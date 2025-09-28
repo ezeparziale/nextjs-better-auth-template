@@ -1,0 +1,26 @@
+{
+  "semi": false,
+  "trailingComma": "all",
+  "singleQuote": false,
+  "printWidth": 88,
+  "tabWidth": 2,
+  "useTabs": false,
+  "quoteProps": "as-needed",
+  "proseWrap": "always",
+  "endOfLine": "lf",
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+  "importOrder": [
+    "^(next/(.*)$)|^(next$)",
+    "^(react/(.*)$)|^(react$)",
+    "<THIRD_PARTY_MODULES>",
+    "^@/types/(.*)$",
+    "^@/lib/(.*)$",
+    "^@/schemas/(.*)$",
+    "^@/actions/(.*)$",
+    "^@/data/(.*)$",
+    "^@/components/ui/(.*)$",
+    "^@/components/(.*)$|^components/(.*)$",
+    "^@/styles/(.*)$",
+    "^[./]"
+  ]
+}
