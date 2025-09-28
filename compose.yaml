@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17.5
+    hostname: postgres_db
+    container_name: postgres_db
+    restart: always
+    user: ${DATABASE_USER}
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_DB}
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    networks:
+      - nextjs_net
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:5.2.1
+    hostname: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+      - ADMINER_DESIGN=hever
+    networks:
+      - nextjs_net
+
+volumes:
+  postgres-db:
+
+networks:
+  nextjs_net:
+    name: nextjs_net
