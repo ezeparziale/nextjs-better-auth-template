@@ -67,7 +67,7 @@ export default function ForgotPasswordForm() {
             <CardHeader>
               <CardTitle>Forgot your password?</CardTitle>
               <CardDescription>
-                Enter your email and we&apos;ll send you a code to reset the password
+                Enter your email and we’ll send you a link to reset your password
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -104,12 +104,12 @@ export default function ForgotPasswordForm() {
                       )}
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       className="w-full"
                       disabled={isLoading}
                       asChild
                     >
-                      <Link href="/login">Cancel</Link>
+                      <Link href="/login">Back to login</Link>
                     </Button>
                   </div>
                 </form>
