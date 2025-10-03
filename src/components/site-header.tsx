@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function SiteHeader() {
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
 
   return (
     <header className="flex h-[var(--header-height)] shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-[var(--header-height)] lg:px-6">
@@ -32,7 +32,7 @@ export function SiteHeader() {
         <h1 className="text-base font-medium">Documents</h1>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
-          {status === "loading" ? (
+          {isPending ? (
             <Skeleton className="size-8 rounded-full" />
           ) : session?.user ? (
             <DropdownMenu>
