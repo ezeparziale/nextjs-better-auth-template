@@ -1,6 +1,12 @@
+import { Metadata } from "next"
 import { Suspense } from "react"
 import { CheckYourEmail } from "./check-your-email"
 import { EmailVerification } from "./email-verification"
+
+export const metadata: Metadata = {
+  title: "Verify Email",
+  description: "Verify your email address",
+}
 
 export default function VerifyEmailPage({
   searchParams,
