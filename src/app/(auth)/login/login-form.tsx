@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 
 type FormData = LogInFormSchemaType
 
@@ -159,11 +160,7 @@ export default function LogInForm() {
                   />
 
                   <Button type="submit" className="w-full" disabled={!!loadingProvider}>
-                    {loadingProvider === "email" ? (
-                      <Loader2Icon className="animate-spin" />
-                    ) : (
-                      "Log In"
-                    )}
+                    {loadingProvider === "email" ? <Spinner /> : "Log In"}
                   </Button>
 
                   <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
@@ -184,7 +181,7 @@ export default function LogInForm() {
                       </div>
                     )}
                     {loadingProvider === "github" ? (
-                      <Loader2Icon className="animate-spin" />
+                      <Spinner />
                     ) : (
                       <>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -211,7 +208,7 @@ export default function LogInForm() {
                       </div>
                     )}
                     {loadingProvider === "google" ? (
-                      <Loader2Icon className="animate-spin" />
+                      <Spinner />
                     ) : (
                       <>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Spinner } from "@/components/ui/spinner"
 
 enum VerificationStatus {
   Loading = "loading",
@@ -71,7 +72,7 @@ export function EmailVerification({ token }: { token: string }) {
   if (status === VerificationStatus.Loading) {
     return (
       <VerificationCard
-        icon={<Loader2 className="text-primary h-6 w-6 animate-spin" />}
+        icon={<Spinner />}
         title="Verifying Email"
         description="Please wait while we verify your email..."
       />

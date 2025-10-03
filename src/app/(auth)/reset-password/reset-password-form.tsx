@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 
 type FormData = ResetPasswordFormSchemaType
 
@@ -107,7 +108,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                     <Button type="submit" className="w-full" disabled={isLoading}>
                       {isLoading ? (
                         <>
-                          <Loader2Icon className="mr-2 animate-spin" />
+                          <Spinner />
                           Resetting...
                         </>
                       ) : (
