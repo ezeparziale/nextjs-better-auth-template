@@ -1,0 +1,96 @@
+"use client"
+
+import Link from "next/link"
+import { LogOut, Settings } from "lucide-react"
+import { useSession } from "@/lib/auth-client"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ThemeToggle } from "@/components/theme-toggle"
+
+export function SiteHeader() {
+  const { data: session } = useSession()
+
+  return (
+    <header className="flex h-[var(--header-height)] shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-[var(--header-height)] lg:px-6">
+      <div className="flex w-full items-center gap-1">
+        <SidebarTrigger className="-ml-1" />
+        <Separator
+          orientation="vertical"
+          className="mx-2 data-[orientation=vertical]:h-4"
+        />
+        <h1 className="text-base font-medium">Documents</h1>
+        <div className="ml-auto flex items-center gap-2">
+          <ThemeToggle />
+          {status === "loading" ? (
+            <Skeleton className="size-8 rounded-full" />
+          ) : session?.user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative size-8 rounded-full">
+                  <Avatar className="size-8">
+                    <AvatarImage
+                      src={session.user.image ?? ""}
+                      alt={session.user.name ?? ""}
+                    />
+                    <AvatarFallback>
+                      {session.user.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm leading-none font-medium">
+                      {session.user.name}
+                    </p>
+                    <p className="text-muted-foreground text-xs leading-none">
+                      {session.user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/settings">
+                    <Settings className="mr-2 size-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/logout">
+                    <LogOut className="mr-2 size-4" />
+                    <span>Logout</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button variant="secondary" asChild>
+                <Link href="/signup">Sign up</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}
