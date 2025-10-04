@@ -12,7 +12,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">{children}</div>
+        <div className="flex flex-1 flex-col p-5">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )
