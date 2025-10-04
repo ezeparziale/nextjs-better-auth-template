@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { signIn, signUp } from "@/lib/auth-client"
 import { SignUpFormSchema, SignUpFormSchemaType } from "@/schemas/auth"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -192,9 +193,7 @@ export default function SignUpForm() {
                     disabled={!!loadingProvider}
                   >
                     {lastSignInMethod === "github" && (
-                      <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full px-2 py-0.5 text-xs">
-                        Last used
-                      </div>
+                      <Badge className="absolute -top-2 -right-2">Last used</Badge>
                     )}
                     {loadingProvider === "github" ? (
                       <Spinner />
@@ -219,9 +218,7 @@ export default function SignUpForm() {
                     disabled={!!loadingProvider}
                   >
                     {lastSignInMethod === "google" && (
-                      <div className="bg-primary text-primary-foreground absolute -top-2 -right-2 rounded-full px-2 py-0.5 text-xs">
-                        Last used
-                      </div>
+                      <Badge className="absolute -top-2 -right-2">Last used</Badge>
                     )}
                     {loadingProvider === "google" ? (
                       <Spinner />
