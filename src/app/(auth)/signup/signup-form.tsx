@@ -64,7 +64,7 @@ export default function SignUpForm() {
       })
 
       if (result.error) {
-        form.setError("email", { message: result.error.message })
+        toast.error(result.error.message)
       } else {
         toast.success("Sign up successful")
         setTimeout(() => {
@@ -188,6 +188,7 @@ export default function SignUpForm() {
                   </div>
 
                   <Button
+                    type="button"
                     variant="outline"
                     className="relative w-full"
                     onClick={() => handleSocialSignIn("github")}
@@ -207,8 +208,8 @@ export default function SignUpForm() {
                   </Button>
 
                   <Button
-                    variant="outline"
                     type="button"
+                    variant="outline"
                     className="relative w-full"
                     onClick={() => handleSocialSignIn("google")}
                     disabled={!!loadingProvider}
@@ -232,7 +233,7 @@ export default function SignUpForm() {
               <p className="text-muted-foreground text-center text-sm">
                 Already have an account?{" "}
                 <Link href="/login" className="text-primary hover:underline">
-                  Log In
+                  Log in
                 </Link>
               </p>
             </CardFooter>

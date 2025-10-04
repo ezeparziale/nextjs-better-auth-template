@@ -36,6 +36,7 @@ export default function LogInForm() {
   const router = useRouter()
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const [lastSignInMethod, setLastSignInMethod] = useState<string | null>(null)
+  const [isResendingEmail, setIsResendingEmail] = useState<boolean>(false)
 
   useEffect(() => {
     const lastMethod = localStorage.getItem("last-sign-in-method")
@@ -53,11 +54,17 @@ export default function LogInForm() {
   })
 
   async function handleResendVerificationEmail(email: string) {
+    if (isResendingEmail) return
+
+    setIsResendingEmail(true)
+
     try {
       await authClient.sendVerificationEmail({ email })
       toast.success("Verification email sent")
     } catch {
       toast.error("Failed to resend verification email")
+    } finally {
+      setIsResendingEmail(false)
     }
   }
 
@@ -70,7 +77,7 @@ export default function LogInForm() {
       })
 
       if (result.error) {
-        if (result.error.message === "Email not verified") {
+        if (result.error.code === "EMAIL_NOT_VERIFIED") {
           toast.info("Email not verified", {
             action: {
               label: "Resend email",
@@ -78,7 +85,7 @@ export default function LogInForm() {
             },
           })
         } else {
-          form.setError("email", { message: result.error.message })
+          toast.error(result.error.message)
         }
       } else {
         router.push("/dashboard")
@@ -137,14 +144,14 @@ export default function LogInForm() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <div className="flex items-center">
+                        <div className="flex items-center justify-between">
                           <FormLabel>Password</FormLabel>
-                          <a
+                          <Link
                             href="/forgot-password"
                             className="text-muted-foreground ml-auto inline-block text-sm underline-offset-4 hover:underline"
                           >
                             Forgot your password?
-                          </a>
+                          </Link>
                         </div>
                         <FormControl>
                           <Input
@@ -170,6 +177,7 @@ export default function LogInForm() {
                   </div>
 
                   <Button
+                    type="button"
                     variant="outline"
                     className="relative w-full"
                     onClick={() => handleSocialSignIn("github")}
@@ -189,8 +197,8 @@ export default function LogInForm() {
                   </Button>
 
                   <Button
-                    variant="outline"
                     type="button"
+                    variant="outline"
                     className="relative w-full"
                     onClick={() => handleSocialSignIn("google")}
                     disabled={!!loadingProvider}
@@ -214,7 +222,7 @@ export default function LogInForm() {
               <p className="text-muted-foreground text-center text-sm">
                 Don&apos;t have an account?{" "}
                 <Link href="/signup" className="text-primary hover:underline">
-                  Sign Up
+                  Sign up
                 </Link>
               </p>
             </CardFooter>
