@@ -14,20 +14,20 @@ export const SignUpFormSchema = z
     path: ["confirmPassword"],
   })
 
-export type SignUpFormSchemaType = z.infer<typeof SignUpFormSchema>
+export type SignUpForm = z.infer<typeof SignUpFormSchema>
 
 export const LogInFormSchema = z.object({
   email: z.email({ message: "Invalid email address." }),
   password: z.string(),
 })
 
-export type LogInFormSchemaType = z.infer<typeof LogInFormSchema>
+export type LogInForm = z.infer<typeof LogInFormSchema>
 
 export const ForgotPasswordFormSchema = z.object({
   email: z.email({ message: "Invalid email address." }),
 })
 
-export type ForgotPasswordFormSchemaType = z.infer<typeof ForgotPasswordFormSchema>
+export type ForgotPasswordForm = z.infer<typeof ForgotPasswordFormSchema>
 
 export const ResetPasswordFormSchema = z
   .object({
@@ -39,4 +39,4 @@ export const ResetPasswordFormSchema = z
     path: ["confirmPassword"],
   })
 
-export type ResetPasswordFormSchemaType = z.infer<typeof ResetPasswordFormSchema>
+export type ResetPasswordForm = z.infer<typeof ResetPasswordFormSchema>

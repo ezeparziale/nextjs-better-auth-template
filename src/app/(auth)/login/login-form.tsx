@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient, signIn } from "@/lib/auth-client"
-import { LogInFormSchema, LogInFormSchemaType } from "@/schemas/auth"
+import { LogInFormSchema, type LogInForm } from "@/schemas/auth"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +30,7 @@ import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
-type FormData = LogInFormSchemaType
+type FormData = LogInForm
 
 export default function LogInForm() {
   const router = useRouter()
@@ -44,7 +44,7 @@ export default function LogInForm() {
     }
   }, [])
 
-  const form = useForm<LogInFormSchemaType>({
+  const form = useForm<FormData>({
     resolver: zodResolver(LogInFormSchema),
     defaultValues: {
       email: "",

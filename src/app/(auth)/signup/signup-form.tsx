@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { signIn, signUp } from "@/lib/auth-client"
-import { SignUpFormSchema, SignUpFormSchemaType } from "@/schemas/auth"
+import { SignUpFormSchema, type SignUpForm } from "@/schemas/auth"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +30,7 @@ import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
-type FormData = SignUpFormSchemaType
+type FormData = SignUpForm
 
 export default function SignUpForm() {
   const router = useRouter()
