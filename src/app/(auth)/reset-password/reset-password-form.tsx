@@ -108,7 +108,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                       {isLoading ? (
                         <>
                           <Spinner />
-                          Resetting...
+                          Resetting password…
                         </>
                       ) : (
                         "Reset"
