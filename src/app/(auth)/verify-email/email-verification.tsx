@@ -74,7 +74,7 @@ export function EmailVerification({ token }: { token: string }) {
       <VerificationCard
         icon={<Spinner />}
         title="Verifying Email"
-        description="Please wait while we verify your email..."
+        description="Please wait while we verify your email…"
       />
     )
   }
@@ -85,7 +85,7 @@ export function EmailVerification({ token }: { token: string }) {
       <VerificationCard
         icon={<CheckCircle className="text-primary h-6 w-6" />}
         title="Email Verified"
-        description={`Your email has been successfully verified. Redirecting to login in ${seconds}s...`}
+        description={`Your email has been successfully verified. Redirecting to login in ${seconds}s…`}
       >
         <Button asChild className="w-full">
           <Link href="/login">Go to Login</Link>

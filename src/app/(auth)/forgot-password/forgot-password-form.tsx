@@ -96,7 +96,7 @@ export default function ForgotPasswordForm() {
                       {isLoading ? (
                         <>
                           <Spinner />
-                          Sending...
+                          Sending…
                         </>
                       ) : (
                         "Send reset link"
