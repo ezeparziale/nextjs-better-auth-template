@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { authClient, signIn } from "@/lib/auth-client"
+import { signIn } from "@/lib/auth-client"
 import { LogInFormSchema, type LogInForm } from "@/schemas/auth"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,6 @@ export default function LogInForm() {
   const router = useRouter()
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const [lastSignInMethod, setLastSignInMethod] = useState<string | null>(null)
-  const [isResendingEmail, setIsResendingEmail] = useState<boolean>(false)
 
   useEffect(() => {
     const lastMethod = localStorage.getItem("last-sign-in-method")
@@ -53,21 +52,6 @@ export default function LogInForm() {
     },
   })
 
-  async function handleResendVerificationEmail(email: string) {
-    if (isResendingEmail) return
-
-    setIsResendingEmail(true)
-
-    try {
-      await authClient.sendVerificationEmail({ email })
-      toast.success("Verification email sent")
-    } catch {
-      toast.error("Failed to resend verification email")
-    } finally {
-      setIsResendingEmail(false)
-    }
-  }
-
   async function onSubmit(values: FormData) {
     setLoadingProvider("email")
     try {
@@ -78,12 +62,8 @@ export default function LogInForm() {
 
       if (result.error) {
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
-          toast.info("Email not verified", {
-            action: {
-              label: "Resend email",
-              onClick: () => handleResendVerificationEmail(values.email),
-            },
-          })
+          router.push(`/verify-email?email=${values.email}`)
+          toast.info("Email not verified")
         } else {
           toast.error(result.error.message)
         }
