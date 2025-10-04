@@ -42,10 +42,9 @@ export default function ForgotPasswordForm() {
   async function onSubmit(values: FormData) {
     setIsLoading(true)
     try {
-      const result = await authClient.forgetPassword({ email: values.email })
+      const result = await authClient.requestPasswordReset({ email: values.email })
 
       if (result.error) {
-        form.setError("email", { message: result.error.message })
         toast.error(result.error.message)
       } else {
         toast.success("Password reset link sent to your email.")
