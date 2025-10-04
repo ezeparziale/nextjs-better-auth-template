@@ -52,12 +52,12 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         form.setError("password", { message: result.error.message })
         toast.error(result.error.message)
       } else {
-        toast.success("Password reset successfully.")
+        toast.success("Password reset successfully")
         form.reset()
         router.push("/login")
       }
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong")
     } finally {
       setIsLoading(false)
     }
@@ -70,7 +70,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
           <Card>
             <CardHeader>
               <CardTitle>Reset password</CardTitle>
-              <CardDescription>Enter your new password below.</CardDescription>
+              <CardDescription>Enter your new password below</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>

@@ -66,13 +66,13 @@ export default function SignUpForm() {
       if (result.error) {
         form.setError("email", { message: result.error.message })
       } else {
-        toast.success("Sign up successful!")
+        toast.success("Sign up successful")
         setTimeout(() => {
           router.push("/login")
         }, 2000)
       }
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong")
     } finally {
       setLoadingProvider(null)
     }

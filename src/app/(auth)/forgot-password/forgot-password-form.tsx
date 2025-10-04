@@ -47,12 +47,12 @@ export default function ForgotPasswordForm() {
       if (result.error) {
         toast.error(result.error.message)
       } else {
-        toast.success("Password reset link sent to your email.")
+        toast.success("Password reset link sent to your email")
         form.reset()
         router.push("/login")
       }
     } catch {
-      toast.error("Something went wrong. Please try again.")
+      toast.error("Something went wrong")
     } finally {
       setIsLoading(false)
     }

@@ -55,9 +55,9 @@ export default function LogInForm() {
   async function handleResendVerificationEmail(email: string) {
     try {
       await authClient.sendVerificationEmail({ email })
-      toast.success("Verification email sent!")
+      toast.success("Verification email sent")
     } catch {
-      toast.error("Failed to resend verification email.")
+      toast.error("Failed to resend verification email")
     }
   }
 
@@ -83,9 +83,8 @@ export default function LogInForm() {
       } else {
         router.push("/dashboard")
       }
-    } catch (err) {
-      toast.error("Something went wrong. Please try again.")
-      console.error("Unexpected error:", err)
+    } catch {
+      toast.error("Something went wrong")
     } finally {
       setLoadingProvider(null)
     }
