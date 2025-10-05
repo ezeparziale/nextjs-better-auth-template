@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { PageHeader } from "@/components/page-header"
 
-const settingsNav = [{ name: "Profile", href: "/settings/profile" }]
+const settingsNav = [
+  { name: "Profile", href: "/settings/profile" },
+  { name: "Sessions", href: "/settings/sessions" },
+]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
