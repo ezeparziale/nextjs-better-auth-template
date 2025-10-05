@@ -32,7 +32,7 @@ import { Spinner } from "@/components/ui/spinner"
 
 type FormData = LogInForm
 
-export default function LogInForm() {
+export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const [lastSignInMethod, setLastSignInMethod] = useState<string | null>(null)
@@ -68,7 +68,7 @@ export default function LogInForm() {
           toast.error(result.error.message)
         }
       } else {
-        router.push("/dashboard")
+        router.push(callbackUrl || "/dashboard")
       }
     } catch {
       toast.error("Something went wrong")
@@ -80,7 +80,7 @@ export default function LogInForm() {
   const handleSocialSignIn = async (provider: "github" | "google") => {
     setLoadingProvider(provider)
     localStorage.setItem("last-sign-in-method", provider)
-    await signIn.social({ provider, callbackURL: "/dashboard" })
+    await signIn.social({ provider, callbackURL: callbackUrl || "/dashboard" })
     setLoadingProvider(null)
   }
 

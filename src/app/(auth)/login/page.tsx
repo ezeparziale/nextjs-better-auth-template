@@ -4,12 +4,14 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import LogInForm from "./login-form"
 
+type SearchParams = Promise<{ callbackUrl?: string }>
+
 export const metadata: Metadata = {
   title: "Login",
   description: "Login to your account",
 }
 
-export default async function SignInPage() {
+export default async function SignInPage(props: { searchParams: SearchParams }) {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
@@ -18,5 +20,8 @@ export default async function SignInPage() {
     redirect("/dashboard")
   }
 
-  return <LogInForm />
+  const searchParams = await props.searchParams
+  const { callbackUrl } = searchParams
+
+  return <LogInForm callbackUrl={callbackUrl} />
 }
