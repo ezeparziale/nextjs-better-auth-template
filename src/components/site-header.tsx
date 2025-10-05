@@ -64,7 +64,7 @@ export function SiteHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings">
+                  <Link href="/settings/profile">
                     <Settings className="mr-2 size-4" />
                     <span>Settings</span>
                   </Link>
