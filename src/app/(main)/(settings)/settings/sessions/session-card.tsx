@@ -117,7 +117,7 @@ export function SessionCard({
               {deviceDescription}
             </CardTitle>
 
-            {isCurrent && <Badge variant="outline">Current Session</Badge>}
+            {isCurrent && <Badge variant="blue-subtle">Current Session</Badge>}
           </div>
 
           {onRevoke && !isCurrent && (
