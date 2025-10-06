@@ -6,7 +6,7 @@ export const SignUpFormSchema = z
     email: z
       .email({ message: "Invalid email address." })
       .min(1, { message: "Email is required." }),
-    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -31,7 +31,7 @@ export type ForgotPasswordForm = z.infer<typeof ForgotPasswordFormSchema>
 
 export const ResetPasswordFormSchema = z
   .object({
-    password: z.string(),
+    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

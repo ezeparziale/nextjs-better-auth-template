@@ -16,6 +16,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    minPasswordLength: 8,
     sendResetPassword: async ({ user, token }) => {
       const url = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`
       const html = `<p>Hi ${user.name},</p>
