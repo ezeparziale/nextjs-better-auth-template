@@ -75,7 +75,6 @@ export default function ResetPasswordForm({ token }: { token: string }) {
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Password */}
                   <FormField
                     control={form.control}
                     name="password"
@@ -89,7 +88,6 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                       </FormItem>
                     )}
                   />
-                  {/* Confirm Password */}
                   <FormField
                     control={form.control}
                     name="confirmPassword"
