@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/page-header"
 const settingsNav = [
   { name: "Profile", href: "/settings/profile" },
   { name: "Sessions", href: "/settings/sessions" },
+  { name: "Account", href: "/settings/account" },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

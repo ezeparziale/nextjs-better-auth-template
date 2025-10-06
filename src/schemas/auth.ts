@@ -40,3 +40,18 @@ export const ResetPasswordFormSchema = z
   })
 
 export type ResetPasswordForm = z.infer<typeof ResetPasswordFormSchema>
+
+export const UpdatePasswordFormSchema = z
+  .object({
+    currentPassword: z.string(),
+    newPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  })
+
+export type UpdatePasswordForm = z.infer<typeof UpdatePasswordFormSchema>
