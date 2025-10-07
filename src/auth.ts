@@ -5,6 +5,7 @@ import prismadb from "./lib/prismadb"
 import "server-only"
 
 export const auth = betterAuth({
+  appName: "Template",
   database: prismaAdapter(prismadb, {
     provider: "postgresql",
   }),
