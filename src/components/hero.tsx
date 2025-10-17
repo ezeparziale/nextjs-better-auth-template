@@ -5,7 +5,7 @@ import { Badge } from "./ui/badge"
 
 export function Hero() {
   return (
-    <section className="container flex flex-col items-center justify-center gap-8 px-4 py-24 md:py-32 lg:py-40">
+    <section className="flex flex-col items-center justify-center gap-8 px-4 py-24 md:py-32 lg:py-40">
       <div className="flex max-w-4xl flex-col items-center gap-6 text-center">
         {/* Badge */}
         <Badge variant="secondary">Built with Next.js 15 🎉</Badge>
