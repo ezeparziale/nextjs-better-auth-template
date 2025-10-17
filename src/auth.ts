@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
+import { twoFactor } from "better-auth/plugins"
 import { sendMail } from "./lib/email"
 import prismadb from "./lib/prismadb"
 import "server-only"
@@ -47,4 +48,5 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
+  plugins: [twoFactor()],
 })
