@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -26,7 +27,16 @@ export default function TwoFactorAuth({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Two-Factor Authentication</CardTitle>
+        <CardTitle>
+          <div className="flex items-center justify-between gap-2">
+            <span> Two-Factor Authentication</span>
+            {isEnabled ? (
+              <Badge variant="green-subtle">Enabled</Badge>
+            ) : (
+              <Badge variant="red-subtle">Disabled</Badge>
+            )}
+          </div>
+        </CardTitle>
         <CardDescription>
           Add an extra layer of security to your account
         </CardDescription>
