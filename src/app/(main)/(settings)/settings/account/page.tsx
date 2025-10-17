@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { PageHeader } from "@/components/page-header"
 import { CreatePasswordForm } from "./create-password-button"
+import TwoFactorAuth from "./two-factor-auth"
 import { UpdatePasswordForm } from "./update-password-form"
 
 const PAGE = {
@@ -37,6 +38,11 @@ export default async function AccountPage() {
       ) : (
         <CreatePasswordForm email={session.user.email} />
       )}
+
+      <TwoFactorAuth
+        isEnabled={session.user.twoFactorEnabled ?? false}
+        hasPasswordAccount={hasPasswordAccount}
+      />
     </div>
   )
 }
