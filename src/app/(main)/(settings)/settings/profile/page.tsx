@@ -3,7 +3,6 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { PageHeader } from "@/components/page-header"
-import { DeleteAccountForm } from "./delete-account-form"
 
 const PAGE = {
   title: "Profile",
@@ -26,7 +25,6 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <DeleteAccountForm userEmail={session.user.email} />
     </div>
   )
 }
