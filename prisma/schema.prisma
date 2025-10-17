@@ -20,6 +20,9 @@ model User {
   sessions Session[]
   accounts Account[]
 
+  twoFactorEnabled Boolean?    @default(false) @map("two_factor_enabled")
+  twofactors       TwoFactor[]
+
   @@map("users")
 }
 
@@ -66,4 +69,14 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String @map("backup_codes")
+  userId      String @map("user_id")
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor")
 }
