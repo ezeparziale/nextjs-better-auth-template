@@ -10,7 +10,8 @@
     "lint:fix": "eslint --fix",
     "format:check": "prettier --check .",
     "format:fix": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "prisma generate --no-engine"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
