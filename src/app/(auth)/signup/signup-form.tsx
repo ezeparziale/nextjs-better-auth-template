@@ -64,7 +64,7 @@ export default function SignUpForm() {
       })
 
       if (result.error) {
-        toast.error(result.error.message)
+        toast.error(result.error.message || "Something went wrong")
       } else {
         toast.success("Sign up successful")
         setTimeout(() => {

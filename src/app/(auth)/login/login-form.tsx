@@ -65,7 +65,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
           router.push(`/verify-email?email=${values.email}`)
           toast.info("Email not verified")
         } else {
-          toast.error(result.error.message)
+          toast.error(result.error.message || "Something went wrong")
         }
       } else {
         router.push(callbackUrl || "/dashboard")
