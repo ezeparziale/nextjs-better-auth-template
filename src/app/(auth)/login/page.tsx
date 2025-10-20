@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import LogInForm from "./login-form"
+import LogInForm from "./_components/login-form"
 
 type SearchParams = Promise<{ callbackUrl?: string }>
 

@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import SignUpForm from "./signup-form"
+import SignUpForm from "./_components/signup-form"
 
 export const metadata: Metadata = {
   title: "Sign Up",

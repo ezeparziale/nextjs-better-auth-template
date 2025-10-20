@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
-import { CheckYourEmail } from "./check-your-email"
-import { EmailVerification } from "./email-verification"
+import { CheckYourEmail } from "./_components/check-your-email"
+import { EmailVerification } from "./_components/email-verification"
 
 export const metadata: Metadata = {
   title: "Verify Email",

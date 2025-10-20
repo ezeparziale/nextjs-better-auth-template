@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
-import ResetPasswordForm from "./reset-password-form"
+import ResetPasswordForm from "./_components/reset-password-form"
 
 type SearchParams = Promise<{ token: string }>
 

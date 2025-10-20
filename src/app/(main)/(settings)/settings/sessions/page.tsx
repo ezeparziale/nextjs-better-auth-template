@@ -3,7 +3,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { PageHeader } from "@/components/page-header"
-import { SessionsList } from "./sessions-list"
+import { SessionsList } from "./_components/sessions-list"
 
 const PAGE = {
   title: "Sessions",

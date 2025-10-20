@@ -10,8 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import BackupCodeForm from "./backup-code-form"
-import TotpForm from "./totp-form"
+import BackupCodeForm from "./_components/backup-code-form"
+import TotpForm from "./_components/totp-form"
 
 type SearchParams = Promise<{ callbackUrl?: string }>
 
