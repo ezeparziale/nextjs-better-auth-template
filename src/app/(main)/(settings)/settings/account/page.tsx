@@ -45,7 +45,7 @@ export default async function AccountPage() {
         isEnabled={session.user.twoFactorEnabled ?? false}
         hasPasswordAccount={hasPasswordAccount}
       />
-      <PasskeyManagement passKeys={passKeys} />
+      <PasskeyManagement passKeys={passKeys} hasPasswordAccount={hasPasswordAccount} />
       <DeleteAccountForm userEmail={session.user.email} />
     </div>
   )

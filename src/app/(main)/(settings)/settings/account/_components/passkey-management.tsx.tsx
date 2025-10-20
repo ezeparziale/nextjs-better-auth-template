@@ -56,7 +56,13 @@ const passkeySchema = z.object({
 
 type FormData = z.infer<typeof passkeySchema>
 
-export default function PasskeyManagement({ passKeys }: { passKeys: Passkey[] }) {
+export default function PasskeyManagement({
+  passKeys,
+  hasPasswordAccount,
+}: {
+  passKeys: Passkey[]
+  hasPasswordAccount: boolean
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [deletePasskeyId, setDeletePasskeyId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState<boolean>(false)
@@ -127,6 +133,7 @@ export default function PasskeyManagement({ passKeys }: { passKeys: Passkey[] })
               onClick={() => setIsDialogOpen(true)}
               aria-label="Add passkey"
               className="shrink-0"
+              disabled={!hasPasswordAccount}
             >
               <PlusIcon />
               Create new passkey
@@ -134,7 +141,9 @@ export default function PasskeyManagement({ passKeys }: { passKeys: Passkey[] })
           </div>
         </CardHeader>
         <CardContent>
-          {passKeys.length === 0 ? (
+          {!hasPasswordAccount ? (
+            <span>Create a password first to enable passkey management.</span>
+          ) : passKeys.length === 0 ? (
             <span>No passkeys found.</span>
           ) : (
             <div className="space-y-3">
@@ -145,7 +154,12 @@ export default function PasskeyManagement({ passKeys }: { passKeys: Passkey[] })
                       <div className="flex-1 space-y-1.5">
                         <CardTitle>{passkey.name}</CardTitle>
                         <CardDescription>
-                          Created on {new Date(passkey.createdAt).toISOString()}
+                          Created on{" "}
+                          {new Date(passkey.createdAt).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </CardDescription>
                       </div>
                       <Button
