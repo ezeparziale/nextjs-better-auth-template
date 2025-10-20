@@ -35,7 +35,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -182,11 +181,10 @@ export default function PasskeyManagement({
       <Dialog
         open={isDialogOpen}
         onOpenChange={(o) => {
-          if (o) form.reset()
+          if (!o) form.reset()
           setIsDialogOpen(o)
         }}
       >
-        <DialogTrigger asChild></DialogTrigger>
         <DialogContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
