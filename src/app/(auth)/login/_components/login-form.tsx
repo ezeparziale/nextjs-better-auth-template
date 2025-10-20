@@ -29,6 +29,7 @@ import {
 import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import PasskeyButton from "./passkey-button"
 
 type FormData = LogInForm
 
@@ -109,6 +110,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                           <Input
                             placeholder="you@example.com"
                             type="email"
+                            autoComplete="email webauthn"
                             disabled={!!loadingProvider}
                             {...field}
                           />
@@ -135,6 +137,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                         </div>
                         <FormControl>
                           <Input
+                            autoComplete="current-password webauthn"
                             placeholder="••••••••"
                             type="password"
                             disabled={!!loadingProvider}
@@ -149,6 +152,8 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                   <Button type="submit" className="w-full" disabled={!!loadingProvider}>
                     {loadingProvider === "email" ? <Spinner /> : "Log In"}
                   </Button>
+
+                  <PasskeyButton />
 
                   <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
                     <span className="bg-card text-muted-foreground relative z-10 px-2">

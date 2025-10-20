@@ -5,11 +5,9 @@ import { auth } from "@/auth"
 import { PageHeader } from "@/components/page-header"
 import { CreatePasswordForm } from "./_components/create-password-button"
 import { DeleteAccountForm } from "./_components/delete-account-form"
+import PasskeyManagement from "./_components/passkey-management.tsx"
+import TwoFactorAuth from "./_components/two-factor-auth"
 import { UpdatePasswordForm } from "./_components/update-password-form"
-import { CreatePasswordForm } from "./create-password-button"
-import { DeleteAccountForm } from "./delete-account-form"
-import TwoFactorAuth from "./two-factor-auth"
-import { UpdatePasswordForm } from "./update-password-form"
 
 const PAGE = {
   title: "Account",
@@ -29,6 +27,7 @@ export default async function AccountPage() {
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
 
+  const passKeys = await auth.api.listPasskeys({ headers: await headers() })
   const accounts = await auth.api.listUserAccounts({ headers: await headers() })
   const hasPasswordAccount = accounts.some(
     (account) => account.providerId === "credential",
@@ -46,6 +45,7 @@ export default async function AccountPage() {
         isEnabled={session.user.twoFactorEnabled ?? false}
         hasPasswordAccount={hasPasswordAccount}
       />
+      <PasskeyManagement passKeys={passKeys} />
       <DeleteAccountForm userEmail={session.user.email} />
     </div>
   )
