@@ -43,11 +43,13 @@ export type ResetPasswordForm = z.infer<typeof ResetPasswordFormSchema>
 
 export const UpdatePasswordFormSchema = z
   .object({
-    currentPassword: z.string(),
+    currentPassword: z.string().min(1, { message: "Password is required." }),
     newPassword: z
       .string()
       .min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Please complete the password confirmation." }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match.",
