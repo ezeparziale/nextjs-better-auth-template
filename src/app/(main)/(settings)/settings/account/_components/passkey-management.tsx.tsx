@@ -4,7 +4,13 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import type { Passkey } from "better-auth/plugins/passkey"
-import { PlusIcon, TrashIcon } from "lucide-react"
+import {
+  InfoIcon,
+  KeyRoundIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  TrashIcon,
+} from "lucide-react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -19,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
@@ -36,6 +43,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import {
   Form,
   FormControl,
@@ -121,7 +136,9 @@ export default function PasskeyManagement({
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5">
-              <CardTitle>Passkey Management</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Passkey management
+              </CardTitle>
               <CardDescription>
                 Manage your passkeys for secure, passwordless authentication across all
                 your devices.
@@ -135,40 +152,88 @@ export default function PasskeyManagement({
               disabled={!hasPasswordAccount}
             >
               <PlusIcon />
-              Create new passkey
+              <span className="hidden sm:inline">Create new passkey</span>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {!hasPasswordAccount ? (
-            <span>Create a password first to enable passkey management.</span>
+            <Empty className="border border-dashed">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <InfoIcon />
+                </EmptyMedia>
+                <EmptyTitle>Password Required</EmptyTitle>
+                <EmptyDescription>
+                  Create a password first to enable passkey management.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : passKeys.length === 0 ? (
-            <span>No passkeys found.</span>
+            <Empty className="border border-dashed">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <KeyRoundIcon />
+                </EmptyMedia>
+                <EmptyTitle>No passkeys yet</EmptyTitle>
+                <EmptyDescription>
+                  Create your first passkey to enable fast, secure, passwordless sign-in
+                  on this device.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button
+                  size="sm"
+                  onClick={() => setIsDialogOpen(true)}
+                  aria-label="Add passkey"
+                >
+                  <PlusIcon />
+                  Create your first passkey
+                </Button>
+              </EmptyContent>
+            </Empty>
           ) : (
             <div className="space-y-3">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-muted-foreground text-sm">
+                  {passKeys.length} {passKeys.length === 1 ? "passkey" : "passkeys"}{" "}
+                  configured
+                </p>
+                <Badge variant="secondary" className="gap-1.5">
+                  <ShieldCheckIcon className="size-3" />
+                  Secure
+                </Badge>
+              </div>
               {passKeys.map((passkey) => (
-                <Card key={passkey.id}>
+                <Card key={passkey.id} className="border-muted">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-1.5">
-                        <CardTitle>{passkey.name}</CardTitle>
-                        <CardDescription>
-                          Created on{" "}
-                          {new Date(passkey.createdAt).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </CardDescription>
+                      <div className="flex min-w-0 flex-1 items-start gap-3">
+                        <div className="bg-primary/10 shrink-0 rounded-lg p-2">
+                          <KeyRoundIcon className="text-primary size-4" />
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <CardTitle className="truncate text-base">
+                            {passkey.name}
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            Created{" "}
+                            {new Date(passkey.createdAt).toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </CardDescription>
+                        </div>
                       </div>
                       <Button
                         variant="destructive"
+                        aria-label="Delete passkey"
+                        disabled={isDeleting}
                         size="sm"
                         onClick={() => setDeletePasskeyId(passkey.id)}
-                        className="shrink-0"
                       >
                         <TrashIcon />
-                        Delete
                       </Button>
                     </div>
                   </CardHeader>
@@ -186,23 +251,28 @@ export default function PasskeyManagement({
         }}
       >
         <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add passkey</DialogTitle>
+            <DialogDescription>
+              Give your passkey a memorable name to identify this device.
+            </DialogDescription>
+          </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <DialogHeader>
-                <DialogTitle>Add passkey</DialogTitle>
-                <DialogDescription>
-                  Add a new passkey to your account.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="my-4 space-y-4">
+              <div className="mb-6 space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex-wrap">Name</FormLabel>
+                      <FormLabel>Passkey name</FormLabel>
                       <FormControl>
-                        <Input type="text" autoComplete="off" {...field} />
+                        <Input
+                          type="text"
+                          autoComplete="off"
+                          placeholder="e.g., My desktop"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -235,13 +305,14 @@ export default function PasskeyManagement({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete passkey?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the passkey{" "}
+              This action cannot be undone. This will permanently delete{" "}
               <span className="text-foreground font-semibold">
                 &quot;{passkeyToDelete?.name}&quot;
-              </span>{" "}
-              and you will need to create a new one to use passwordless authentication.
+              </span>
+              . You&apos;ll need to create a new passkey to use passwordless
+              authentication on this device again.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
