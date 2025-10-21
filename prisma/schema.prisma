@@ -25,6 +25,8 @@ model User {
 
   passkeys Passkey[]
 
+  lastLoginMethod String? @map("last_login_method")
+
   @@map("users")
 }
 
