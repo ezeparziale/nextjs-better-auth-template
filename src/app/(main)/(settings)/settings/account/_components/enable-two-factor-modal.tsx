@@ -105,7 +105,18 @@ export default function EnableTwoFactorModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent
+        onEscapeKeyDown={(e) => {
+          if (step === "backup") e.preventDefault()
+        }}
+        onPointerDownOutside={(e) => {
+          if (step === "backup") e.preventDefault()
+        }}
+        onInteractOutside={(e) => {
+          if (step === "backup") e.preventDefault()
+        }}
+        showCloseButton={step !== "backup"}
+      >
         <DialogHeader>
           <DialogTitle>Enable Two-Factor Authentication</DialogTitle>
           <div className="mt-2 flex items-center gap-2">
@@ -220,27 +231,27 @@ function QRCodeSetup({
   return (
     <div className="space-y-6">
       <Tabs defaultValue="qr" className="w-full">
-        <TabsList className="mb-2 grid w-full grid-cols-2">
+        <TabsList className="mb-4 grid w-full grid-cols-2">
           <TabsTrigger value="qr">Scan QR Code</TabsTrigger>
           <TabsTrigger value="manual">Manual Entry</TabsTrigger>
         </TabsList>
         <TabsContent value="qr" className="space-y-4">
           <div className="flex flex-col items-center gap-4">
-            <div className="border-border rounded-lg border-2 bg-white p-4">
+            <div className="border-border rounded-xl border-2 bg-white p-4 shadow-sm">
               <QRCode size={256} value={totpURI} />
             </div>
             <div className="text-center">
-              <p className="text-foreground text-sm font-medium">
+              <p className="text-foreground text-base font-semibold">
                 Scan with your authenticator app
               </p>
-              <p className="text-muted-foreground mt-1 text-xs">
+              <p className="text-muted-foreground text-sm">
                 Use Google Authenticator, Authy, or any TOTP app
               </p>
             </div>
           </div>
         </TabsContent>
         <TabsContent value="manual" className="space-y-4">
-          <div className="space-y-2">
+          <div className="border-border bg-muted/30 space-y-4 rounded-lg border p-4">
             <Label>Enter this key manually in your authenticator app</Label>
             <div className="flex items-center gap-2">
               <Input
@@ -259,8 +270,16 @@ function QRCodeSetup({
                 {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
               </Button>
             </div>
-            <p className="text-muted-foreground text-sm">Account: {accountName}</p>
-            <p className="text-muted-foreground text-sm">Type: Time-based (TOTP)</p>
+            <div className="border-border space-y-1.5 pt-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Account:</span>
+                <span className="text-foreground font-medium">{accountName}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Type:</span>
+                <span className="text-foreground font-medium">Time-based (TOTP)</span>
+              </div>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
@@ -423,13 +442,15 @@ function BackupCodes({
       </Alert>
 
       <div className="space-y-3">
+        <Label className="text-sm font-medium">Your backup codes</Label>
         <div className="border-border bg-muted/30 grid grid-cols-1 gap-2 rounded-lg border p-4 md:grid-cols-2">
           {backupCodes.map((code, index) => (
             <div
               key={index}
-              className="bg-background flex items-center gap-2 rounded-md px-3 py-2 text-center"
+              className="border-border bg-background flex items-center gap-2 rounded-md border px-3 py-2.5 shadow-sm"
             >
-              <code className="text-foreground flex-1 font-mono text-sm font-medium">
+              <span className="text-muted-foreground text-xs">#{index + 1}</span>
+              <code className="text-foreground flex-1 text-center font-mono text-sm font-semibold">
                 {code}
               </code>
             </div>
@@ -437,7 +458,7 @@ function BackupCodes({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <Button
           variant="outline"
           onClick={handleCopy}
@@ -445,12 +466,12 @@ function BackupCodes({
         >
           {copied ? (
             <>
-              <Check className="text-success size-4" />
+              <Check className="text-green-600" />
               Copied!
             </>
           ) : (
             <>
-              <Copy className="size-4" />
+              <Copy />
               Copy codes
             </>
           )}
@@ -460,8 +481,17 @@ function BackupCodes({
           onClick={handleDownload}
           className="flex-1 bg-transparent"
         >
-          <Download className="size-4" />
-          {downloaded ? "Downloaded!" : "Download Codes"}
+          {downloaded ? (
+            <>
+              <Check className="text-green-600" />
+              Downloaded!
+            </>
+          ) : (
+            <>
+              <Download />
+              Download codes
+            </>
+          )}{" "}
         </Button>
       </div>
 
