@@ -60,7 +60,7 @@ export default function SignUpForm() {
         toast.success("Sign up successful")
         setTimeout(() => {
           router.push("/login")
-        }, 2000)
+        }, 500)
       }
     } catch {
       toast.error("Something went wrong")
