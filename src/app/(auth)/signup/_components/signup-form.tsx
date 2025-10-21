@@ -2,13 +2,12 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { signIn, signUp } from "@/lib/auth-client"
 import { SignUpFormSchema, type SignUpForm } from "@/schemas/auth"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -35,14 +34,6 @@ type FormData = SignUpForm
 export default function SignUpForm() {
   const router = useRouter()
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
-  const [lastSignInMethod, setLastSignInMethod] = useState<string | null>(null)
-
-  useEffect(() => {
-    const lastMethod = localStorage.getItem("last-sign-in-method")
-    if (lastMethod) {
-      setLastSignInMethod(lastMethod)
-    }
-  }, [])
 
   const form = useForm<FormData>({
     resolver: zodResolver(SignUpFormSchema),
@@ -80,7 +71,6 @@ export default function SignUpForm() {
 
   const handleSocialSignIn = async (provider: "github" | "google") => {
     setLoadingProvider(provider)
-    localStorage.setItem("last-sign-in-method", provider)
     await signIn.social({ provider, callbackURL: "/dashboard" })
     setLoadingProvider(null)
   }
@@ -187,13 +177,10 @@ export default function SignUpForm() {
             <Button
               type="button"
               variant="outline"
-              className="relative w-full"
+              className="w-full"
               onClick={() => handleSocialSignIn("github")}
               disabled={!!loadingProvider}
             >
-              {lastSignInMethod === "github" && (
-                <Badge className="absolute -top-2 -right-2">Last used</Badge>
-              )}
               {loadingProvider === "github" ? (
                 <Spinner />
               ) : (
@@ -207,13 +194,10 @@ export default function SignUpForm() {
             <Button
               type="button"
               variant="outline"
-              className="relative w-full"
+              className="w-full"
               onClick={() => handleSocialSignIn("google")}
               disabled={!!loadingProvider}
             >
-              {lastSignInMethod === "google" && (
-                <Badge className="absolute -top-2 -right-2">Last used</Badge>
-              )}
               {loadingProvider === "google" ? (
                 <Spinner />
               ) : (
