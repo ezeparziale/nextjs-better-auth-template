@@ -33,31 +33,25 @@ export default async function TwoFactorPage(props: { searchParams: SearchParams 
   const { callbackUrl } = searchParams
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col">
-          <Tabs defaultValue="totp">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="totp">Authenticator</TabsTrigger>
-              <TabsTrigger value="backup">Backup code</TabsTrigger>
-            </TabsList>
-            <Card>
-              <CardHeader>
-                <CardTitle>Two factor authentication</CardTitle>
-                <CardDescription>Verify your identity to continue</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TabsContent value="totp">
-                  <TotpForm callbackUrl={callbackUrl} />
-                </TabsContent>
-                <TabsContent value="backup">
-                  <BackupCodeForm callbackUrl={callbackUrl} />
-                </TabsContent>
-              </CardContent>
-            </Card>
-          </Tabs>
-        </div>
-      </div>
-    </div>
+    <Tabs defaultValue="totp">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="totp">Authenticator</TabsTrigger>
+        <TabsTrigger value="backup">Backup code</TabsTrigger>
+      </TabsList>
+      <Card>
+        <CardHeader>
+          <CardTitle>Two factor authentication</CardTitle>
+          <CardDescription>Verify your identity to continue</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TabsContent value="totp">
+            <TotpForm callbackUrl={callbackUrl} />
+          </TabsContent>
+          <TabsContent value="backup">
+            <BackupCodeForm callbackUrl={callbackUrl} />
+          </TabsContent>
+        </CardContent>
+      </Card>
+    </Tabs>
   )
 }

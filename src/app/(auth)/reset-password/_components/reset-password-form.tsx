@@ -64,69 +64,58 @@ export default function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Reset password</CardTitle>
-              <CardDescription>Enter your new password below</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" disabled={isLoading} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm password</FormLabel>
-                        <FormControl>
-                          <Input type="password" disabled={isLoading} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex flex-col gap-2">
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Spinner />
-                          Resetting password…
-                        </>
-                      ) : (
-                        "Reset"
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      disabled={isLoading}
-                      asChild
-                    >
-                      <Link href="/login">Cancel</Link>
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Reset password</CardTitle>
+        <CardDescription>Enter your new password below</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" disabled={isLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm password</FormLabel>
+                  <FormControl>
+                    <Input type="password" disabled={isLoading} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex flex-col gap-2">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Spinner />
+                    Resetting password…
+                  </>
+                ) : (
+                  "Reset"
+                )}
+              </Button>
+              <Button variant="outline" className="w-full" disabled={isLoading} asChild>
+                <Link href="/login">Cancel</Link>
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }
