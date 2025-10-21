@@ -2,11 +2,11 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { signIn } from "@/lib/auth-client"
+import { authClient, signIn } from "@/lib/auth-client"
 import { LogInFormSchema, type LogInForm } from "@/schemas/auth"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,14 +36,7 @@ type FormData = LogInForm
 export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
-  const [lastSignInMethod, setLastSignInMethod] = useState<string | null>(null)
-
-  useEffect(() => {
-    const lastMethod = localStorage.getItem("last-sign-in-method")
-    if (lastMethod) {
-      setLastSignInMethod(lastMethod)
-    }
-  }, [])
+  const lastMethod = authClient.getLastUsedLoginMethod()
 
   const form = useForm<FormData>({
     resolver: zodResolver(LogInFormSchema),
@@ -165,7 +158,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
               onClick={() => handleSocialSignIn("github")}
               disabled={!!loadingProvider}
             >
-              {lastSignInMethod === "github" && (
+              {lastMethod === "github" && (
                 <Badge className="absolute -top-2 -right-2">Last used</Badge>
               )}
               {loadingProvider === "github" ? (
@@ -184,7 +177,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
               onClick={() => handleSocialSignIn("google")}
               disabled={!!loadingProvider}
             >
-              {lastSignInMethod === "google" && (
+              {lastMethod === "google" && (
                 <Badge className="absolute -top-2 -right-2">Last used</Badge>
               )}
               {loadingProvider === "google" ? (
