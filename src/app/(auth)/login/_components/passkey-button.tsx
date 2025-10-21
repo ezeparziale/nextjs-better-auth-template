@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 
-export default function PasskeyButton() {
+export default function PasskeyButton({ loading }: { loading: boolean }) {
   const router = useRouter()
 
   const { refetch } = authClient.useSession()
@@ -28,7 +28,6 @@ export default function PasskeyButton() {
     try {
       const result = await authClient.signIn.passkey(undefined)
       if (result.error) {
-        console.error(result.error)
         toast.error(result.error.message || "Something went wrong")
         return
       }
@@ -39,7 +38,12 @@ export default function PasskeyButton() {
     }
   }
   return (
-    <Button className="w-full" variant="outline" onClick={() => handlePasskeyLogin()}>
+    <Button
+      className="w-full"
+      variant="outline"
+      onClick={() => handlePasskeyLogin()}
+      disabled={loading}
+    >
       <KeyIcon />
       Use passkey
     </Button>
