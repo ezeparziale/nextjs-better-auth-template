@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { signIn } from "@/lib/auth-client"
 import { LogInFormSchema, type LogInForm } from "@/schemas/auth"
@@ -19,13 +19,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from "@/components/ui/field"
 import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -94,37 +94,38 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email */}
-            <FormField
-              control={form.control}
+        <form
+          id="form-login"
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          <FieldGroup>
+            <Controller
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="you@example.com"
-                      type="email"
-                      autoComplete="email webauthn"
-                      disabled={!!loadingProvider}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="you@example.com"
+                    type="email"
+                    autoComplete="email webauthn"
+                    disabled={!!loadingProvider}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
               )}
             />
-
-            {/* Password */}
-            <FormField
-              control={form.control}
+            <Controller
               name="password"
-              render={({ field }) => (
-                <FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
                   <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
+                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
                     <Link
                       href="/forgot-password"
                       className="text-muted-foreground ml-auto inline-block text-sm underline-offset-4 hover:underline"
@@ -132,32 +133,31 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                       Forgot your password?
                     </Link>
                   </div>
-                  <FormControl>
-                    <Input
-                      autoComplete="current-password webauthn"
-                      placeholder="••••••••"
-                      type="password"
-                      disabled={!!loadingProvider}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="current-password webauthn"
+                    placeholder="••••••••"
+                    type="password"
+                    disabled={!!loadingProvider}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
               )}
             />
-
-            <Button type="submit" className="w-full" disabled={!!loadingProvider}>
+            <Button
+              type="submit"
+              form="form-login"
+              className="w-full"
+              disabled={!!loadingProvider}
+            >
               {loadingProvider === "email" ? <Spinner /> : "Log In"}
             </Button>
-
-            <PasskeyButton />
-
-            <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-              <span className="bg-card text-muted-foreground relative z-10 px-2">
-                Or continue with
-              </span>
-            </div>
-
+            <PasskeyButton loading={!!loadingProvider} />
+            <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+              Or continue with
+            </FieldSeparator>
             <Button
               type="button"
               variant="outline"
@@ -177,7 +177,6 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                 </>
               )}
             </Button>
-
             <Button
               type="button"
               variant="outline"
@@ -197,16 +196,13 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                 </>
               )}
             </Button>
-          </form>
-        </Form>
+          </FieldGroup>
+        </form>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
-        <p className="text-muted-foreground text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </p>
+      <CardFooter className="flex flex-col">
+        <FieldDescription>
+          Don&apos;t have an account? <Link href="/signup">Sign up</Link>
+        </FieldDescription>
       </CardFooter>
     </Card>
   )
