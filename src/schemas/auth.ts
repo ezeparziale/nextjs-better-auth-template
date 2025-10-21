@@ -7,7 +7,9 @@ export const SignUpFormSchema = z
       .email({ message: "Invalid email address." })
       .min(1, { message: "Email is required." }),
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Please complete the password confirmation." }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match.",
@@ -32,7 +34,9 @@ export type ForgotPasswordForm = z.infer<typeof ForgotPasswordFormSchema>
 export const ResetPasswordFormSchema = z
   .object({
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-    confirmPassword: z.string(),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Please complete the password confirmation." }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match.",
