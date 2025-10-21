@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Login to your account",
 }
 
-export default async function SignInPage(props: { searchParams: SearchParams }) {
+export default async function LoginPage(props: { searchParams: SearchParams }) {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
