@@ -73,7 +73,6 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
 
   const handleSocialSignIn = async (provider: "github" | "google") => {
     setLoadingProvider(provider)
-    localStorage.setItem("last-sign-in-method", provider)
     await signIn.social({ provider, callbackURL: callbackUrl || "/dashboard" })
     setLoadingProvider(null)
   }
