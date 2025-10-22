@@ -19,14 +19,18 @@ export const SignUpFormSchema = z
 export type SignUpForm = z.infer<typeof SignUpFormSchema>
 
 export const LogInFormSchema = z.object({
-  email: z.email({ message: "Invalid email address." }),
+  email: z.email({ message: "Invalid email address." }).min(1, {
+    message: "Email is required.",
+  }),
   password: z.string().min(1, { message: "Password is required." }),
 })
 
 export type LogInForm = z.infer<typeof LogInFormSchema>
 
 export const ForgotPasswordFormSchema = z.object({
-  email: z.email({ message: "Invalid email address." }),
+  email: z.email({ message: "Invalid email address." }).min(1, {
+    message: "Email is required.",
+  }),
 })
 
 export type ForgotPasswordForm = z.infer<typeof ForgotPasswordFormSchema>
