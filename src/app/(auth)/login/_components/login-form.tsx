@@ -35,7 +35,7 @@ type FormData = LogInForm
 
 export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
-  const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
+  const [submittingMethod, setSubmittingMethod] = useState<string | null>(null)
   const lastMethod = authClient.getLastUsedLoginMethod()
 
   const form = useForm<FormData>({
@@ -47,7 +47,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   })
 
   async function onSubmit(values: FormData) {
-    setLoadingProvider("email")
+    setSubmittingMethod("email")
     try {
       const result = await signIn.email({
         email: values.email,
@@ -67,14 +67,14 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
     } catch {
       toast.error("Something went wrong")
     } finally {
-      setLoadingProvider(null)
+      setSubmittingMethod(null)
     }
   }
 
   const handleSocialSignIn = async (provider: "github" | "google") => {
-    setLoadingProvider(provider)
+    setSubmittingMethod(provider)
     await signIn.social({ provider, callbackURL: callbackUrl || "/dashboard" })
-    setLoadingProvider(null)
+    setSubmittingMethod(null)
   }
 
   return (
@@ -105,7 +105,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                     placeholder="you@example.com"
                     type="email"
                     autoComplete="email webauthn"
-                    disabled={!!loadingProvider}
+                    disabled={!!submittingMethod}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -132,7 +132,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                     autoComplete="current-password webauthn"
                     placeholder="••••••••"
                     type="password"
-                    disabled={!!loadingProvider}
+                    disabled={!!submittingMethod}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -142,11 +142,11 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
               type="submit"
               form="form-login"
               className="w-full"
-              disabled={!!loadingProvider}
+              disabled={!!submittingMethod}
             >
-              {loadingProvider === "email" ? <Spinner /> : "Log In"}
+              {submittingMethod === "email" ? <Spinner /> : "Log In"}
             </Button>
-            <PasskeyButton loading={!!loadingProvider} />
+            <PasskeyButton loading={!!submittingMethod} />
             <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
               Or continue with
             </FieldSeparator>
@@ -155,12 +155,12 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
               variant="outline"
               className="relative w-full"
               onClick={() => handleSocialSignIn("github")}
-              disabled={!!loadingProvider}
+              disabled={!!submittingMethod}
             >
               {lastMethod === "github" && (
                 <Badge className="absolute -top-2 -right-2">Last used</Badge>
               )}
-              {loadingProvider === "github" ? (
+              {submittingMethod === "github" ? (
                 <Spinner />
               ) : (
                 <>
@@ -174,12 +174,12 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
               variant="outline"
               className="relative w-full"
               onClick={() => handleSocialSignIn("google")}
-              disabled={!!loadingProvider}
+              disabled={!!submittingMethod}
             >
               {lastMethod === "google" && (
                 <Badge className="absolute -top-2 -right-2">Last used</Badge>
               )}
-              {loadingProvider === "google" ? (
+              {submittingMethod === "google" ? (
                 <Spinner />
               ) : (
                 <>
