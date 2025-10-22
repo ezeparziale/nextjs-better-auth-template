@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -36,7 +36,11 @@ type FormData = LogInForm
 export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
   const [submittingMethod, setSubmittingMethod] = useState<string | null>(null)
-  const lastMethod = authClient.getLastUsedLoginMethod()
+  const [lastMethod, setLastMethod] = useState<string | null>(null)
+
+  useEffect(() => {
+    setLastMethod(authClient.getLastUsedLoginMethod())
+  }, [])
 
   const form = useForm<FormData>({
     resolver: zodResolver(LogInFormSchema),
@@ -56,8 +60,10 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
 
       if (result.error) {
         if (result.error.code === "EMAIL_NOT_VERIFIED") {
-          router.push(`/verify-email?email=${values.email}`)
           toast.info("Email not verified")
+          setTimeout(() => {
+            router.push(`/verify-email?email=${values.email}`)
+          }, 500)
         } else {
           toast.error(result.error.message || "Something went wrong")
         }
