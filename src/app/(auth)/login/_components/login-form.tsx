@@ -62,7 +62,9 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
           toast.error(result.error.message || "Something went wrong")
         }
       } else {
-        router.push(callbackUrl || "/dashboard")
+        setTimeout(() => {
+          router.push(callbackUrl || "/dashboard")
+        }, 500)
       }
     } catch {
       toast.error("Something went wrong")
