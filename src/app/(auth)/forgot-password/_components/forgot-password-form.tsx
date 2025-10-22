@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -24,7 +23,7 @@ type FormData = ForgotPasswordForm
 
 export default function ForgotPasswordForm() {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+
   const form = useForm<FormData>({
     resolver: zodResolver(ForgotPasswordFormSchema),
     defaultValues: {
@@ -32,15 +31,16 @@ export default function ForgotPasswordForm() {
     },
   })
 
+  const { isSubmitting } = form.formState
+
   async function onSubmit(values: FormData) {
-    setIsLoading(true)
     try {
       const result = await authClient.requestPasswordReset({ email: values.email })
 
       if (result.error) {
         toast.error(result.error.message)
       } else {
-        toast.success("Password reset link sent to your email")
+        toast.success("Check your email for the password reset link.")
         form.reset()
         setTimeout(() => {
           router.push("/login")
@@ -48,8 +48,6 @@ export default function ForgotPasswordForm() {
       }
     } catch {
       toast.error("Something went wrong")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -57,9 +55,7 @@ export default function ForgotPasswordForm() {
     <Card>
       <CardHeader>
         <CardTitle>Forgot your password?</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a link to reset your password
-        </CardDescription>
+        <CardDescription>Enter your email to reset your password</CardDescription>
       </CardHeader>
       <CardContent>
         <form id="form-forgot-password" onSubmit={form.handleSubmit(onSubmit)}>
@@ -76,7 +72,7 @@ export default function ForgotPasswordForm() {
                     aria-invalid={fieldState.invalid}
                     type="email"
                     aria-label="Email address to receive reset link"
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -87,9 +83,9 @@ export default function ForgotPasswordForm() {
                 type="submit"
                 form="form-forgot-password"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? (
+                {isSubmitting ? (
                   <>
                     <Spinner />
                     Sending…
@@ -98,7 +94,12 @@ export default function ForgotPasswordForm() {
                   "Send reset link"
                 )}
               </Button>
-              <Button variant="ghost" className="w-full" disabled={isLoading} asChild>
+              <Button
+                variant="ghost"
+                className="w-full"
+                disabled={isSubmitting}
+                asChild
+              >
                 <Link href="/login">Back to login</Link>
               </Button>
             </div>
