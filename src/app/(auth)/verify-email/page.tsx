@@ -1,14 +1,7 @@
 import { Metadata } from "next"
-import Link from "next/link"
+import { redirect } from "next/navigation"
 import { Suspense } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
 import { CheckYourEmail } from "./_components/check-your-email"
 import { EmailVerification } from "./_components/email-verification"
@@ -30,37 +23,10 @@ export default async function VerifyEmailPage(props: { searchParams: SearchParam
   } else if (email) {
     content = <CheckYourEmail email={email} />
   } else {
-    content = <NoVerificationData />
+    redirect("/login")
   }
 
-  return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <Suspense fallback={<VerificationLoader />}>{content}</Suspense>
-      </div>
-    </div>
-  )
-}
-
-function NoVerificationData() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>No Verification Link</CardTitle>
-        <CardDescription>
-          It looks like you accessed this page directly. Please use the verification
-          link sent to your email.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-2">
-          <Button type="button" className="w-full" variant="ghost">
-            <Link href="/login">Back to login</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  )
+  return <Suspense fallback={<VerificationLoader />}>{content}</Suspense>
 }
 
 function VerificationLoader() {

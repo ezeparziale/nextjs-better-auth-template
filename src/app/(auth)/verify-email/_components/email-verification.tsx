@@ -73,7 +73,7 @@ export function EmailVerification({ token }: { token: string }) {
     return (
       <VerificationCard
         icon={<Spinner />}
-        title="Verifying Email"
+        title="Verifying email"
         description="Please wait while we verify your email…"
       />
     )
@@ -83,8 +83,8 @@ export function EmailVerification({ token }: { token: string }) {
   if (status === VerificationStatus.Success) {
     return (
       <VerificationCard
-        icon={<CheckCircle className="text-primary h-6 w-6" />}
-        title="Email Verified"
+        icon={<CheckCircle className="text-primary size-6" />}
+        title="Email verified"
         description={`Your email has been successfully verified. Redirecting to login in ${seconds}s…`}
       >
         <Button asChild className="w-full">
@@ -97,12 +97,12 @@ export function EmailVerification({ token }: { token: string }) {
   // --- ERROR ---
   return (
     <VerificationCard
-      icon={<XCircle className="text-destructive h-6 w-6" />}
-      title="Verification Error"
-      description="We couldn’t verify your email"
+      icon={<XCircle className="text-destructive size-6" />}
+      title="Verification error"
+      description="We couldn't verify your email"
     >
       <div className="flex gap-2">
-        <Button asChild variant="outline" className="flex-1 bg-transparent">
+        <Button asChild variant="outline" className="flex-1">
           <Link href="/signup">Sign up</Link>
         </Button>
         <Button asChild className="flex-1">
@@ -125,17 +125,15 @@ function VerificationCard({
   children?: React.ReactNode
 }) {
   return (
-    <Card className="bg-card border-border mx-auto w-full max-w-md" aria-live="polite">
+    <Card>
       <CardHeader className="text-center">
-        <div className="bg-muted mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+        <div className="bg-muted mx-auto mb-4 flex size-12 items-center justify-center rounded-full">
           {icon}
         </div>
-        <CardTitle className="text-card-foreground">{title}</CardTitle>
-        <CardDescription className="text-muted-foreground">
-          {description}
-        </CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
-      {children && <CardContent className="space-y-4">{children}</CardContent>}
+      {children && <CardContent>{children}</CardContent>}
     </Card>
   )
 }
