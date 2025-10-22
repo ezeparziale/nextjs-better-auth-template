@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { ForgotPasswordFormSchema, type ForgotPasswordForm } from "@/schemas/auth"
@@ -16,14 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -49,7 +42,9 @@ export default function ForgotPasswordForm() {
       } else {
         toast.success("Password reset link sent to your email")
         form.reset()
-        router.push("/login")
+        setTimeout(() => {
+          router.push("/login")
+        }, 500)
       }
     } catch {
       toast.error("Something went wrong")
@@ -63,33 +58,37 @@ export default function ForgotPasswordForm() {
       <CardHeader>
         <CardTitle>Forgot your password?</CardTitle>
         <CardDescription>
-          Enter your email and we’ll send you a link to reset your password
+          Enter your email and we&apos;ll send you a link to reset your password
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Email */}
-            <FormField
-              control={form.control}
+        <form id="form-forgot-password" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup>
+            <Controller
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      aria-label="Email address to receive reset link"
-                      disabled={isLoading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    type="email"
+                    aria-label="Email address to receive reset link"
+                    disabled={isLoading}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
               )}
             />
-            <div className="flex flex-col gap-2">
-              <Button type="submit" className="w-full" disabled={isLoading}>
+            <div className="flex flex-col gap-4">
+              <Button
+                type="submit"
+                form="form-forgot-password"
+                className="w-full"
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <>
                     <Spinner />
@@ -103,8 +102,8 @@ export default function ForgotPasswordForm() {
                 <Link href="/login">Back to login</Link>
               </Button>
             </div>
-          </form>
-        </Form>
+          </FieldGroup>
+        </form>
       </CardContent>
     </Card>
   )
