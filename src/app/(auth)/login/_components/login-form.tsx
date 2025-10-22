@@ -94,11 +94,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form
-          id="form-login"
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form id="form-login" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
               name="email"
