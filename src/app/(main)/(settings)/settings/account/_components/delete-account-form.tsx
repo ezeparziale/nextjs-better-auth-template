@@ -12,9 +12,8 @@ import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
-  CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -26,7 +25,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -86,99 +84,98 @@ export function DeleteAccountForm({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <Card className="border-destructive">
-      <CardHeader>
-        <CardTitle className="text-destructive">Delete Account</CardTitle>
-        <CardDescription>
-          Permanently delete your account and all of your content.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <CardAction className="border-destructive">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive">Delete Account</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <Form {...form}>
-                <form>
-                  <DialogHeader>
-                    <DialogTitle>Delete your account?</DialogTitle>
-                    <DialogDescription>
-                      This will permanently delete your account and remove your data
-                      from our servers.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <Alert variant="destructive" className="bg-destructive/5 my-4">
-                    <CircleAlertIcon aria-hidden="true" />
-                    <AlertTitle>This action cannot be undone.</AlertTitle>
-                  </Alert>
-
-                  <div className="my-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex-wrap">
-                            Enter your email{" "}
-                            <span className="text-muted-foreground">{userEmail}</span>{" "}
-                            to continue:
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="email" autoComplete="off" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="confirmation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex-wrap">
-                            Type{" "}
-                            <span className="text-muted-foreground">
-                              {CONFIRMATION_TEXT}
-                            </span>{" "}
-                            to confirm
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="text" autoComplete="off" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="outline" disabled={isLoading}>
-                        Cancel
-                      </Button>
-                    </DialogClose>
-                    <Button
-                      className={buttonVariants({ variant: "destructive" })}
-                      disabled={!isConfirmationTextMatching || isLoading}
-                      onClick={form.handleSubmit(handleDeleteAccount)}
-                      aria-label="Delete Account"
-                    >
-                      {isLoading ? (
-                        <>
-                          <Spinner /> Deleting…
-                        </>
-                      ) : (
-                        "Delete"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        </CardAction>
-      </CardContent>
-    </Card>
+    <>
+      <Card className="border-destructive/40 pb-0">
+        <CardHeader>
+          <CardTitle>Delete Account</CardTitle>
+          <CardDescription>
+            Permanently delete your account and all of your content.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="bg-destructive/15 border-t-destructive/40 justify-end rounded-b-xl border-t !py-4">
+          <Button variant="destructive" onClick={() => setIsDialogOpen(true)} size="sm">
+            Delete account
+          </Button>
+        </CardFooter>
+      </Card>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <Form {...form}>
+            <form>
+              <DialogHeader>
+                <DialogTitle>Delete your account?</DialogTitle>
+                <DialogDescription>
+                  This will permanently delete your account and remove your data from
+                  our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <Alert variant="destructive" className="bg-destructive/5 my-4">
+                <CircleAlertIcon aria-hidden="true" />
+                <AlertTitle>This action cannot be undone.</AlertTitle>
+              </Alert>
+              <div className="my-4 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex-wrap">
+                        Enter your email{" "}
+                        <span className="text-muted-foreground">{userEmail}</span> to
+                        continue:
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="email" autoComplete="off" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex-wrap">
+                        Type{" "}
+                        <span className="text-muted-foreground">
+                          {CONFIRMATION_TEXT}
+                        </span>{" "}
+                        to confirm
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="text" autoComplete="off" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline" disabled={isLoading}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+                <Button
+                  className={buttonVariants({ variant: "destructive" })}
+                  disabled={!isConfirmationTextMatching || isLoading}
+                  onClick={form.handleSubmit(handleDeleteAccount)}
+                  aria-label="Delete Account"
+                >
+                  {isLoading ? (
+                    <>
+                      <Spinner /> Deleting…
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
