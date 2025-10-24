@@ -7,8 +7,8 @@ import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -36,28 +36,24 @@ export function CreatePasswordForm({ email }: { email: string }) {
   }
 
   return (
-    <Card>
+    <Card className="pb-0">
       <CardHeader>
         <CardTitle>Create Password</CardTitle>
         <CardDescription>
           Click the button to receive an email and create your password.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardFooter className="bg-sidebar flex items-center justify-end rounded-b-xl border-t py-4!">
         <Button
           type="button"
           onClick={() => handleCreatePasswordReset()}
           disabled={isLoading}
+          size="sm"
         >
-          {isLoading ? (
-            <>
-              <Spinner /> Requesting password reset…
-            </>
-          ) : (
-            "Request password reset"
-          )}
+          {isLoading && <Spinner />}
+          Request password reset
         </Button>
-      </CardContent>
+      </CardFooter>
     </Card>
   )
 }
