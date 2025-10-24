@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardContent,
+  CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -25,39 +26,49 @@ export default function TwoFactorAuth({
   const [isDisableModalOpen, setIsDisableModalOpen] = useState<boolean>(false)
 
   return (
-    <Card>
+    <Card className="pb-0">
       <CardHeader>
-        <CardTitle>
-          <div className="flex items-center justify-between gap-2">
-            <span> Two-Factor Authentication</span>
-            {isEnabled ? (
-              <Badge variant="green-subtle">Enabled</Badge>
-            ) : (
-              <Badge variant="red-subtle">Disabled</Badge>
-            )}
-          </div>
-        </CardTitle>
+        <CardAction>
+          {isEnabled ? (
+            <Badge variant="green-subtle">Enabled</Badge>
+          ) : (
+            <Badge variant="red-subtle">Disabled</Badge>
+          )}
+        </CardAction>
+        <CardTitle>Two-Factor Authentication</CardTitle>
         <CardDescription>
           Add an extra layer of security to your account
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardFooter
+        className={cn(
+          "bg-sidebar flex items-center justify-between gap-4 rounded-b-xl border-t py-4!",
+          hasPasswordAccount && "justify-end",
+        )}
+      >
+        {!hasPasswordAccount && (
+          <CardDescription>
+            Create a password first to enable two factor.
+          </CardDescription>
+        )}
         {isEnabled ? (
-          <Button variant="destructive" onClick={() => setIsDisableModalOpen(true)}>
+          <Button
+            variant="destructive"
+            onClick={() => setIsDisableModalOpen(true)}
+            size="sm"
+          >
             Disable 2FA
           </Button>
         ) : (
           <Button
             onClick={() => setIsEnableModalOpen(true)}
             disabled={!hasPasswordAccount}
+            size="sm"
           >
             Enable 2FA
           </Button>
         )}
-      </CardContent>
-      {!hasPasswordAccount && (
-        <CardFooter>Create a password first to enable two factor.</CardFooter>
-      )}
+      </CardFooter>
       <EnableTwoFactorModal
         open={isEnableModalOpen}
         onOpenChange={setIsEnableModalOpen}
