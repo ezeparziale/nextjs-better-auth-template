@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { auth } from "@/auth"
+import { auth } from "@/lib/auth"
 import ForgotPasswordForm from "./_components/forgot-password-form"
 
 export const metadata: Metadata = {
