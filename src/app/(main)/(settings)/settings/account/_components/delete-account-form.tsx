@@ -92,7 +92,7 @@ export function DeleteAccountForm({ userEmail }: { userEmail: string }) {
             Permanently delete your account and all of your content.
           </CardDescription>
         </CardHeader>
-        <CardFooter className="bg-destructive/15 border-t-destructive/40 justify-end rounded-b-xl border-t !py-4">
+        <CardFooter className="bg-destructive/15 border-t-destructive/40 justify-end rounded-b-xl border-t py-4!">
           <Button variant="destructive" onClick={() => setIsDialogOpen(true)} size="sm">
             Delete account
           </Button>
