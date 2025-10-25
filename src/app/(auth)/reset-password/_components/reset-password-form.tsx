@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
-import { ResetPasswordFormSchema, type ResetPasswordForm } from "@/schemas/auth"
+import { resetPasswordFormSchema, type ResetPasswordForm } from "@/schemas/auth"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -33,7 +33,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const form = useForm<FormData>({
-    resolver: zodResolver(ResetPasswordFormSchema),
+    resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: {
       password: "",
       confirmPassword: "",

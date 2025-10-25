@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
-import { UpdatePasswordFormSchema, type UpdatePasswordForm } from "@/schemas/auth"
+import { updatePasswordFormSchema, type UpdatePasswordForm } from "@/schemas/auth"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -23,7 +23,7 @@ type FormData = UpdatePasswordForm
 
 export function UpdatePasswordForm() {
   const form = useForm<FormData>({
-    resolver: zodResolver(UpdatePasswordFormSchema),
+    resolver: zodResolver(updatePasswordFormSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",

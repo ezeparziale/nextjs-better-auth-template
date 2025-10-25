@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient, signIn } from "@/lib/auth-client"
-import { LogInFormSchema, type LogInForm } from "@/schemas/auth"
+import { logInFormSchema, type LogInForm } from "@/schemas/auth"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -43,7 +43,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   }, [])
 
   const form = useForm<FormData>({
-    resolver: zodResolver(LogInFormSchema),
+    resolver: zodResolver(logInFormSchema),
     defaultValues: {
       email: "",
       password: "",

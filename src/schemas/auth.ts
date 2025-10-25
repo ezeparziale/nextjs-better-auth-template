@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const SignUpFormSchema = z
+export const signUpFormSchema = z
   .object({
     name: z.string().min(1, { message: "Name is required." }),
     email: z
@@ -16,26 +16,26 @@ export const SignUpFormSchema = z
     path: ["confirmPassword"],
   })
 
-export type SignUpForm = z.infer<typeof SignUpFormSchema>
+export type SignUpForm = z.infer<typeof signUpFormSchema>
 
-export const LogInFormSchema = z.object({
+export const logInFormSchema = z.object({
   email: z.email({ message: "Invalid email address." }).min(1, {
     message: "Email is required.",
   }),
   password: z.string().min(1, { message: "Password is required." }),
 })
 
-export type LogInForm = z.infer<typeof LogInFormSchema>
+export type LogInForm = z.infer<typeof logInFormSchema>
 
-export const ForgotPasswordFormSchema = z.object({
+export const forgotPasswordFormSchema = z.object({
   email: z.email({ message: "Invalid email address." }).min(1, {
     message: "Email is required.",
   }),
 })
 
-export type ForgotPasswordForm = z.infer<typeof ForgotPasswordFormSchema>
+export type ForgotPasswordForm = z.infer<typeof forgotPasswordFormSchema>
 
-export const ResetPasswordFormSchema = z
+export const resetPasswordFormSchema = z
   .object({
     password: z.string().min(8, { message: "Password must be at least 8 characters." }),
     confirmPassword: z
@@ -47,9 +47,9 @@ export const ResetPasswordFormSchema = z
     path: ["confirmPassword"],
   })
 
-export type ResetPasswordForm = z.infer<typeof ResetPasswordFormSchema>
+export type ResetPasswordForm = z.infer<typeof resetPasswordFormSchema>
 
-export const UpdatePasswordFormSchema = z
+export const updatePasswordFormSchema = z
   .object({
     currentPassword: z.string().min(1, { message: "Password is required." }),
     newPassword: z
@@ -64,4 +64,4 @@ export const UpdatePasswordFormSchema = z
     path: ["confirmPassword"],
   })
 
-export type UpdatePasswordForm = z.infer<typeof UpdatePasswordFormSchema>
+export type UpdatePasswordForm = z.infer<typeof updatePasswordFormSchema>

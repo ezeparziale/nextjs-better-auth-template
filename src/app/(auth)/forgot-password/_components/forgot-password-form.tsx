@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth-client"
-import { ForgotPasswordFormSchema, type ForgotPasswordForm } from "@/schemas/auth"
+import { forgotPasswordFormSchema, type ForgotPasswordForm } from "@/schemas/auth"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -25,7 +25,7 @@ export default function ForgotPasswordForm() {
   const router = useRouter()
 
   const form = useForm<FormData>({
-    resolver: zodResolver(ForgotPasswordFormSchema),
+    resolver: zodResolver(forgotPasswordFormSchema),
     defaultValues: {
       email: "",
     },

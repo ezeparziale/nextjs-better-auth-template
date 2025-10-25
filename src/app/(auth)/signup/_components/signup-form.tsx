@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { signIn, signUp } from "@/lib/auth-client"
-import { SignUpFormSchema, type SignUpForm } from "@/schemas/auth"
+import { signUpFormSchema, type SignUpForm } from "@/schemas/auth"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -36,7 +36,7 @@ export default function SignUpForm() {
   const [isLoading, setIsLoading] = useState<string | null>(null)
 
   const form = useForm<FormData>({
-    resolver: zodResolver(SignUpFormSchema),
+    resolver: zodResolver(signUpFormSchema),
     defaultValues: {
       name: "",
       email: "",
