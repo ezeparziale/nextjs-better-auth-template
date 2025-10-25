@@ -36,7 +36,11 @@ export function SiteHeader() {
           ) : session?.user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative size-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative size-8 rounded-full"
+                  key={session.user.image ? "header-avatar" : "header-no-avatar"}
+                >
                   <Avatar className="size-8">
                     <AvatarImage
                       src={session.user.image ?? ""}
