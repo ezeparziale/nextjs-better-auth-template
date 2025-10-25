@@ -3,6 +3,8 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { PageHeader } from "@/components/page-header"
+import AvatarForm from "./_components/avatar-form"
+import NameForm from "./_components/name-form"
 
 const PAGE = {
   title: "Profile",
@@ -25,6 +27,8 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+      <NameForm />
+      <AvatarForm />
     </div>
   )
 }
