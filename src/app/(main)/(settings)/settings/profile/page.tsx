@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { PageHeader } from "@/components/page-header"
 import AvatarForm from "./_components/avatar-form"
+import EmailCard from "./_components/email-card"
 import NameForm from "./_components/name-form"
 
 const PAGE = {
@@ -29,6 +30,11 @@ export default async function ProfilePage() {
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
       <NameForm />
       <AvatarForm />
+      <EmailCard
+        email={session.user.email}
+        isPrimary={true}
+        isVerified={!!session.user.emailVerified}
+      />
     </div>
   )
 }
