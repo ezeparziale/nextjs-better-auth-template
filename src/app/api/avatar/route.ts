@@ -69,12 +69,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { url } = await request.json()
-
-    if (!url) {
-      return NextResponse.json({ error: "No URL provided" }, { status: 400 })
-    }
-
     // Delete from Vercel Blob
     if (session.user.image) {
       await del(session.user.image)
