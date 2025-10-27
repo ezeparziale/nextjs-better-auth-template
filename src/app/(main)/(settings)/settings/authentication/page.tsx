@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { auth } from "@/lib/auth"
+import { PageHeader } from "@/components/page-header"
 import ProvidersList from "./_components/providers-list"
 import ProvidersListSkeleton from "./_components/providers-list-skeleton"
 
@@ -27,8 +28,11 @@ export default async function Authentication() {
   const accounts = await auth.api.listUserAccounts({ headers: await headers() })
 
   return (
-    <Suspense fallback={<ProvidersListSkeleton />}>
-      <ProvidersList accounts={accounts} />
-    </Suspense>
+    <div className="space-y-6">
+      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+      <Suspense fallback={<ProvidersListSkeleton />}>
+        <ProvidersList accounts={accounts} />
+      </Suspense>
+    </div>
   )
 }
