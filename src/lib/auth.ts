@@ -6,6 +6,9 @@ import { sendMail } from "./email"
 import prismadb from "./prismadb"
 import "server-only"
 
+export const SUPPORTED_OAUTH_PROVIDERS = ["credential", "google", "github"] as const
+export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number]
+
 export const auth = betterAuth({
   appName: "Template",
   database: prismaAdapter(prismadb, {
@@ -47,6 +50,14 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["credential", "google", "github"],
+      allowDifferentEmails: false,
+      updateUserInfoOnLink: false,
     },
   },
   plugins: [

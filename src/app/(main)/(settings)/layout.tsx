@@ -10,6 +10,7 @@ const settingsNav = [
   { name: "Profile", href: "/settings/profile" },
   { name: "Sessions", href: "/settings/sessions" },
   { name: "Account", href: "/settings/account" },
+  { name: "Authentication", href: "/settings/authentication" },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
