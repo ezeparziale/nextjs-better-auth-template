@@ -265,7 +265,7 @@ export default function PasskeyManagement({
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Passkey name</FormLabel>
+                      <FormLabel>Device name</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
