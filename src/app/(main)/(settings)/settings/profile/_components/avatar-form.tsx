@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useCallback, useState } from "react"
-import { UploadIcon, ZoomInIcon } from "lucide-react"
+import { UploadIcon, XIcon, ZoomInIcon } from "lucide-react"
 import Cropper from "react-easy-crop"
 import { toast } from "sonner"
 import { useSession } from "@/lib/auth-client"
@@ -194,9 +194,9 @@ export default function AvatarForm() {
             {isPending ? (
               <Skeleton className="size-20 rounded-full" />
             ) : (
-              <div className="flex flex-col items-center gap-2">
+              <div className="relative">
                 <Avatar
-                  className="size-20 cursor-pointer transition hover:opacity-80"
+                  className="size-20 cursor-pointer border transition hover:opacity-80"
                   key={currentAvatar ? "form-avatar" : "form-avatar-no-image"}
                   onClick={() => document.getElementById("avatar-upload")?.click()}
                 >
@@ -208,6 +208,18 @@ export default function AvatarForm() {
                     {getUserInitials()}
                   </AvatarFallback>
                 </Avatar>
+                {currentAvatar && (
+                  <Button
+                    className="absolute end-0 top-0 size-5 cursor-pointer rounded-full border"
+                    size="icon"
+                    variant="secondary"
+                    onClick={handleDelete}
+                    disabled={isDeleting || isUploading}
+                    aria-label="Remove avatar"
+                  >
+                    <XIcon />
+                  </Button>
+                )}
               </div>
             )}
           </CardAction>
@@ -221,18 +233,6 @@ export default function AvatarForm() {
           <CardDescription>
             Upload a profile picture. Recommended size: 256x256px.
           </CardDescription>
-          {currentAvatar && (
-            <Button
-              type="button"
-              variant="default"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting || isUploading}
-            >
-              {isDeleting && <Spinner />}
-              Remove
-            </Button>
-          )}
         </CardFooter>
       </Card>
 
