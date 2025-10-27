@@ -47,10 +47,7 @@ export function SiteHeader() {
                       alt={session.user.name ?? ""}
                     />
                     <AvatarFallback>
-                      {session.user.name
-                        ?.split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {session.user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
