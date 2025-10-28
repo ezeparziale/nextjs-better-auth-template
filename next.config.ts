@@ -6,6 +6,18 @@ const nextConfig: NextConfig = {
       fullUrl: true,
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "https://lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "https://avatars.githubusercontent.com",
+      },
+    ],
+  },
 }
 
 export default nextConfig
