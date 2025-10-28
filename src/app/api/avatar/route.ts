@@ -4,6 +4,11 @@ import { auth } from "@/lib/auth"
 import { generateAvatarFilename } from "@/lib/avatar-utils"
 import prismadb from "@/lib/prismadb"
 
+const imageProviders = [
+  "https://lh3.googleusercontent.com",
+  "https://avatars.githubusercontent.com",
+]
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({
@@ -15,7 +20,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove old avatar
-    if (session.user.image) {
+    if (
+      session.user.image &&
+      !imageProviders.some((provider) => session.user.image?.startsWith(provider))
+    ) {
       await del(session.user.image)
     }
 
@@ -70,7 +78,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete from Vercel Blob
-    if (session.user.image) {
+    if (
+      session.user.image &&
+      !imageProviders.some((provider) => session.user.image?.startsWith(provider))
+    ) {
       await del(session.user.image)
     }
 
