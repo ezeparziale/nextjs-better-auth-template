@@ -27,6 +27,11 @@ model User {
 
   lastLoginMethod String? @map("last_login_method")
 
+  role       String?   @default("user")
+  banned     Boolean?  @default(false)
+  banReason  String?   @map("ban_reason")
+  banExpires DateTime? @map("ban_expires")
+
   @@map("users")
 }
 
@@ -40,6 +45,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String? @map("impersonated_by")
 
   @@unique([token])
   @@map("session")

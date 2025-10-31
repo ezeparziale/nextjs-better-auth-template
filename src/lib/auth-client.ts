@@ -1,4 +1,5 @@
 import {
+  adminClient,
   lastLoginMethodClient,
   passkeyClient,
   twoFactorClient,
@@ -7,6 +8,7 @@ import { createAuthClient } from "better-auth/react"
 
 export const authClient = createAuthClient({
   plugins: [
+    adminClient(),
     twoFactorClient({
       onTwoFactorRedirect: () => {
         const params = new URLSearchParams(window.location.search)

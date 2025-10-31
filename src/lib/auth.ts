@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { lastLoginMethod, twoFactor } from "better-auth/plugins"
+import { admin, lastLoginMethod, twoFactor } from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
 import { sendMail } from "./email"
 import prismadb from "./prismadb"
@@ -61,6 +61,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    admin(),
     twoFactor(),
     passkey(),
     lastLoginMethod({
