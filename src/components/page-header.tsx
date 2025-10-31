@@ -8,6 +8,7 @@ interface PageHeaderProps {
   actions?: React.ReactNode
   className?: string
   isSection?: boolean
+  divider?: boolean
 }
 
 export function PageHeader({
@@ -16,12 +17,13 @@ export function PageHeader({
   actions,
   className,
   isSection = false,
+  divider = false,
 }: PageHeaderProps) {
   return (
     <div
       className={cn(
         "flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0",
-        isSection && "border-b pb-4",
+        (divider || isSection) && "border-b pb-4",
         className,
       )}
     >
