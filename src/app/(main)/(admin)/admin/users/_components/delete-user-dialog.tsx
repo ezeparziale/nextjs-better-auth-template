@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -103,7 +104,15 @@ export default function DeleteUserDialog({
           </FieldGroup>
         </form>
         <DialogFooter>
-          <Button type="submit" form="form-delete-user" disabled={isSubmitting}>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button
+            type="submit"
+            form="form-delete-user"
+            disabled={isSubmitting}
+            variant="destructive"
+          >
             {isSubmitting && <Spinner />} Delete
           </Button>
         </DialogFooter>
