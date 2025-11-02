@@ -13,8 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -112,19 +112,18 @@ export default function BanUnbanUserDialog({
         </DialogHeader>
 
         {!isBanned && (
-          <div className="flex flex-col gap-4 py-2">
-            <div>
-              <Label htmlFor="reason">Reason (optional)</Label>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="reason">Reason (optional)</FieldLabel>
               <Input
                 id="reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="e.g. Violation of terms"
               />
-            </div>
-
-            <div>
-              <Label>Ban duration</Label>
+            </Field>
+            <Field>
+              <FieldLabel>Ban duration</FieldLabel>
               <Select
                 value={banExpiresIn}
                 onValueChange={(v: BanDurationOption) => setBanExpiresIn(v)}
@@ -141,8 +140,8 @@ export default function BanUnbanUserDialog({
                   <SelectItem value="forever">Forever</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+            </Field>
+          </FieldGroup>
         )}
 
         <DialogFooter>
