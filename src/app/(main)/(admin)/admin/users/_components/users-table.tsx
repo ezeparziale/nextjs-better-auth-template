@@ -1,5 +1,6 @@
 "use client"
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
   flexRender,
@@ -34,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { columns } from "./columns"
+import { USERS_EVENTS, UsersRefreshDetail } from "./events"
 
 type QueryParams = {
   searchValue?: string | undefined
@@ -48,30 +50,56 @@ type QueryParams = {
   filterOperator?: "contains" | "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | undefined
 }
 
+type InitialParams = {
+  page?: string
+  pageSize?: string
+  search?: string
+  sortBy?: string
+  sortDirection?: "asc" | "desc"
+}
+
 const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
-  // Visible columns by default
   name: true,
   email: true,
   emailVerified: true,
-  createdAt: true,
-  // Hidden columns by default
-  role: false,
-  banned: false,
-  image: false,
+  banned: true,
+  role: true,
+  createdAt: false,
   updatedAt: false,
 }
 
-export default function UsersTable() {
+export default function UsersTable({
+  initialParams,
+}: {
+  initialParams: InitialParams
+}) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const [refreshKey, setRefreshKey] = useState(0)
+
   const [users, setUsers] = useState<UserWithRole[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchInput, setSearchInput] = useState("")
-  const [sorting, setSorting] = useState<SortingState>([])
+
+  const [searchInput, setSearchInput] = useState(initialParams.search || "")
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    if (initialParams.sortBy) {
+      return [
+        {
+          id: initialParams.sortBy,
+          desc: initialParams.sortDirection === "desc",
+        },
+      ]
+    }
+    return []
+  })
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
   const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
+    pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
+    pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
   })
   const [totalUsers, setTotalUsers] = useState(0)
 
@@ -83,6 +111,21 @@ export default function UsersTable() {
     setSearchInput(value)
     setPagination((prev) => ({ ...prev, pageIndex: 0 }))
   }
+
+  useEffect(() => {
+    const handleRefresh = (event: Event) => {
+      const customEvent = event as CustomEvent<UsersRefreshDetail>
+
+      if (customEvent.detail?.resetPagination) {
+        setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+      }
+
+      setRefreshKey((prev) => prev + 1)
+    }
+
+    window.addEventListener(USERS_EVENTS.REFRESH, handleRefresh)
+    return () => window.removeEventListener(USERS_EVENTS.REFRESH, handleRefresh)
+  }, [])
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -122,7 +165,42 @@ export default function UsersTable() {
       }
     }
     fetchUsers()
-  }, [pagination.pageIndex, pagination.pageSize, searchInput, sorting])
+  }, [pagination.pageIndex, pagination.pageSize, searchInput, sorting, refreshKey])
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+
+    if (searchInput) {
+      params.set("search", searchInput)
+    }
+
+    if (pagination.pageIndex > 0) {
+      params.set("page", String(pagination.pageIndex + 1))
+    }
+    if (pagination.pageSize !== 10) {
+      params.set("pageSize", String(pagination.pageSize))
+    }
+
+    if (sorting.length > 0) {
+      params.set("sortBy", sorting[0].id)
+      params.set("sortDirection", sorting[0].desc ? "desc" : "asc")
+    }
+
+    const newUrl = `${pathname}${params.toString() ? `?${params.toString()}` : ""}`
+
+    const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
+    if (newUrl !== currentUrl) {
+      router.push(newUrl, { scroll: false })
+    }
+  }, [
+    searchInput,
+    pagination.pageIndex,
+    pagination.pageSize,
+    sorting,
+    pathname,
+    router,
+    searchParams,
+  ])
 
   const table = useReactTable({
     data: users,

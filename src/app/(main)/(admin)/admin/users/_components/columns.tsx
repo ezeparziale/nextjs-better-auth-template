@@ -2,20 +2,10 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
-import { BanIcon, MoreHorizontalIcon, Trash2Icon, UserCogIcon } from "lucide-react"
-import { toast } from "sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import CellActions from "./cell-actions"
 
 export const columns: ColumnDef<UserWithRole>[] = [
   {
@@ -123,44 +113,6 @@ export const columns: ColumnDef<UserWithRole>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => {
-      const user = row.original
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="size-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontalIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => {
-                navigator.clipboard.writeText(user.id)
-                toast.info("ID copied to clipboard")
-              }}
-            >
-              Copy ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <UserCogIcon className="size-4" />
-              Edit user
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <BanIcon className="size-4" />
-              {user.banned ? "Unbann" : "Ban"} user
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">
-              <Trash2Icon className="size-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
+    cell: ({ row }) => <CellActions row={row.original} />,
   },
 ]
