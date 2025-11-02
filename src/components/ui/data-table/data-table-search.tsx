@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Search, X } from "lucide-react"
 import { useDebouncedCallback } from "use-debounce"
 import { Button } from "@/components/ui/button"
@@ -20,13 +20,25 @@ export function DataTableSearch({
   debounceMs = 500,
 }: DataTableSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [localValue, setLocalValue] = useState(value)
+
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
 
   const handleSearch = useDebouncedCallback((query: string) => {
     onChange(query)
   }, debounceMs)
 
+  const handleChange = (newValue: string) => {
+    setLocalValue(newValue)
+    handleSearch(newValue)
+  }
+
   const handleClear = () => {
+    setLocalValue("")
     onClear()
+    inputRef.current?.focus()
   }
 
   return (
@@ -34,10 +46,8 @@ export function DataTableSearch({
       <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
       <Input
         placeholder={placeholder}
-        onChange={(e) => {
-          handleSearch(e.target.value)
-        }}
-        defaultValue={value}
+        onChange={(e) => handleChange(e.target.value)}
+        value={localValue}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
             inputRef?.current?.blur()
