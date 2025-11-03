@@ -1,6 +1,13 @@
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { UserWithRole } from "better-auth/plugins/admin"
-import { BanIcon, MoreHorizontalIcon, Trash2Icon, UserCogIcon } from "lucide-react"
+import {
+  BanIcon,
+  CopyIcon,
+  MoreHorizontalIcon,
+  Trash2Icon,
+  UserCogIcon,
+} from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +22,7 @@ import BanUserDialog from "./ban-user-dialog"
 import DeleteUserDialog from "./delete-user-dialog"
 
 export default function CellActions({ row }: { row: UserWithRole }) {
+  const router = useRouter()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isBanUserDialogOpen, setIsBanUserDialogOpen] = useState(false)
 
@@ -35,10 +43,12 @@ export default function CellActions({ row }: { row: UserWithRole }) {
               toast.info("ID copied to clipboard")
             }}
           >
-            Copy ID
+            <CopyIcon className="size-4" /> Copy ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => router.push(`/admin/users/${row.id}/settings`)}
+          >
             <UserCogIcon className="size-4" />
             Edit user
           </DropdownMenuItem>
