@@ -40,11 +40,7 @@ export default async function NewUserAdminPage(props: { params: Params }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`Settings`}
-        description={`Manage user account settings and preferences.`}
-        isSection
-      />
+      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
       <EditUserForm user={userDTO} />
     </div>
   )
