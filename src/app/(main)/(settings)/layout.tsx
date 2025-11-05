@@ -21,9 +21,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       <PageHeader
         title="Settings"
         description="Manage your account settings and preferences."
+        divider
       />
-
-      <Separator />
 
       <div className="flex flex-col gap-6 md:flex-row">
         <nav className="flex flex-row gap-2 md:w-48 md:flex-col">
