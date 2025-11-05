@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeToggle } from "@/components/theme-toggle"
+import ImpersonationUserIndicator from "./impersonation-user-indicator"
 
 export function SiteHeader() {
   const { data: session, isPending } = useSession()
@@ -30,6 +31,7 @@ export function SiteHeader() {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <div className="ml-auto flex items-center gap-2">
+          <ImpersonationUserIndicator />
           <ThemeToggle />
           {isPending ? (
             <Skeleton className="size-8 rounded-full" />

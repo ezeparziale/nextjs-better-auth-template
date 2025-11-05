@@ -17,6 +17,10 @@ const getSideBarNavItems = (id: string): NavItem[] => {
       href: `${baseHref}/sessions`,
     },
     {
+      name: "Actions",
+      href: `${baseHref}/actions`,
+    },
+    {
       name: "Logs",
       href: `${baseHref}/logs`,
     },
