@@ -43,8 +43,8 @@ export function SiteHeader() {
                 >
                   <Avatar className="size-8">
                     <AvatarImage
-                      src={session.user.image ?? ""}
-                      alt={session.user.name ?? ""}
+                      src={session.user.image as string}
+                      alt="User profile menu"
                     />
                     <AvatarFallback>
                       {session.user.name.charAt(0).toUpperCase()}
