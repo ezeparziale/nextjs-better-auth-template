@@ -1,6 +1,9 @@
 "use client"
 
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Button } from "./ui/button"
 
 interface PageHeaderProps {
   title: string
@@ -9,6 +12,7 @@ interface PageHeaderProps {
   className?: string
   isSection?: boolean
   divider?: boolean
+  backLink?: string
 }
 
 export function PageHeader({
@@ -18,15 +22,30 @@ export function PageHeader({
   className,
   isSection = false,
   divider = false,
+  backLink,
 }: PageHeaderProps) {
   return (
     <div
       className={cn(
-        "flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0",
+        "relative flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0",
         (divider || isSection) && "border-b pb-4",
+        "mt-4",
         className,
       )}
     >
+      {backLink && (
+        <Button
+          size="sm"
+          variant="link"
+          className="text-muted-foreground absolute -top-10 left-0 has-[>svg]:px-0"
+          asChild
+        >
+          <Link href={backLink} prefetch={false}>
+            <ArrowLeft className="size-4" />
+            <span className="text-sm">Back</span>
+          </Link>
+        </Button>
+      )}
       <div className="space-y-1">
         <h2
           className={cn(
