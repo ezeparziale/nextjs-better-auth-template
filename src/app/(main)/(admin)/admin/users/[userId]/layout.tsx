@@ -45,12 +45,13 @@ export default async function UserLayout({
   if (!user) return null
 
   return (
-    <div className="container space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title={`Edit ${user.email}`}
         description={`ID: ${user.id}`}
         actions={<DeleteUserButton userId={user.id} userEmail={user.email} />}
         divider
+        backLink="/admin/users"
       />
       <div className="flex flex-col gap-6 md:flex-row">
         <SidebarNav items={sidebarNavItems} />

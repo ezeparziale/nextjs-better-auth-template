@@ -50,7 +50,7 @@ export default function CellActions({ row }: { row: UserWithRole }) {
             onClick={() => router.push(`/admin/users/${row.id}/settings`)}
           >
             <UserCogIcon className="size-4" />
-            Edit user
+            Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
@@ -58,7 +58,7 @@ export default function CellActions({ row }: { row: UserWithRole }) {
             }}
           >
             <BanIcon className="size-4" />
-            {row.banned ? "Unban" : "Ban"} user
+            {row.banned ? "Unban" : "Ban"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

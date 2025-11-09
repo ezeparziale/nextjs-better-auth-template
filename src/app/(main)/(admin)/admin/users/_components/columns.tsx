@@ -10,7 +10,7 @@ import CellActions from "./cell-actions"
 export const columns: ColumnDef<UserWithRole>[] = [
   {
     accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => {
       const name = row.original.name ?? ""
       const image = row.original.image ?? ""

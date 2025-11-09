@@ -27,7 +27,12 @@ export default async function NewUserAdminPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} divider />
+      <PageHeader
+        title={PAGE.title}
+        description={PAGE.description}
+        divider
+        backLink="/admin/users"
+      />
       <CreateUserForm />
     </div>
   )
