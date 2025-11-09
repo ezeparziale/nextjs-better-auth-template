@@ -32,6 +32,8 @@ model User {
   banReason  String?   @map("ban_reason")
   banExpires DateTime? @map("ban_expires")
 
+  userroles UserRole[]
+
   @@map("users")
 }
 
@@ -108,4 +110,57 @@ model Passkey {
   aaguid       String?
 
   @@map("passkey")
+}
+
+model Role {
+  id              String           @id
+  name            String
+  key             String
+  description     String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @default(now()) @map("updated_at")
+  userroles       UserRole[]
+  rolepermissions RolePermission[]
+
+  @@unique([key])
+  @@map("roles")
+}
+
+model Permission {
+  id              String           @id
+  name            String
+  key             String
+  description     String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @default(now()) @map("updated_at")
+  rolepermissions RolePermission[]
+
+  @@unique([key])
+  @@map("permissions")
+}
+
+model UserRole {
+  id     String @id
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId String @map("role_id")
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("users_roles")
+}
+
+model RolePermission {
+  id           String     @id
+  roleId       String     @map("role_id")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String     @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("roles_permissions")
 }

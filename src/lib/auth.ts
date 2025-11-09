@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { admin, lastLoginMethod, twoFactor } from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
+import { rbacPlugin } from "./auth/rbac-plugin"
 import { sendMail } from "./email"
 import prismadb from "./prismadb"
 import "server-only"
@@ -67,5 +68,6 @@ export const auth = betterAuth({
     lastLoginMethod({
       storeInDatabase: true,
     }),
+    rbacPlugin(),
   ],
 })
