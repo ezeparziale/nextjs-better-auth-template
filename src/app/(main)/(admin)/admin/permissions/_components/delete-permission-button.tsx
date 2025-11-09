@@ -4,14 +4,14 @@ import { useState } from "react"
 import { Trash2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import DeleteUserDialog from "./delete-user-dialog"
+import DeletePermissionDialog from "./delete-permission-dialog"
 
-export default function DeleteUserButton({
-  userId,
-  userEmail,
+export default function DeletePermissionButton({
+  permissionId,
+  permissionKey,
 }: {
-  userId: string
-  userEmail: string
+  permissionId: string
+  permissionKey: string
 }) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
 
@@ -22,19 +22,19 @@ export default function DeleteUserButton({
           <Button
             variant="destructive"
             onClick={() => setIsDeleteDialogOpen(true)}
-            aria-label="Delete user"
+            aria-label="Delete permission"
           >
             <Trash2Icon aria-hidden="true" className="size-4" />
-            <span className="hidden md:inline">Delete user</span>
+            <span className="hidden md:inline">Delete permission</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent className="md:hidden" align="end">
-          Delete user
+          Delete permission
         </TooltipContent>
       </Tooltip>
-      <DeleteUserDialog
-        userId={userId}
-        userEmail={userEmail}
+      <DeletePermissionDialog
+        permissionId={permissionId}
+        permissionKey={permissionKey}
         isOpen={isDeleteDialogOpen}
         setIsOpen={setIsDeleteDialogOpen}
         goToTableAfterDelete
