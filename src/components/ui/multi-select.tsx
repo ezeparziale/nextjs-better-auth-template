@@ -32,6 +32,7 @@ type MultiSelectContextType = {
   toggleValue: (value: string) => void
   items: Map<string, ReactNode>
   onItemAdded: (value: string, label: ReactNode) => void
+  disabled?: boolean
 }
 const MultiSelectContext = createContext<MultiSelectContextType | null>(null)
 
@@ -40,11 +41,13 @@ export function MultiSelect({
   values,
   defaultValues,
   onValuesChange,
+  disabled,
 }: {
   children: ReactNode
   values?: string[]
   defaultValues?: string[]
   onValuesChange?: (values: string[]) => void
+  disabled?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [internalValues, setInternalValues] = useState(
@@ -54,6 +57,7 @@ export function MultiSelect({
   const [items, setItems] = useState<Map<string, ReactNode>>(new Map())
 
   function toggleValue(value: string) {
+    if (disabled) return
     const getNewSet = (prev: Set<string>) => {
       const newSet = new Set(prev)
       if (newSet.has(value)) {
@@ -75,7 +79,7 @@ export function MultiSelect({
   }, [])
 
   return (
-    <MultiSelectContext
+    <MultiSelectContext.Provider
       value={{
         open,
         setOpen,
@@ -83,12 +87,13 @@ export function MultiSelect({
         toggleValue,
         items,
         onItemAdded,
+        disabled,
       }}
     >
-      <Popover open={open} onOpenChange={setOpen} modal={true}>
+      <Popover open={open} onOpenChange={disabled ? undefined : setOpen} modal={true}>
         {children}
       </Popover>
-    </MultiSelectContext>
+    </MultiSelectContext.Provider>
   )
 }
 
@@ -100,12 +105,13 @@ export function MultiSelectTrigger({
   className?: string
   children?: ReactNode
 } & ComponentPropsWithoutRef<typeof Button>) {
-  const { open } = useMultiSelectContext()
+  const { open, disabled } = useMultiSelectContext()
 
   return (
     <PopoverTrigger asChild>
       <Button
         {...props}
+        disabled={disabled}
         variant={props.variant ?? "outline"}
         role={props.role ?? "combobox"}
         aria-expanded={props["aria-expanded"] ?? open}
@@ -132,7 +138,7 @@ export function MultiSelectValue({
   clickToRemove?: boolean
   overflowBehavior?: "wrap" | "wrap-when-open" | "cutoff"
 } & Omit<ComponentPropsWithoutRef<"div">, "children">) {
-  const { selectedValues, toggleValue, items, open } = useMultiSelectContext()
+  const { selectedValues, toggleValue, items, open, disabled } = useMultiSelectContext()
   const [overflowAmount, setOverflowAmount] = useState(0)
   const valueRef = useRef<HTMLDivElement>(null)
   const overflowRef = useRef<HTMLDivElement>(null)
@@ -212,7 +218,7 @@ export function MultiSelectValue({
             className="group flex items-center gap-1"
             key={value}
             onClick={
-              clickToRemove
+              clickToRemove && !disabled
                 ? (e) => {
                     e.stopPropagation()
                     toggleValue(value)
@@ -289,7 +295,7 @@ export function MultiSelectItem({
   badgeLabel?: ReactNode
   value: string
 } & Omit<ComponentPropsWithoutRef<typeof CommandItem>, "value">) {
-  const { toggleValue, selectedValues, onItemAdded } = useMultiSelectContext()
+  const { toggleValue, selectedValues, onItemAdded, disabled } = useMultiSelectContext()
   const isSelected = selectedValues.has(value)
 
   useEffect(() => {
@@ -299,6 +305,7 @@ export function MultiSelectItem({
   return (
     <CommandItem
       {...props}
+      disabled={disabled}
       onSelect={() => {
         toggleValue(value)
         onSelect?.(value)
