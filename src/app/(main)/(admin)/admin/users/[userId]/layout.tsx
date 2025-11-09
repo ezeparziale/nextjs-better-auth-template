@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
@@ -42,7 +43,7 @@ export default async function UserLayout({
 
   const user = await getUser(userId)
 
-  if (!user) return null
+  if (!user) return notFound()
 
   return (
     <div className="space-y-6">

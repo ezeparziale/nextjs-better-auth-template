@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { PageHeader } from "@/components/page-header"
 import EditUserForm from "../_components/edit-user-form"
@@ -31,6 +31,8 @@ export default async function NewUserAdminPage(props: { params: Params }) {
   if (session.user.role !== "admin") redirect("/dashboard")
 
   const user = await getUser(userId)
+
+  if (!user) return notFound()
 
   const userDTO = {
     id: user.id,
