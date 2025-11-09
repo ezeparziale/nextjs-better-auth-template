@@ -13,6 +13,7 @@ interface PageHeaderProps {
   isSection?: boolean
   divider?: boolean
   backLink?: string
+  mobileActionsBelow?: boolean
 }
 
 export function PageHeader({
@@ -23,11 +24,16 @@ export function PageHeader({
   isSection = false,
   divider = false,
   backLink,
+  mobileActionsBelow = true,
 }: PageHeaderProps) {
   return (
     <div
       className={cn(
-        "relative flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0",
+        "relative",
+        mobileActionsBelow
+          ? "flex flex-col space-y-2"
+          : "flex flex-row items-start justify-between",
+        "sm:flex-row sm:items-center sm:justify-between sm:space-y-0",
         (divider || isSection) && "border-b pb-4",
         "mt-4",
         className,
@@ -59,7 +65,7 @@ export function PageHeader({
           <p className="text-muted-foreground text-sm">{description}</p>
         ) : null}
       </div>
-      {actions ? <div>{actions}</div> : null}
+      {actions ? <div className="shrink-0">{actions}</div> : null}
     </div>
   )
 }
