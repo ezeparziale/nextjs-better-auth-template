@@ -9,14 +9,52 @@ import { UserWithRole } from "better-auth/plugins/admin"
 import * as z from "zod"
 import { RBAC_ERROR_CODES } from "./error-codes"
 import { schema } from "./schema"
-import { Permission, Role, RolePermission, User, UserRole } from "./types"
+import { seedRBACData } from "./seed"
+import {
+  Permission,
+  RBACPluginOptions,
+  Role,
+  RolePermission,
+  User,
+  UserRole,
+} from "./types"
+import { getPaginationParams } from "./utils"
+import { validatePermissionKey } from "./validation"
 
-export const rbacPlugin = () => {
+const DEFAULT_PERMISSION_KEY_PATTERN = /^[a-z0-9_]+:[a-z0-9_]+$/i
+
+export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined) => {
+  const opts = {
+    defaultLimit: 10,
+    maxLimit: 100,
+    defaultOffset: 0,
+    seedPermissions: [],
+    seedRoles: [],
+    minPermissionKeyLength: 3,
+    maxPermissionKeyLength: 50,
+    permissionKeyPattern: DEFAULT_PERMISSION_KEY_PATTERN,
+    permissionKeyErrorMessage: undefined,
+    ...options,
+  }
+
+  const validationOptions = {
+    minLength: opts.minPermissionKeyLength,
+    maxLength: opts.maxPermissionKeyLength,
+    pattern: opts.permissionKeyPattern,
+    errorMessage: opts.permissionKeyErrorMessage,
+  }
+
+  const paginationConfig = {
+    defaultLimit: opts.defaultLimit,
+    maxLimit: opts.maxLimit,
+    defaultOffset: opts.defaultOffset,
+  }
+
   /**
    * Ensures a valid session, if not will throw.
    * Will also provide additional types on the user to include role types.
    */
-  const adminMiddleware = createAuthMiddleware(async (ctx) => {
+  const rbacMiddleware = createAuthMiddleware(async (ctx) => {
     const session = await getSessionFromCtx(ctx)
     if (!session) {
       throw new APIError("UNAUTHORIZED")
@@ -54,7 +92,7 @@ export const rbacPlugin = () => {
         "/rbac/list-permissions",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             searchValue: z.string().optional().meta({
               description: "The value to search.",
@@ -75,7 +113,7 @@ export const rbacPlugin = () => {
               .meta({ description: "The number of permissions to return." })
               .or(z.number())
               .optional()
-              .default(10),
+              .default(opts.defaultLimit),
             offset: z
               .string()
               .meta({
@@ -83,7 +121,7 @@ export const rbacPlugin = () => {
               })
               .or(z.number())
               .optional()
-              .default(0),
+              .default(opts.defaultOffset),
             sortBy: z
               .string()
               .meta({
@@ -146,7 +184,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           const where: Where[] = []
@@ -158,11 +196,18 @@ export const rbacPlugin = () => {
               value: ctx.query.searchValue,
             })
           }
+
+          const { limit, offset } = getPaginationParams(
+            ctx.query?.limit,
+            ctx.query?.offset,
+            paginationConfig,
+          )
+
           try {
             const permissions = await ctx.context.adapter.findMany<Permission>({
               model: "permission",
-              limit: Number(ctx.query?.limit),
-              offset: Number(ctx.query?.offset),
+              limit,
+              offset,
               sortBy: ctx.query?.sortBy
                 ? {
                     field: ctx.query.sortBy,
@@ -210,7 +255,7 @@ export const rbacPlugin = () => {
         "/rbac/get-permission",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             id: z.string().meta({
               description: "The id of the permission.",
@@ -218,7 +263,7 @@ export const rbacPlugin = () => {
           }),
           metadata: {
             openapi: {
-              operationId: "getPermission",
+              operationId: "rbac.getPermission",
               summary: "Get an existing permission",
               description: "Get an existing permission",
               responses: {
@@ -265,7 +310,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           const permission = await ctx.context.adapter.findOne<Permission>({
@@ -306,7 +351,7 @@ export const rbacPlugin = () => {
         "/rbac/create-permission",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             name: z.string().meta({
               description: "The name of the permission.",
@@ -394,8 +439,10 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
+
+          validatePermissionKey(ctx.body.key, validationOptions)
 
           // Check if permission with the same key already exists
           const existingPermission = await ctx.context.adapter.findOne<Permission>({
@@ -485,7 +532,7 @@ export const rbacPlugin = () => {
         "/rbac/update-permission",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             id: z.string().meta({
               description: "The id of the permission to update.",
@@ -579,7 +626,11 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
+          }
+
+          if (ctx.body.key) {
+            validatePermissionKey(ctx.body.key, validationOptions)
           }
 
           // Check if permission exists
@@ -742,7 +793,7 @@ export const rbacPlugin = () => {
         "/rbac/delete-permission",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             id: z.string().meta({
               description: "The id of the permission to delete.",
@@ -800,7 +851,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if permission exists
@@ -854,7 +905,7 @@ export const rbacPlugin = () => {
         "/rbac/list-roles",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             searchValue: z.string().optional().meta({
               description: "The value to search.",
@@ -875,7 +926,7 @@ export const rbacPlugin = () => {
               .meta({ description: "The number of roles to return." })
               .or(z.number())
               .optional()
-              .default(10),
+              .default(opts.defaultLimit),
             offset: z
               .string()
               .meta({
@@ -883,7 +934,7 @@ export const rbacPlugin = () => {
               })
               .or(z.number())
               .optional()
-              .default(0),
+              .default(opts.defaultOffset),
             sortBy: z
               .string()
               .meta({
@@ -938,7 +989,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           const where: Where[] = []
@@ -951,11 +1002,17 @@ export const rbacPlugin = () => {
             })
           }
 
+          const { limit, offset } = getPaginationParams(
+            ctx.query?.limit,
+            ctx.query?.offset,
+            paginationConfig,
+          )
+
           try {
             const roles = await ctx.context.adapter.findMany<Role>({
               model: "role",
-              limit: Number(ctx.query?.limit),
-              offset: Number(ctx.query?.offset),
+              limit,
+              offset,
               sortBy: ctx.query?.sortBy
                 ? {
                     field: ctx.query.sortBy,
@@ -1003,7 +1060,7 @@ export const rbacPlugin = () => {
         "/rbac/get-role",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             id: z.string().meta({
               description: "The id of the role.",
@@ -1058,7 +1115,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           const role = await ctx.context.adapter.findOne<Role>({
@@ -1099,7 +1156,7 @@ export const rbacPlugin = () => {
         "/rbac/create-role",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             name: z.string().meta({
               description: "The name of the role.",
@@ -1167,7 +1224,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if role with the same key already exists
@@ -1258,7 +1315,7 @@ export const rbacPlugin = () => {
         "/rbac/update-role",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             id: z.string().meta({
               description: "The id of the role to update.",
@@ -1352,7 +1409,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if role exists
@@ -1517,7 +1574,7 @@ export const rbacPlugin = () => {
         "/rbac/delete-role",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             id: z.string().meta({
               description: "The id of the role to delete.",
@@ -1575,7 +1632,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if role exists
@@ -1629,7 +1686,7 @@ export const rbacPlugin = () => {
         "/rbac/assign-permission-to-role",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             roleId: z.string().meta({
               description: "The id of the role.",
@@ -1697,7 +1754,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if role exists
@@ -1789,7 +1846,7 @@ export const rbacPlugin = () => {
         "/rbac/remove-permission-from-role",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             roleId: z.string().meta({
               description: "The id of the role.",
@@ -1831,7 +1888,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Delete assignment
@@ -1872,7 +1929,7 @@ export const rbacPlugin = () => {
         "/rbac/assign-role-to-user",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             userId: z.string().meta({
               description: "The id of the user.",
@@ -1940,7 +1997,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if user exists
@@ -2032,7 +2089,7 @@ export const rbacPlugin = () => {
         "/rbac/remove-role-from-user",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             userId: z.string().meta({
               description: "The id of the user.",
@@ -2074,7 +2131,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Delete assignment
@@ -2115,7 +2172,7 @@ export const rbacPlugin = () => {
         "/rbac/get-permission-roles",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z
             .object({
               permissionId: z.string().optional().meta({
@@ -2247,7 +2304,7 @@ export const rbacPlugin = () => {
         "/rbac/get-role-permissions",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             roleId: z.string().meta({
               description: "The id of the role.",
@@ -2308,7 +2365,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if role exists
@@ -2379,7 +2436,7 @@ export const rbacPlugin = () => {
         "/rbac/get-user-roles",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             userId: z.string().meta({
               description: "The id of the user.",
@@ -2437,7 +2494,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if user exists
@@ -2505,7 +2562,7 @@ export const rbacPlugin = () => {
         "/rbac/get-user-permissions",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             userId: z.string().meta({
               description: "The id of the user.",
@@ -2564,7 +2621,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Check if user exists
@@ -2652,7 +2709,7 @@ export const rbacPlugin = () => {
         "/rbac/check-permission",
         {
           method: "POST",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           body: z.object({
             userId: z.string().meta({
               description: "The id of the user.",
@@ -2691,7 +2748,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           // Get the permission by key
@@ -2753,6 +2810,114 @@ export const rbacPlugin = () => {
       /**
        * ### Endpoint
        *
+       * POST `/rbac/has-permission`
+       *
+       * ### API Methods
+       *
+       * **server:**
+       * `auth.api.hasPermission`
+       *
+       * **client:**
+       * `authClient.rbac.hasPermission`
+       */
+      hasPermission: createAuthEndpoint(
+        "/rbac/has-permission",
+        {
+          method: "POST",
+          use: [rbacMiddleware],
+          body: z.object({
+            permissionKey: z.string().meta({
+              description: "The key of the permission to check.",
+            }),
+          }),
+          metadata: {
+            openapi: {
+              operationId: "rbac.hasPermission",
+              summary: "Check if the current user has a specific permission",
+              description:
+                "Check if the authenticated user has a specific permission through their roles",
+              responses: {
+                200: {
+                  description: "Permission check result",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          hasPermission: {
+                            type: "boolean",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        async (ctx) => {
+          const session = ctx.context.session
+
+          // Get the permission by key
+          const permission = await ctx.context.adapter.findOne<Permission>({
+            model: "permission",
+            where: [
+              {
+                field: "key",
+                value: ctx.body.permissionKey,
+              },
+            ],
+          })
+
+          if (!permission) {
+            return ctx.json({
+              hasPermission: false,
+            })
+          }
+
+          // Get current user's roles
+          const userRoles = await ctx.context.adapter.findMany<UserRole>({
+            model: "userRole",
+            where: [
+              {
+                field: "userId",
+                value: session.user.id,
+              },
+            ],
+          })
+
+          // Check if any role has the permission
+          for (const userRole of userRoles) {
+            const rolePermission = await ctx.context.adapter.findOne<RolePermission>({
+              model: "rolePermission",
+              where: [
+                {
+                  field: "roleId",
+                  value: userRole.roleId,
+                },
+                {
+                  field: "permissionId",
+                  value: permission.id,
+                },
+              ],
+            })
+
+            if (rolePermission) {
+              return ctx.json({
+                hasPermission: true,
+              })
+            }
+          }
+
+          return ctx.json({
+            hasPermission: false,
+          })
+        },
+      ),
+      /**
+       * ### Endpoint
+       *
        * GET `/rbac/get-permissions-options`
        *
        * ### API Methods
@@ -2767,7 +2932,7 @@ export const rbacPlugin = () => {
         "/rbac/get-permissions-options",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             onlyActive: z
               .string()
@@ -2821,7 +2986,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           const where: Where[] = []
@@ -2875,7 +3040,7 @@ export const rbacPlugin = () => {
         "/rbac/get-roles-options",
         {
           method: "GET",
-          use: [adminMiddleware],
+          use: [rbacMiddleware],
           query: z.object({
             onlyActive: z
               .string()
@@ -2928,7 +3093,7 @@ export const rbacPlugin = () => {
           const session = ctx.context.session
 
           if (session.user.role != "admin") {
-            throw new Error("Unauthorized")
+            throw new APIError("FORBIDDEN")
           }
 
           const where: Where[] = []
@@ -2967,5 +3132,11 @@ export const rbacPlugin = () => {
       ),
     },
     $ERROR_CODES: RBAC_ERROR_CODES,
+    async init(ctx) {
+      // Seed RBAC data if options are provided
+      if (opts && (opts.seedPermissions || opts.seedRoles)) {
+        await seedRBACData(ctx, opts, validationOptions)
+      }
+    },
   } satisfies BetterAuthPlugin
 }
