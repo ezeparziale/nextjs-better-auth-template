@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
+import { Option } from "@/types/types"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -25,11 +26,6 @@ const editRolePermissionsSchema = z.object({
 })
 
 type FormData = z.infer<typeof editRolePermissionsSchema>
-
-type Option = {
-  value: string
-  label: string
-}
 
 export default function EditRolePermissionsForm({
   roleId,
