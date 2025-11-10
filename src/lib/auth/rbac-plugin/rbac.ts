@@ -19,29 +19,46 @@ import {
   UserRole,
 } from "./types"
 import { getPaginationParams } from "./utils"
-import { validatePermissionKey } from "./validation"
+import { validateKey } from "./validation"
 
 const DEFAULT_PERMISSION_KEY_PATTERN = /^[a-z0-9_]+:[a-z0-9_]+$/i
+const DEFAULT_ROLE_KEY_PATTERN = /^[a-z0-9_]+$/i
 
 export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined) => {
   const opts = {
+    // Pagination
     defaultLimit: 10,
     maxLimit: 100,
     defaultOffset: 0,
+    // Seed
     seedPermissions: [],
     seedRoles: [],
+    // Permission key format
     minPermissionKeyLength: 3,
     maxPermissionKeyLength: 50,
     permissionKeyPattern: DEFAULT_PERMISSION_KEY_PATTERN,
     permissionKeyErrorMessage: undefined,
+    // Role key format
+    minRoleKeyLength: 3,
+    maxRoleKeyLength: 50,
+    roleKeyPattern: DEFAULT_ROLE_KEY_PATTERN,
+    roleKeyErrorMessage: undefined,
     ...options,
   }
 
   const validationOptions = {
-    minLength: opts.minPermissionKeyLength,
-    maxLength: opts.maxPermissionKeyLength,
-    pattern: opts.permissionKeyPattern,
-    errorMessage: opts.permissionKeyErrorMessage,
+    permission: {
+      minLength: opts.minPermissionKeyLength,
+      maxLength: opts.maxPermissionKeyLength,
+      pattern: opts.permissionKeyPattern,
+      errorMessage: opts.permissionKeyErrorMessage,
+    },
+    role: {
+      minLength: opts.minRoleKeyLength,
+      maxLength: opts.maxRoleKeyLength,
+      pattern: opts.roleKeyPattern,
+      errorMessage: opts.roleKeyErrorMessage,
+    },
   }
 
   const paginationConfig = {
@@ -442,7 +459,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
             throw new APIError("FORBIDDEN")
           }
 
-          validatePermissionKey(ctx.body.key, validationOptions)
+          validateKey("permission", ctx.body.key, validationOptions)
 
           // Check if permission with the same key already exists
           const existingPermission = await ctx.context.adapter.findOne<Permission>({
@@ -630,7 +647,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
           }
 
           if (ctx.body.key) {
-            validatePermissionKey(ctx.body.key, validationOptions)
+            validateKey("permission", ctx.body.key, validationOptions)
           }
 
           // Check if permission exists
@@ -1227,6 +1244,8 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
             throw new APIError("FORBIDDEN")
           }
 
+          validateKey("role", ctx.body.key, validationOptions)
+
           // Check if role with the same key already exists
           const existingRole = await ctx.context.adapter.findOne<Role>({
             model: "role",
@@ -1410,6 +1429,10 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
 
           if (session.user.role != "admin") {
             throw new APIError("FORBIDDEN")
+          }
+
+          if (ctx.body.key) {
+            validateKey("role", ctx.body.key, validationOptions)
           }
 
           // Check if role exists
