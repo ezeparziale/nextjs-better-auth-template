@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
+import * as z from "zod"
 import { authClient, useSession } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import {
