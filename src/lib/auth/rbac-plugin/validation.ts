@@ -70,5 +70,5 @@ function capitalize(s: string): string {
 function defaultErrorMessage(type: "permission" | "role"): string {
   return type === "permission"
     ? `Permission key must follow the format "feature:action" (e.g., "user:read", "post:write").`
-    : `Role key must contain only letters, numbers, or underscores (e.g., "admin", "editor").`
+    : `Role key must contain only letters, numbers, or underscores (e.g., "editor", "reviewer").`
 }
