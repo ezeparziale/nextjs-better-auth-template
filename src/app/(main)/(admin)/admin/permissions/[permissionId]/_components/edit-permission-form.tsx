@@ -56,6 +56,16 @@ export default function EditPermissionForm({ permission }: { permission: Permiss
       })
 
       if (error) {
+        if (
+          error.code === "INVALID_PERMISSION_KEY" ||
+          error.code === "INVALID_PERMISSION_KEY_LENGTH" ||
+          error.code === "INVALID_PERMISSION_KEY_FORMAT"
+        ) {
+          form.setError("key", {
+            type: "custom",
+            message: error.message,
+          })
+        }
         toast.error(error.message || "Failed to update permission")
       } else {
         if (data.permission) {
