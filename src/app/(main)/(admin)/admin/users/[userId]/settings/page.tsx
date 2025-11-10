@@ -10,6 +10,7 @@ const PAGE = {
   title: "Edit user",
   description: "Edit the user's settings.",
   callbackUrl: "/admin/users",
+  section: "settings",
 }
 
 export const metadata: Metadata = {
@@ -26,7 +27,8 @@ export default async function NewUserAdminPage(props: { params: Params }) {
 
   const { userId } = await props.params
 
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/settings`)
+  if (!session)
+    redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
   if (session.user.role !== "admin") redirect("/dashboard")
 

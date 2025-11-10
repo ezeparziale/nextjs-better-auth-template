@@ -9,6 +9,7 @@ const PAGE = {
   title: "Manage permission roles",
   description: "Assign or remove roles from this permission.",
   callbackUrl: "/admin/permissions",
+  section: "roles",
 }
 
 export const metadata: Metadata = {
@@ -25,7 +26,8 @@ export default async function RolesPermissionAdminPage(props: { params: Params }
 
   const { permissionId } = await props.params
 
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${permissionId}/roles`)
+  if (!session)
+    redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${permissionId}/${PAGE.section}`)
 
   if (session.user.role !== "admin") redirect("/dashboard")
 
