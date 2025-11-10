@@ -50,6 +50,16 @@ export default function EditRoleForm({ role }: { role: Role }) {
       })
 
       if (error) {
+        if (
+          error.code === "INVALID_ROLE_KEY" ||
+          error.code === "INVALID_ROLE_KEY_LENGTH" ||
+          error.code === "INVALID_ROLE_KEY_FORMAT"
+        ) {
+          form.setError("key", {
+            type: "custom",
+            message: error.message,
+          })
+        }
         toast.error(error.message || "Failed to update role")
       } else {
         if (data.role) {

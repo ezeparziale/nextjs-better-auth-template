@@ -48,6 +48,16 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
       })
 
       if (error) {
+        if (
+          error.code === "INVALID_ROLE_KEY" ||
+          error.code === "INVALID_ROLE_KEY_LENGTH" ||
+          error.code === "INVALID_ROLE_KEY_FORMAT"
+        ) {
+          form.setError("key", {
+            type: "custom",
+            message: error.message,
+          })
+        }
         toast.error(error.message || "Failed to create role")
       } else {
         toast.success(`Role ${data.role.key ?? ""} created successfully`)
