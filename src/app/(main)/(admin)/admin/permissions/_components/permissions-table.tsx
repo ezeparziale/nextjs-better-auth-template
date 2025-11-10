@@ -13,12 +13,12 @@ import {
 import { KeyIcon } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Permission } from "@/lib/auth/rbac-plugin"
+import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
 import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
 import { DataTableSearch } from "@/components/ui/data-table/data-table-search"
 import { DataTableSearchNotFound } from "@/components/ui/data-table/data-table-search-not-found"
 import { DataTableViewOptions } from "@/components/ui/data-table/data-table-view-options"
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
   Table,
@@ -214,16 +214,7 @@ export default function PermissionsTable({
   })
 
   if (loading && data.length === 0) {
-    return (
-      <Empty className="w-full border border-dashed">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <Spinner />
-          </EmptyMedia>
-          <EmptyTitle>Loading…</EmptyTitle>
-        </EmptyHeader>
-      </Empty>
-    )
+    return <DataTableLoading table={table} rowCount={pagination.pageSize} />
   }
 
   return (

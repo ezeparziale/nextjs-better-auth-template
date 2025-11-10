@@ -11,14 +11,14 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
-import { UserIcon } from "lucide-react"
+import { KeyIcon, UserIcon } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
+import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
 import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
 import { DataTableSearch } from "@/components/ui/data-table/data-table-search"
 import { DataTableSearchNotFound } from "@/components/ui/data-table/data-table-search-not-found"
 import { DataTableViewOptions } from "@/components/ui/data-table/data-table-view-options"
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
   Table,
@@ -73,7 +73,7 @@ export default function UsersTable({
 
   const [refreshKey, setRefreshKey] = useState(0)
 
-  const [users, setUsers] = useState<UserWithRole[]>([])
+  const [data, setData] = useState<UserWithRole[]>([])
   const [loading, setLoading] = useState(true)
 
   const [searchInput, setSearchInput] = useState(initialParams.search || "")
@@ -95,7 +95,7 @@ export default function UsersTable({
     pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
     pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
   })
-  const [totalUsers, setTotalUsers] = useState(0)
+  const [total, setTotal] = useState(0)
 
   const handleClearSearch = () => {
     setSearchInput("")
@@ -122,7 +122,7 @@ export default function UsersTable({
   }, [])
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchData = async () => {
       setLoading(true)
       try {
         const queryParams: QueryParams = {
@@ -150,15 +150,15 @@ export default function UsersTable({
           return
         }
 
-        setUsers(data.users || [])
-        setTotalUsers(data.total || 0)
+        setData(data.users || [])
+        setTotal(data.total || 0)
       } catch (err) {
         console.error("Error:", err)
       } finally {
         setLoading(false)
       }
     }
-    fetchUsers()
+    fetchData()
   }, [pagination.pageIndex, pagination.pageSize, searchInput, sorting, refreshKey])
 
   useEffect(() => {
@@ -197,9 +197,9 @@ export default function UsersTable({
   ])
 
   const table = useReactTable({
-    data: users,
+    data,
     columns,
-    pageCount: Math.ceil(totalUsers / pagination.pageSize),
+    pageCount: Math.ceil(total / pagination.pageSize),
     state: {
       pagination,
       sorting,
@@ -215,17 +215,8 @@ export default function UsersTable({
     autoResetPageIndex: false,
   })
 
-  if (loading && users.length === 0) {
-    return (
-      <Empty className="w-full border border-dashed">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <Spinner />
-          </EmptyMedia>
-          <EmptyTitle>Loading…</EmptyTitle>
-        </EmptyHeader>
-      </Empty>
-    )
+  if (loading && data.length === 0) {
+    return <DataTableLoading table={table} rowCount={pagination.pageSize} />
   }
 
   return (
