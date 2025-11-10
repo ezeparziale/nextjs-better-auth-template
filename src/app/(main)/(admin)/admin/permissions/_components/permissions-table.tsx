@@ -10,21 +10,15 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { KeyIcon, LucideIcon } from "lucide-react"
+import { KeyIcon } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Permission } from "@/lib/auth/rbac-plugin"
-import { Button } from "@/components/ui/button"
+import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
 import { DataTableSearch } from "@/components/ui/data-table/data-table-search"
+import { DataTableSearchNotFound } from "@/components/ui/data-table/data-table-search-not-found"
 import { DataTableViewOptions } from "@/components/ui/data-table/data-table-view-options"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
   Table,
@@ -279,13 +273,13 @@ export default function PermissionsTable({
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
                   {searchInput ? (
-                    <SearchNotFound
-                      searchValue={searchInput}
+                    <DataTableSearchNotFound
+                      title={`No permissions found with "${searchInput}"`}
                       handleClearSearch={handleClearSearch}
                       Icon={KeyIcon}
                     />
                   ) : (
-                    <NoValues
+                    <DataTableNoData
                       title="No permissions found"
                       description="There are no permissions to display"
                       Icon={KeyIcon}
@@ -299,54 +293,5 @@ export default function PermissionsTable({
       </div>
       <DataTablePagination table={table} />
     </div>
-  )
-}
-
-function SearchNotFound({
-  searchValue,
-  handleClearSearch,
-  Icon,
-}: {
-  searchValue: string
-  handleClearSearch: () => void
-  Icon: LucideIcon
-}) {
-  return (
-    <Empty className="border border-dashed">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon />
-        </EmptyMedia>
-        <EmptyTitle>{`No permissions found with "${searchValue}"`}</EmptyTitle>
-        <EmptyDescription>Try adjusting your search terms</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button variant="outline" onClick={handleClearSearch}>
-          Clear search
-        </Button>
-      </EmptyContent>
-    </Empty>
-  )
-}
-
-function NoValues({
-  title,
-  description,
-  Icon,
-}: {
-  title: string
-  description: string
-  Icon: LucideIcon
-}) {
-  return (
-    <Empty className="border border-dashed">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon />
-        </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
   )
 }

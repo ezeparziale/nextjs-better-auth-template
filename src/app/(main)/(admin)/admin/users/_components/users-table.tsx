@@ -11,20 +11,14 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
-import { LucideIcon, UserIcon } from "lucide-react"
+import { UserIcon } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
-import { Button } from "@/components/ui/button"
+import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
 import { DataTableSearch } from "@/components/ui/data-table/data-table-search"
+import { DataTableSearchNotFound } from "@/components/ui/data-table/data-table-search-not-found"
 import { DataTableViewOptions } from "@/components/ui/data-table/data-table-view-options"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
 import {
   Table,
@@ -281,13 +275,13 @@ export default function UsersTable({
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
                   {searchInput ? (
-                    <SearchNotFound
-                      searchValue={searchInput}
+                    <DataTableSearchNotFound
+                      title={`No users found with "${searchInput}"`}
                       handleClearSearch={handleClearSearch}
-                      Icon={UserIcon}
+                      Icon={KeyIcon}
                     />
                   ) : (
-                    <NoValues
+                    <DataTableNoData
                       title="No users found"
                       description="There are no users to display"
                       Icon={UserIcon}
@@ -301,54 +295,5 @@ export default function UsersTable({
       </div>
       <DataTablePagination table={table} />
     </div>
-  )
-}
-
-function SearchNotFound({
-  searchValue,
-  handleClearSearch,
-  Icon,
-}: {
-  searchValue: string
-  handleClearSearch: () => void
-  Icon: LucideIcon
-}) {
-  return (
-    <Empty className="border border-dashed">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon />
-        </EmptyMedia>
-        <EmptyTitle>{`No users found with "${searchValue}"`}</EmptyTitle>
-        <EmptyDescription>Try adjusting your search terms</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <Button variant="outline" onClick={handleClearSearch}>
-          Clear search
-        </Button>
-      </EmptyContent>
-    </Empty>
-  )
-}
-
-function NoValues({
-  title,
-  description,
-  Icon,
-}: {
-  title: string
-  description: string
-  Icon: LucideIcon
-}) {
-  return (
-    <Empty className="border border-dashed">
-      <EmptyHeader>
-        <EmptyMedia variant="icon">
-          <Icon />
-        </EmptyMedia>
-        <EmptyTitle>{title}</EmptyTitle>
-        <EmptyDescription>{description}</EmptyDescription>
-      </EmptyHeader>
-    </Empty>
   )
 }
