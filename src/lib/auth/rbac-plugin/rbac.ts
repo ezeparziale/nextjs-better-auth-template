@@ -3155,6 +3155,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       ),
     },
     $ERROR_CODES: RBAC_ERROR_CODES,
+    options,
     async init(ctx) {
       // Seed RBAC data if options are provided
       if (opts && (opts.seedPermissions || opts.seedRoles)) {
