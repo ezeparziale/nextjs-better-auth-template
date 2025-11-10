@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { z } from "zod"
+import * as z from "zod"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,13 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-
-const editRoleSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  key: z.string().min(1, "Key is required"),
-  description: z.string().min(1, "Description is required"),
-  isActive: z.boolean(),
-})
+import { editRoleSchema } from "../../_components/schemas"
 
 type FormData = z.infer<typeof editRoleSchema>
 
