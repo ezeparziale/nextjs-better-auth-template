@@ -1,6 +1,6 @@
 import type { AuthContext } from "better-auth"
 import type { Permission, RBACPluginOptions, Role, RolePermission } from "./types"
-import { PermissionKeyValidationOptions, validatePermissionKey } from "./validation"
+import { KeyValidationConfig, validateKey } from "./validation"
 
 /**
  * Seeds permissions into the database if they don't already exist
@@ -8,13 +8,13 @@ import { PermissionKeyValidationOptions, validatePermissionKey } from "./validat
 async function seedPermissions(
   ctx: AuthContext,
   permissions: RBACPluginOptions["seedPermissions"],
-  validationOptions: PermissionKeyValidationOptions,
+  validationOptions: KeyValidationConfig,
 ) {
   if (!permissions || permissions.length === 0) return
 
   for (const permission of permissions) {
     try {
-      validatePermissionKey(permission.key, validationOptions)
+      validateKey("permission", permission.key, validationOptions)
     } catch (error) {
       console.error(`Invalid permission key "${permission.key}":`, error)
       continue
@@ -47,10 +47,20 @@ async function seedPermissions(
  * Seeds roles into the database if they don't already exist
  * Also associates permissions with roles
  */
-async function seedRoles(ctx: AuthContext, roles: RBACPluginOptions["seedRoles"]) {
+async function seedRoles(
+  ctx: AuthContext,
+  roles: RBACPluginOptions["seedRoles"],
+  validationOptions: KeyValidationConfig,
+) {
   if (!roles || roles.length === 0) return
 
   for (const role of roles) {
+    try {
+      validateKey("role", role.key, validationOptions)
+    } catch (error) {
+      console.error(`Invalid role key "${role.key}":`, error)
+      continue
+    }
     // Check if role already exists
     const existing = await ctx.adapter.findOne<Role>({
       model: "role",
@@ -116,14 +126,14 @@ async function associatePermissionsToRole(
 export async function seedRBACData(
   ctx: AuthContext,
   options: Required<Pick<RBACPluginOptions, "seedPermissions" | "seedRoles">>,
-  validationOptions: PermissionKeyValidationOptions,
+  validationOptions: KeyValidationConfig,
 ) {
   try {
     // Seed permissions first (roles depend on them)
     await seedPermissions(ctx, options.seedPermissions, validationOptions)
 
     // Then seed roles with their permission associations
-    await seedRoles(ctx, options.seedRoles)
+    await seedRoles(ctx, options.seedRoles, validationOptions)
   } catch (error) {
     console.error("Error seeding RBAC data:", error)
     throw error
