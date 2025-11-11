@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth"
 import prismadb from "@/lib/prismadb"
 import { PageHeader } from "@/components/page-header"
 import ImpersonateUserCard from "./_components/impersonate-user-card"
+import { ResetPasswordCard } from "./_components/reset-password-card"
+import { SetTemporaryPasswordCard } from "./_components/set-temporary-password-card"
 
 const PAGE = {
   title: "Actions",
@@ -32,15 +34,16 @@ export default async function ActionsUserAdminPage(props: { params: Params }) {
 
   if (session.user.role !== "admin") redirect("/dashboard")
 
-  const userHasPassword = !!(await prismadb.account.findFirst({
-    where: { userId: userId, providerId: "credential" },
-  }))
-
-  console.log(userHasPassword)
+  const { hasCredentialAccount } = await auth.api.userHasCredentialAccount({
+    body: { userId },
+    headers: await headers(),
+  })
 
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+      <SetTemporaryPasswordCard userId={userId} />
+      <ResetPasswordCard userId={userId} hasCredentialAccount={hasCredentialAccount} />
       <ImpersonateUserCard userId={userId} />
     </div>
   )
