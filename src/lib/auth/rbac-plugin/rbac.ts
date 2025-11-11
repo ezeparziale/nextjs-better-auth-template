@@ -85,6 +85,17 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       }
     }
   })
+
+  /**
+   * Ensures the user has the "admin" role, otherwise throws a "FORBIDDEN" error.
+   */
+  const ensureUserIsAdmin = (session: { user: { role?: string | null } }) => {
+    const roles = session.user.role?.split(",").map((role) => role.trim()) || []
+    if (!roles.includes("admin")) {
+      throw new APIError("FORBIDDEN")
+    }
+  }
+
   return {
     id: "rbac",
     schema: schema,
@@ -200,9 +211,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           const where: Where[] = []
 
@@ -326,9 +335,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           const permission = await ctx.context.adapter.findOne<Permission>({
             model: "permission",
@@ -455,9 +462,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           validateKey("permission", ctx.body.key, validationOptions)
 
@@ -642,9 +647,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           if (ctx.body.key) {
             validateKey("permission", ctx.body.key, validationOptions)
@@ -867,9 +870,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if permission exists
           const existingPermission = await ctx.context.adapter.findOne<Permission>({
@@ -1005,9 +1006,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           const where: Where[] = []
 
@@ -1131,9 +1130,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           const role = await ctx.context.adapter.findOne<Role>({
             model: "role",
@@ -1240,9 +1237,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           validateKey("role", ctx.body.key, validationOptions)
 
@@ -1427,9 +1422,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           if (ctx.body.key) {
             validateKey("role", ctx.body.key, validationOptions)
@@ -1654,9 +1647,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if role exists
           const existingRole = await ctx.context.adapter.findOne<Role>({
@@ -1776,9 +1767,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if role exists
           const role = await ctx.context.adapter.findOne<Role>({
@@ -1910,9 +1899,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Delete assignment
           await ctx.context.adapter.delete<RolePermission>({
@@ -2019,9 +2006,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if user exists
           const user = await ctx.context.adapter.findOne<User>({
@@ -2153,9 +2138,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Delete assignment
           await ctx.context.adapter.delete<UserRole>({
@@ -2387,9 +2370,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if role exists
           const role = await ctx.context.adapter.findOne<Role>({
@@ -2516,9 +2497,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if user exists
           const user = await ctx.context.adapter.findOne<User>({
@@ -2643,9 +2622,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Check if user exists
           const user = await ctx.context.adapter.findOne<User>({
@@ -2770,9 +2747,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           // Get the permission by key
           const permission = await ctx.context.adapter.findOne<Permission>({
@@ -3008,9 +2983,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           const where: Where[] = []
 
@@ -3115,9 +3088,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
         async (ctx) => {
           const session = ctx.context.session
 
-          if (session.user.role != "admin") {
-            throw new APIError("FORBIDDEN")
-          }
+          ensureUserIsAdmin(session)
 
           const where: Where[] = []
 
