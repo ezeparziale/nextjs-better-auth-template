@@ -52,7 +52,12 @@ export default function ImpersonateUserCard({ userId }: { userId: string }) {
         </CardDescription>
       </CardHeader>
       <CardFooter className="bg-sidebar flex items-center justify-end rounded-b-xl border-t py-4!">
-        <Button size="sm" disabled={isPending} onClick={handleImpersonateUser}>
+        <Button
+          size="sm"
+          disabled={isPending}
+          onClick={handleImpersonateUser}
+          aria-label="Impersonate user"
+        >
           {isPending && <Spinner />} Impersonate user
         </Button>
       </CardFooter>
