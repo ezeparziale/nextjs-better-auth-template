@@ -5,6 +5,7 @@ import {
   twoFactorClient,
 } from "better-auth/client/plugins"
 import { createAuthClient } from "better-auth/react"
+import { adminPlusClient } from "./auth/admin-plus-plugin/client"
 import { rbacClient } from "./auth/rbac-plugin/client"
 
 export const authClient = createAuthClient({
@@ -25,6 +26,7 @@ export const authClient = createAuthClient({
     passkeyClient(),
     lastLoginMethodClient(),
     rbacClient(),
+    adminPlusClient(),
   ],
 })
 
