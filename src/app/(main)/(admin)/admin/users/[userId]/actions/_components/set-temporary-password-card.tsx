@@ -136,7 +136,10 @@ export function SetTemporaryPasswordCard({ userId }: { userId: string }) {
           </DialogContent>
         </Dialog>
       </CardContent>
-      <CardFooter className="bg-sidebar flex items-center justify-end rounded-b-xl border-t py-4!">
+      <CardFooter className="bg-sidebar flex items-center justify-between rounded-b-xl border-t py-4!">
+        <CardDescription>
+          This action will remove all sessions from the user.
+        </CardDescription>
         <Button
           onClick={() => setIsOpen(true)}
           size="sm"
