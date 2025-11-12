@@ -1,4 +1,8 @@
-import { auth, SUPPORTED_OAUTH_PROVIDERS, SupportedOAuthProvider } from "@/lib/auth"
+import {
+  auth,
+  SUPPORTED_OAUTH_PROVIDERS,
+  SupportedOAuthProvider,
+} from "@/lib/auth/auth"
 import {
   Card,
   CardAction,

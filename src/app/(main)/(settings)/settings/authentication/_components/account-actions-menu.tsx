@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { ExternalLinkIcon, MoreHorizontalIcon } from "lucide-react"
 import { toast } from "sonner"
-import { SupportedOAuthProvider } from "@/lib/auth"
-import { authClient } from "@/lib/auth-client"
+import { SupportedOAuthProvider } from "@/lib/auth/auth"
+import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,

@@ -12,7 +12,7 @@ import {
 } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
 import { KeyIcon, UserIcon } from "lucide-react"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
 import { DataTableLoadingRow } from "@/components/ui/data-table/data-table-loading-row"
 import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"

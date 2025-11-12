@@ -2,11 +2,12 @@ import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { admin, lastLoginMethod, twoFactor } from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
-import { adminPlusPlugin } from "./auth/admin-plus-plugin"
-import { rbacPlugin } from "./auth/rbac-plugin"
-import { sendMail } from "./email"
-import prismadb from "./prismadb"
-import "server-only"
+import { sendMail } from "../email"
+import prismadb from "../prismadb"
+import { adminPlusPlugin } from "./admin-plus-plugin"
+import { rbacPlugin } from "./rbac-plugin"
+
+// import "server-only"
 
 export const SUPPORTED_OAUTH_PROVIDERS = ["credential", "google", "github"] as const
 export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number]
@@ -68,6 +69,27 @@ export const auth = betterAuth({
     passkey(),
     lastLoginMethod({
       storeInDatabase: true,
+    }),
+    rbacPlugin({
+      minPermissionKeyLength: 5,
+      permissionKeyPattern: /^[a-z0-9_-]+\.[a-z0-9_-]+$/i,
+      seedPermissions: [
+        {
+          key: "user1.read",
+          name: "Read Users",
+          description: "Can view users",
+          isActive: true,
+        },
+      ],
+      seedRoles: [
+        {
+          key: "admin1",
+          name: "Administrator",
+          description: "Full access",
+          isActive: true,
+          permissions: ["user1:read"],
+        },
+      ],
     }),
     adminPlusPlugin(),
   ],

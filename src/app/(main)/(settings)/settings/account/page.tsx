@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth/auth"
 import { PageHeader } from "@/components/page-header"
 import { CreatePasswordForm } from "./_components/create-password-button"
 import { DeleteAccountForm } from "./_components/delete-account-form"

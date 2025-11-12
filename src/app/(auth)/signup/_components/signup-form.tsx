@@ -6,7 +6,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { signIn, signUp } from "@/lib/auth-client"
+import { signIn, signUp } from "@/lib/auth/auth-client"
 import { signUpFormSchema, type SignUpForm } from "@/schemas/auth"
 import { Button } from "@/components/ui/button"
 import {

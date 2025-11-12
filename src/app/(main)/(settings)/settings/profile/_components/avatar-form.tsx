@@ -5,7 +5,7 @@ import { useCallback, useState } from "react"
 import { UploadIcon, XIcon, ZoomInIcon } from "lucide-react"
 import Cropper from "react-easy-crop"
 import { toast } from "sonner"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/auth-client"
 import {
   getCroppedImg,
   resizeImage,

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { KeyIcon } from "lucide-react"
 import { toast } from "sonner"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 
 export default function PasskeyButton({ loading }: { loading: boolean }) {

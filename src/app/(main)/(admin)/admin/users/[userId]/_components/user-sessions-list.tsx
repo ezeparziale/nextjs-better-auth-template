@@ -5,7 +5,7 @@ import { useState } from "react"
 import { type SessionWithImpersonatedBy } from "better-auth/plugins/admin"
 import { MonitorIcon, TrashIcon } from "lucide-react"
 import { toast } from "sonner"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {

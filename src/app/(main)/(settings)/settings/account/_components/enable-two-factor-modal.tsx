@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import QRCode from "react-qr-code"
 import { toast } from "sonner"
 import z from "zod"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import {
   EnableTwoFactorAuthForm,
   enableTwoFactorAuthSchema,

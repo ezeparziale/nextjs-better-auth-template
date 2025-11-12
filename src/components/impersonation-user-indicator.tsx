@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { UserXIcon } from "lucide-react"
 import { toast } from "sonner"
-import { authClient, useSession } from "@/lib/auth-client"
+import { authClient, useSession } from "@/lib/auth/auth-client"
 import { Button } from "./ui/button"
 
 export default function ImpersonationUserIndicator() {

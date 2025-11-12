@@ -11,7 +11,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { KeyIcon } from "lucide-react"
-import { authClient } from "@/lib/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Permission } from "@/lib/auth/rbac-plugin"
 import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
 import { DataTableLoadingRow } from "@/components/ui/data-table/data-table-loading-row"

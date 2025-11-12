@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { del, put } from "@vercel/blob"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth/auth"
 import { generateAvatarFilename } from "@/lib/avatar-utils"
 import prismadb from "@/lib/prismadb"
 

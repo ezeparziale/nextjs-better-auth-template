@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth/auth"
 import { DateDescription } from "@/components/date-description"
 import { PageHeader } from "@/components/page-header"
 import { getPermission } from "../get-permission"

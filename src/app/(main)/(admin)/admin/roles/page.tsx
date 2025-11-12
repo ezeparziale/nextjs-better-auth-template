@@ -1,6 +1,6 @@
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
+import { auth } from "@/lib/auth/auth"
 import { PageHeader } from "@/components/page-header"
 import CreateRoleButton from "./_components/create-role-button"
 import { RolesProvider } from "./_components/roles-context"

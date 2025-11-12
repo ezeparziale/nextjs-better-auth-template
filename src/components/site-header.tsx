@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { LogOut, Settings } from "lucide-react"
-import { useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth/auth-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
