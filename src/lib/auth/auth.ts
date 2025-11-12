@@ -1,8 +1,12 @@
+import { render } from "@react-email/components"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { admin, lastLoginMethod, twoFactor } from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
-import { sendMail } from "../email"
+import { reactResetPasswordEmail } from "../email/reset-password"
+import { sendMail } from "../email/send-email"
+import { reactVerifyEmail } from "../email/verify-email"
+import { reactWelcomeEmail } from "../email/welcome"
 import prismadb from "../prismadb"
 import { adminPlusPlugin } from "./admin-plus-plugin"
 import { rbacPlugin } from "./rbac-plugin"
@@ -27,19 +31,15 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, token }) => {
-      const url = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`
-      const html = `<p>Hi ${user.name},</p>
-<p>Click the link below to reset your password.</p>
-<a href="${url}">Reset password</a>`
+      const resetLink = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`
+      const html = await render(reactResetPasswordEmail({ name: user.name, resetLink }))
       await sendMail(user.email, "Reset your password", html)
     },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, token }) => {
-      const url = `${process.env.BETTER_AUTH_URL}/verify-email?token=${token}`
-      const html = `<p>Hi ${user.name},</p>
-<p>Click the link below to verify your email address.</p>
-<a href="${url}">Verify email</a>`
+      const verifyLink = `${process.env.BETTER_AUTH_URL}/verify-email?token=${token}`
+      const html = await render(reactVerifyEmail({ name: user.name, verifyLink }))
       await sendMail(user.email, "Verify your email", html)
     },
     autoSignInAfterVerification: true,
@@ -93,4 +93,16 @@ export const auth = betterAuth({
     }),
     adminPlusPlugin(),
   ],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          // Send welcome email
+          const loginLink = `${process.env.BETTER_AUTH_URL}/login`
+          const html = await render(reactWelcomeEmail({ name: user.name, loginLink }))
+          await sendMail(user.email, "Welcome to Nog", html)
+        },
+      },
+    },
+  },
 })
