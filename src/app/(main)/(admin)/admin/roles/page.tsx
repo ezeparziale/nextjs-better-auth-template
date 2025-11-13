@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
@@ -10,6 +11,11 @@ const PAGE = {
   title: "Roles",
   description: "Manage roles",
   callbackUrl: "/admin/roles",
+}
+
+export const metadata: Metadata = {
+  title: PAGE.title,
+  description: PAGE.description,
 }
 
 type SearchParams = Promise<{
