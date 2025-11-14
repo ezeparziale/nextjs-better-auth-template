@@ -39,6 +39,14 @@ pages.
 - **User Impersonation:** Admins can log in as any user to troubleshoot issues or
   perform actions on their behalf.
 
+### ✉️ Emails
+
+- **Welcome:** Sent to new users after they sign up.
+- **Verify Email:** Sent to new users to verify their email address.
+- **Reset Password:** Sent when a user requests to reset their password.
+- **Password Changed:** Sent to users after they have changed their password.
+- **New Login:** Sent to users when a new login is detected.
+
 ## 👷 Built using
 
 - **Framework:** [Next.js](https://nextjs.org/) 16
