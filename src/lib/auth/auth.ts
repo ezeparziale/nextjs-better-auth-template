@@ -1,12 +1,20 @@
 import { render } from "@react-email/components"
-import { betterAuth } from "better-auth"
+import { APIError, betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import { admin, lastLoginMethod, twoFactor } from "better-auth/plugins"
+import {
+  admin,
+  createAuthMiddleware,
+  lastLoginMethod,
+  twoFactor,
+} from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
+import { NewLoginEmail } from "../email/new-login"
+import { reactPasswordChangedEmail } from "../email/password-changed"
 import { reactResetPasswordEmail } from "../email/reset-password"
 import { sendMail } from "../email/send-email"
 import { reactVerifyEmail } from "../email/verify-email"
 import { reactWelcomeEmail } from "../email/welcome"
+import { parseUserAgent } from "../parse-user-agent"
 import prismadb from "../prismadb"
 import { adminPlusPlugin } from "./admin-plus-plugin"
 import { rbacPlugin } from "./rbac-plugin"
@@ -34,6 +42,20 @@ export const auth = betterAuth({
       const resetLink = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`
       const html = await render(reactResetPasswordEmail({ name: user.name, resetLink }))
       await sendMail(user.email, "Reset your password", html)
+    },
+    onPasswordReset: async ({ user }) => {
+      const userEmail = user.email
+
+      const html = await render(
+        reactPasswordChangedEmail({
+          userEmail,
+          timestamp: new Date().toISOString(),
+          secureAccountLink: `${process.env.APP_URL}/forgot-password`,
+          appName: "Nog",
+        }),
+      )
+
+      await sendMail(userEmail, "Password changed", html)
     },
   },
   emailVerification: {
@@ -104,5 +126,59 @@ export const auth = betterAuth({
         },
       },
     },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      // Change password detected
+      if (ctx.path.startsWith("/change-password")) {
+        console.log(ctx.context.returned)
+        const returned = ctx.context.returned
+
+        if (returned instanceof APIError) {
+          return
+        }
+
+        if (!ctx.context.session) return
+
+        const userEmail = ctx.context.session.user.email
+
+        const html = await render(
+          reactPasswordChangedEmail({
+            userEmail,
+            timestamp: new Date().toISOString(),
+            secureAccountLink: `${process.env.APP_URL}/forgot-password`,
+            appName: "Nog",
+          }),
+        )
+
+        await sendMail(userEmail, "Password changed", html)
+      }
+
+      // New login detected
+      if (ctx.path.startsWith("/sign-in") || ctx.path.startsWith("/callback/:id")) {
+        const session = ctx.context.newSession?.session
+
+        if (!session) return
+
+        const user = await ctx?.context.internalAdapter.findUserById(session.userId)
+
+        if (user) {
+          const { browser, os, location, ipAddress } = parseUserAgent(session)
+
+          const html = await render(
+            NewLoginEmail({
+              name: user.name,
+              browser,
+              os,
+              location,
+              ipAddress,
+              timestamp: new Date().toISOString(),
+              secureAccountLink: `${process.env.BETTER_AUTH_URL}/settings/sessions`,
+            }),
+          )
+          await sendMail(user.email, "New login detected", html)
+        }
+      }
+    }),
   },
 })
