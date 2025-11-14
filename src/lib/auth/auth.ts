@@ -50,7 +50,7 @@ export const auth = betterAuth({
         reactPasswordChangedEmail({
           userEmail,
           timestamp: new Date().toISOString(),
-          secureAccountLink: `${process.env.APP_URL}/forgot-password`,
+          secureAccountLink: `${process.env.BETTER_AUTH_URL}/forgot-password`,
           appName: "Nog",
         }),
       )
@@ -131,7 +131,6 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       // Change password detected
       if (ctx.path.startsWith("/change-password")) {
-        console.log(ctx.context.returned)
         const returned = ctx.context.returned
 
         if (returned instanceof APIError) {
@@ -146,7 +145,7 @@ export const auth = betterAuth({
           reactPasswordChangedEmail({
             userEmail,
             timestamp: new Date().toISOString(),
-            secureAccountLink: `${process.env.APP_URL}/forgot-password`,
+            secureAccountLink: `${process.env.BETTER_AUTH_URL}/forgot-password`,
             appName: "Nog",
           }),
         )
