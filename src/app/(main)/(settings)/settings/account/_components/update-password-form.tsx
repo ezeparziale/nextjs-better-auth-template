@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
 
 type FormData = UpdatePasswordForm
@@ -42,12 +42,18 @@ export function UpdatePasswordForm() {
 
   async function onSubmit(values: FormData) {
     try {
-      const res = await authClient.changePassword({
+      const { error } = await authClient.changePassword({
         ...values,
         revokeOtherSessions: true,
       })
-      if (res.error) {
-        toast.error(res.error.message)
+      if (error) {
+        if (error.code == "INVALID_PASSWORD") {
+          form.setError("currentPassword", {
+            type: "custom",
+            message: error.message,
+          })
+        }
+        toast.error(error.message)
         return
       }
       toast.success("Password updated successfully")
@@ -74,11 +80,10 @@ export function UpdatePasswordForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Current password</FieldLabel>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    type="password"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -91,11 +96,10 @@ export function UpdatePasswordForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>New password</FieldLabel>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    type="password"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -108,11 +112,10 @@ export function UpdatePasswordForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
-                    type="password"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
