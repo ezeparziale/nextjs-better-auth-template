@@ -10,7 +10,7 @@ import {
   TabletIcon,
   TrashIcon,
 } from "lucide-react"
-import { UAParser } from "ua-parser-js"
+import { parseUserAgent } from "@/lib/parse-user-agent"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,19 +72,7 @@ export function SessionCard({
 }: SessionCardProps) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
-  const parser = new UAParser(session.userAgent || "")
-  const result = parser.getResult()
-  const browser = result.browser.name || "Unknown Browser"
-  const browserVersion = result.browser.version
-    ? ` ${result.browser.version.split(".")[0]}`
-    : ""
-  const os = result.os.name || "Unknown OS"
-  const osVersion = result.os.version ? ` ${result.os.version}` : ""
-  const deviceType = result.device.type || "desktop"
-  const deviceModel = result.device.model
-  const deviceDescription = `${browser}${browserVersion} on ${os}${osVersion}${
-    deviceModel ? ` (${deviceModel})` : ""
-  }`
+  const { deviceType, deviceDescription } = parseUserAgent(session)
 
   const formattedDate = formatDistanceToNow(new Date(session.createdAt), {
     addSuffix: true,
