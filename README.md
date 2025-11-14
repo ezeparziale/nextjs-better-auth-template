@@ -31,6 +31,14 @@ pages.
 - **Sessions:**
   - View and manage active sessions.
 
+### 👑 Admin
+
+- **User Management:** Admins can view, create, edit, delete, and ban/unban users.
+- **Role-Based Access Control (RBAC):** Manage user roles and permissions for granular
+  access control.
+- **User Impersonation:** Admins can log in as any user to troubleshoot issues or
+  perform actions on their behalf.
+
 ## 👷 Built using
 
 - **Framework:** [Next.js](https://nextjs.org/) 16
