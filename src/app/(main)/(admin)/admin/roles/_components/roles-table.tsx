@@ -10,7 +10,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { KeyIcon } from "lucide-react"
+import { Shield } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Role } from "@/lib/auth/rbac-plugin"
 import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
@@ -266,13 +266,13 @@ export default function RolesTable({
                     <DataTableSearchNotFound
                       title={`No roles found with "${searchInput}"`}
                       handleClearSearch={handleClearSearch}
-                      Icon={KeyIcon}
+                      Icon={Shield}
                     />
                   ) : (
                     <DataTableNoData
                       title="No roles found"
                       description="There are no roles to display"
-                      Icon={KeyIcon}
+                      Icon={Shield}
                     />
                   )}
                 </TableCell>
