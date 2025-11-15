@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import { Search, X } from "lucide-react"
 import { useDebouncedCallback } from "use-debounce"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 
 interface DataTableSearchProps {
   value: string
@@ -42,30 +46,28 @@ export function DataTableSearch({
   }
 
   return (
-    <div className="relative max-w-sm flex-1">
-      <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-      <Input
+    <InputGroup className="max-w-sm flex-1">
+      <InputGroupAddon align="inline-start" className="cursor-default">
+        <Search className="text-muted-foreground size-4" />
+      </InputGroupAddon>
+      <InputGroupInput
+        ref={inputRef}
         placeholder={placeholder}
-        onChange={(e) => handleChange(e.target.value)}
         value={localValue}
+        onChange={(e) => handleChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
-            inputRef?.current?.blur()
+            inputRef.current?.blur()
           }
         }}
-        ref={inputRef}
-        className="px-9"
       />
       {value && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleClear}
-          className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2 hover:bg-gray-100"
-        >
-          <X className="size-4 text-gray-400" />
-        </Button>
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton size="icon-xs" variant="ghost" onClick={handleClear}>
+            <X className="text-muted-foreground size-4" />
+          </InputGroupButton>
+        </InputGroupAddon>
       )}
-    </div>
+    </InputGroup>
   )
 }
