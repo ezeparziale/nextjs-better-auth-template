@@ -121,4 +121,8 @@ export const auth = betterAuth({
       }
     }),
   },
+  onAPIError: {
+    errorURL: "/error",
+  },
+  disabledPaths: ["/error"],
 })
