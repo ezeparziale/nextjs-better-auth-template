@@ -1,5 +1,4 @@
-import { render } from "@react-email/components"
-import { APIError, betterAuth } from "better-auth"
+import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import {
   admin,
@@ -8,13 +7,13 @@ import {
   twoFactor,
 } from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
-import { NewLoginEmail } from "../email/new-login"
-import { reactPasswordChangedEmail } from "../email/password-changed"
-import { reactResetPasswordEmail } from "../email/reset-password"
-import { sendMail } from "../email/send-email"
-import { reactVerifyEmail } from "../email/verify-email"
-import { reactWelcomeEmail } from "../email/welcome"
-import { parseUserAgent } from "../parse-user-agent"
+import {
+  sendNewLoginEmail,
+  sendPasswordChangedEmail,
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+  sendWelcomeEmail,
+} from "../email/send-email"
 import prismadb from "../prismadb"
 import { adminPlusPlugin } from "./admin-plus-plugin"
 import { rbacPlugin } from "./rbac-plugin"
@@ -39,30 +38,15 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, token }) => {
-      const resetLink = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`
-      const html = await render(reactResetPasswordEmail({ name: user.name, resetLink }))
-      await sendMail(user.email, "Reset your password", html)
+      await sendResetPasswordEmail(user, token)
     },
     onPasswordReset: async ({ user }) => {
-      const userEmail = user.email
-
-      const html = await render(
-        reactPasswordChangedEmail({
-          userEmail,
-          timestamp: new Date().toISOString(),
-          secureAccountLink: `${process.env.BETTER_AUTH_URL}/forgot-password`,
-          appName: "Nog",
-        }),
-      )
-
-      await sendMail(userEmail, "Password changed", html)
+      await sendPasswordChangedEmail(user.email)
     },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, token }) => {
-      const verifyLink = `${process.env.BETTER_AUTH_URL}/verify-email?token=${token}`
-      const html = await render(reactVerifyEmail({ name: user.name, verifyLink }))
-      await sendMail(user.email, "Verify your email", html)
+      await sendVerificationEmail(user, token)
     },
     autoSignInAfterVerification: true,
     sendOnSignUp: true,
@@ -119,10 +103,7 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          // Send welcome email
-          const loginLink = `${process.env.BETTER_AUTH_URL}/login`
-          const html = await render(reactWelcomeEmail({ name: user.name, loginLink }))
-          await sendMail(user.email, "Welcome to Nog", html)
+          await sendWelcomeEmail(user)
         },
       },
     },
@@ -131,52 +112,12 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       // Change password detected
       if (ctx.path.startsWith("/change-password")) {
-        const returned = ctx.context.returned
-
-        if (returned instanceof APIError) {
-          return
-        }
-
-        if (!ctx.context.session) return
-
-        const userEmail = ctx.context.session.user.email
-
-        const html = await render(
-          reactPasswordChangedEmail({
-            userEmail,
-            timestamp: new Date().toISOString(),
-            secureAccountLink: `${process.env.BETTER_AUTH_URL}/forgot-password`,
-            appName: "Nog",
-          }),
-        )
-
-        await sendMail(userEmail, "Password changed", html)
+        await sendPasswordChangedEmail(ctx)
       }
 
       // New login detected
       if (ctx.path.startsWith("/sign-in") || ctx.path.startsWith("/callback/:id")) {
-        const session = ctx.context.newSession?.session
-
-        if (!session) return
-
-        const user = await ctx?.context.internalAdapter.findUserById(session.userId)
-
-        if (user) {
-          const { browser, os, location, ipAddress } = parseUserAgent(session)
-
-          const html = await render(
-            NewLoginEmail({
-              name: user.name,
-              browser,
-              os,
-              location,
-              ipAddress,
-              timestamp: new Date().toISOString(),
-              secureAccountLink: `${process.env.BETTER_AUTH_URL}/settings/sessions`,
-            }),
-          )
-          await sendMail(user.email, "New login detected", html)
-        }
+        await sendNewLoginEmail(ctx)
       }
     }),
   },
