@@ -4,13 +4,13 @@ import { Falling } from "./illustrations/falling"
 import { Button } from "./ui/button"
 
 export default function NotFound404({
-  message,
-  linkText,
-  link,
+  message = "Page not found",
+  linkText = "Back to home",
+  link = "/",
 }: {
-  message: string
-  linkText: string
-  link: string
+  message?: string
+  linkText?: string
+  link?: string
 }) {
   return (
     <div className="flex flex-col items-center">
