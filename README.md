@@ -47,6 +47,26 @@ pages.
 - **Password Changed:** Sent to users after they have changed their password.
 - **New Login:** Sent to users when a new login is detected.
 
+### ✨ Better Auth Plugins
+
+- **Admin Plus:** Extends the base admin functionalities with more granular control over
+  users.
+  - **Password Management:** Allows admins to remove, check for, and set/update
+    passwords for any user.
+- **RBAC (Role-Based Access Control):** A comprehensive plugin for managing user roles
+  and permissions.
+  - **Permission Management:** Full CRUD operations for permissions (create, read,
+    update, delete).
+  - **Role Management:** Full CRUD operations for roles.
+  - **Fine-grained Assignments:**
+    - Assign and remove permissions from roles.
+    - Assign and remove roles from users.
+  - **User-centric Queries:**
+    - Fetch all permissions for a specific user.
+    - Fetch all roles for a specific user.
+  - **Database Seeding:** Utility to seed the database with initial roles and
+    permissions on startup.
+
 ## 👷 Built using
 
 - **Framework:** [Next.js](https://nextjs.org/) 16
