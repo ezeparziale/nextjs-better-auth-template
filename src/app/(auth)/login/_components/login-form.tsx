@@ -145,9 +145,17 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
             <Button
               type="submit"
               form="form-login"
-              className="w-full"
+              className="relative w-full"
               disabled={!!submittingMethod}
             >
+              {lastMethod === "email" && (
+                <Badge
+                  className="border-muted-foreground/20 absolute -top-2 -right-2 border"
+                  variant="secondary"
+                >
+                  Last used
+                </Badge>
+              )}
               {submittingMethod === "email" ? <Spinner /> : "Log In"}
             </Button>
             <PasskeyButton loading={!!submittingMethod} />
