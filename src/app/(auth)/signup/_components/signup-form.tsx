@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/field"
 import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
 
 type FormData = SignUpForm
@@ -127,12 +128,11 @@ export default function SignUpForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
                     placeholder="••••••••"
-                    type="password"
                     disabled={!!isLoading}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -145,12 +145,11 @@ export default function SignUpForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>Confirm Password</FieldLabel>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
                     placeholder="••••••••"
-                    type="password"
                     disabled={!!isLoading}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
 
 type FormData = ResetPasswordForm
@@ -79,7 +79,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" disabled={isLoading} {...field} />
+                    <PasswordInput disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -92,7 +92,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                 <FormItem>
                   <FormLabel>Confirm password</FormLabel>
                   <FormControl>
-                    <Input type="password" disabled={isLoading} {...field} />
+                    <PasswordInput disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/field"
 import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
 import PasskeyButton from "./passkey-button"
 
@@ -129,13 +130,12 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                       Forgot your password?
                     </Link>
                   </div>
-                  <Input
+                  <PasswordInput
                     {...field}
                     id={field.name}
                     aria-invalid={fieldState.invalid}
                     autoComplete="current-password webauthn"
                     placeholder="••••••••"
-                    type="password"
                     disabled={!!submittingMethod}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
