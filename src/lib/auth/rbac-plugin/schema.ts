@@ -39,6 +39,16 @@ export const schema = {
         defaultValue: () => new Date(),
         fieldName: "updatedAt",
       },
+      createdBy: {
+        type: "string",
+        required: false,
+        fieldName: "created_by",
+      },
+      updatedBy: {
+        type: "string",
+        required: false,
+        fieldName: "updated_by",
+      },
     },
   },
   permission: {
@@ -78,6 +88,16 @@ export const schema = {
         required: true,
         defaultValue: () => new Date(),
         fieldName: "updatedAt",
+      },
+      createdBy: {
+        type: "string",
+        required: false,
+        fieldName: "created_by",
+      },
+      updatedBy: {
+        type: "string",
+        required: false,
+        fieldName: "updated_by",
       },
     },
   },

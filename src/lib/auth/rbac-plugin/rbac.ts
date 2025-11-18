@@ -513,6 +513,8 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
               createdAt: new Date(),
               updatedAt: new Date(),
               isActive: ctx.body.isActive ?? true,
+              createdBy: session.user.email,
+              updatedBy: session.user.email,
             },
           })
 
@@ -727,6 +729,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
               }),
               ...(ctx.body.isActive !== undefined && { isActive: ctx.body.isActive }),
               updatedAt: new Date(),
+              updatedBy: session.user.email,
             },
           })
 
@@ -1288,6 +1291,8 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
               createdAt: new Date(),
               updatedAt: new Date(),
               isActive: ctx.body.isActive ?? true,
+              createdBy: session.user.email,
+              updatedBy: session.user.email,
             },
           })
 
@@ -1502,6 +1507,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
               }),
               ...(ctx.body.isActive !== undefined && { isActive: ctx.body.isActive }),
               updatedAt: new Date(),
+              updatedBy: session.user.email,
             },
           })
 

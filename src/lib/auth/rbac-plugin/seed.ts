@@ -36,6 +36,8 @@ async function seedPermissions(
           isActive: permission.isActive ?? true,
           createdAt: new Date(),
           updatedAt: new Date(),
+          createdBy: "system",
+          updatedBy: "system",
         },
       })
       console.log(`Permission created: ${permission.key}`)
@@ -77,6 +79,8 @@ async function seedRoles(
           isActive: role.isActive ?? true,
           createdAt: new Date(),
           updatedAt: new Date(),
+          createdBy: "system",
+          updatedBy: "system",
         },
       })
       console.log(`Role created: ${role.key}`)

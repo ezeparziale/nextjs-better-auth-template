@@ -32,6 +32,18 @@ export const auth = betterAuth({
     deleteUser: {
       enabled: true,
     },
+    additionalFields: {
+      createdBy: {
+        type: "string",
+        required: false,
+        fieldName: "created_by",
+      },
+      updatedBy: {
+        type: "string",
+        required: false,
+        fieldName: "updated_by",
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -102,8 +114,27 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user, ctx) => {
+          return {
+            data: {
+              ...user,
+              createdBy: ctx?.context.session?.user.email || null,
+              updatedBy: ctx?.context.session?.user.email || null,
+            },
+          }
+        },
         after: async (user) => {
           await sendWelcomeEmail(user)
+        },
+      },
+      update: {
+        before: async (user, ctx) => {
+          return {
+            data: {
+              ...user,
+              updatedBy: ctx?.context.session?.user.email || null,
+            },
+          }
         },
       },
     },

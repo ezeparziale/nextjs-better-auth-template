@@ -111,6 +111,18 @@ export const columns: ColumnDef<UserWithRole>[] = [
     },
   },
   {
+    accessorKey: "createdBy",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created By" />
+    ),
+  },
+  {
+    accessorKey: "updatedBy",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Updated By" />
+    ),
+  },
+  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => <CellActions row={row.original} />,

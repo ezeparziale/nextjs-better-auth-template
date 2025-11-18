@@ -6,6 +6,8 @@ export type Permission = {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
+  createdBy?: string
+  updatedBy?: string
 }
 
 export type Role = {
@@ -16,6 +18,8 @@ export type Role = {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
+  createdBy?: string
+  updatedBy?: string
 }
 
 export type RolePermission = {

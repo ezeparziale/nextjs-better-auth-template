@@ -60,6 +60,8 @@ const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
   role: true,
   createdAt: false,
   updatedAt: false,
+  createdBy: false,
+  updatedBy: false,
 }
 
 export default function UsersTable({
