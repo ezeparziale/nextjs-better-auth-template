@@ -120,9 +120,9 @@ model Role {
   name            String
   key             String
   description     String?
-  isActive        Boolean          @default(true)
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @default(now()) @map("updated_at")
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @default(now())
   userroles       UserRole[]
   rolepermissions RolePermission[]
 
@@ -138,9 +138,9 @@ model Permission {
   name            String
   key             String
   description     String?
-  isActive        Boolean          @default(true)
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @default(now()) @map("updated_at")
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @default(now())
   rolepermissions RolePermission[]
 
   created_by String?
@@ -151,25 +151,25 @@ model Permission {
 }
 
 model UserRole {
-  id     String @id
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roleId String @map("role_id")
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id      String @id
+  user_id String
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role_id String
+  role    Role   @relation(fields: [role_id], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  created_at DateTime @default(now())
 
   @@map("users_roles")
 }
 
 model RolePermission {
-  id           String     @id
-  roleId       String     @map("role_id")
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permissionId String     @map("permission_id")
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  id            String     @id
+  role_id       String
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission_id String
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  created_at DateTime @default(now())
 
   @@map("roles_permissions")
 }
