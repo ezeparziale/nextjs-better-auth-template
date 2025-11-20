@@ -44,7 +44,53 @@ export type User = {
   createdAt: Date
   updatedAt: Date
 }
+
+export type RBACEndpoint =
+  | "assignPermissionToRole"
+  | "removePermissionFromRole"
+  | "assignRoleToUser"
+  | "removeRoleFromUser"
+  | "listPermissions"
+  | "getPermission"
+  | "createPermission"
+  | "updatePermission"
+  | "deletePermission"
+  | "getPermissionsOptions"
+  | "getPermissionRoles"
+  | "checkPermission"
+  | "hasPermission"
+  | "listRoles"
+  | "getRole"
+  | "createRole"
+  | "updateRole"
+  | "deleteRole"
+  | "getRolesOptions"
+  | "getRolePermissions"
+  | "getUserRoles"
+  | "getUserPermissions"
+
 export interface RBACPluginOptions {
+  /**
+   * Minimum length for role keys
+   * @default 3
+   */
+  minRoleKeyLength?: number
+  /**
+   * Maximum length for role keys
+   * @default 50
+   */
+  maxRoleKeyLength?: number
+  /**
+   * Regex pattern for valid role keys
+   * Default pattern enforces simple alphanumeric format (e.g., "admin", "moderator", "user_manager")
+   * @default /^[a-z0-9_]+$/i
+   * @example /^[a-z]+$/ for only lowercase letters
+   */
+  roleKeyPattern?: RegExp
+  /**
+   * Custom error message for invalid role key format
+   */
+  roleKeyErrorMessage?: string
   /**
    * Minimum length for permission keys
    * @default 3
@@ -128,4 +174,10 @@ export interface RBACPluginOptions {
     isActive?: boolean
     permissions?: string[]
   }>
+  /**
+   * Array of endpoint names to disable
+   * @example ["deletePermission", "deleteRole", "removeRoleFromUser"]
+   * @default []
+   */
+  disabledEndpoints?: RBACEndpoint[]
 }

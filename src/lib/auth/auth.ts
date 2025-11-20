@@ -108,6 +108,7 @@ export const auth = betterAuth({
           permissions: ["user1:read"],
         },
       ],
+      disabledEndpoints: [],
     }),
     adminPlusPlugin(),
   ],
