@@ -7,6 +7,7 @@ import {
   twoFactor,
 } from "better-auth/plugins"
 import { passkey } from "better-auth/plugins/passkey"
+import { db } from "../db"
 import {
   sendNewLoginEmail,
   sendPasswordChangedEmail,
@@ -14,7 +15,6 @@ import {
   sendVerificationEmail,
   sendWelcomeEmail,
 } from "../email/send-email"
-import prismadb from "../prismadb"
 import { adminPlusPlugin } from "./admin-plus-plugin"
 import { rbacPlugin } from "./rbac-plugin"
 
@@ -25,7 +25,7 @@ export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number]
 
 export const auth = betterAuth({
   appName: "Template",
-  database: prismaAdapter(prismadb, {
+  database: prismaAdapter(db, {
     provider: "postgresql",
   }),
   user: {
