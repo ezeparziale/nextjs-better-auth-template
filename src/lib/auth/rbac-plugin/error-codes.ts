@@ -1,4 +1,4 @@
-import { defineErrorCodes } from "@better-auth/core/utils"
+import { defineErrorCodes } from "better-auth"
 
 export const RBAC_ERROR_CODES = defineErrorCodes({
   PERMISSION_NOT_FOUND: "Permission not found.",

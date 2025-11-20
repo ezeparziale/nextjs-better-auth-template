@@ -1,4 +1,4 @@
-import { type BetterAuthPluginDBSchema } from "@better-auth/core/db"
+import type { BetterAuthPlugin } from "better-auth"
 
 export const schema = {
   role: {
@@ -159,6 +159,6 @@ export const schema = {
       },
     },
   },
-} satisfies BetterAuthPluginDBSchema
+} satisfies BetterAuthPlugin["schema"]
 
 export type RbacSchema = typeof schema
