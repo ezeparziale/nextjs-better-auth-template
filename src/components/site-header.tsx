@@ -37,7 +37,7 @@ export function SiteHeader() {
             <Skeleton className="size-8 rounded-full" />
           ) : session?.user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild className="cursor-pointer">
                 <Button
                   variant="ghost"
                   className="relative size-8 rounded-full"
@@ -66,14 +66,18 @@ export function SiteHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/settings/profile">
                     <Settings className="mr-2 size-4" />
                     <span>Settings</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem
+                  asChild
+                  variant="destructive"
+                  className="cursor-pointer"
+                >
                   <Link href="/logout">
                     <LogOut className="mr-2 size-4" />
                     <span>Logout</span>
