@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { AuditInfo } from "@/components/audit-info"
 import { PageHeader } from "@/components/page-header"
+import { getUser } from "../get-user"
 
 const PAGE = {
   title: "Logs",
@@ -31,9 +33,21 @@ export default async function LogsUserAdminPage(props: { params: Params }) {
 
   if (session.user.role !== "admin") redirect("/dashboard")
 
+  const user = await getUser(userId)
+
+  if (!user) notFound()
+
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+      <div className="rounded-md border">
+        <AuditInfo
+          createdAt={user.createdAt}
+          updatedAt={user.updatedAt}
+          createdBy={user.createdBy}
+          updatedBy={user.updatedBy}
+        />
+      </div>
     </div>
   )
 }

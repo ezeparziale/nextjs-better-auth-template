@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
-import { DateDescription } from "@/components/date-description"
+import { AuditInfo } from "@/components/audit-info"
 import { PageHeader } from "@/components/page-header"
 import { getPermission } from "../get-permission"
 
@@ -39,19 +39,13 @@ export default async function LogsPermissionAdminPage(props: { params: Params })
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium">Created At</h3>
-          <p className="text-muted-foreground text-sm">
-            <DateDescription date={permission.createdAt} />
-          </p>
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-lg font-medium">Updated At</h3>
-          <p className="text-muted-foreground text-sm">
-            <DateDescription date={permission.updatedAt} />
-          </p>
-        </div>
+      <div className="rounded-md border">
+        <AuditInfo
+          createdAt={permission.createdAt}
+          updatedAt={permission.updatedAt}
+          createdBy={permission.createdBy}
+          updatedBy={permission.updatedBy}
+        />
       </div>
     </div>
   )
