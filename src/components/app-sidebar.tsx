@@ -1,61 +1,77 @@
 "use client"
 
+import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Building, Key, LayoutDashboard, Shield, Users } from "lucide-react"
+import {
+  BuildingIcon,
+  KeyIcon,
+  LayoutDashboardIcon,
+  ShieldIcon,
+  UsersIcon,
+} from "lucide-react"
+import { useSession } from "@/lib/auth/auth-client"
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Logo from "./logo"
 
 // Menu items.
 const items = [
   {
     title: "Dashboard",
     url: "/dashboard",
-    icon: LayoutDashboard,
+    icon: LayoutDashboardIcon,
   },
 ]
 
-// TODO: check if user is admin.
+// Admin items.
 const adminItems = [
   {
     title: "Dashboard",
     url: "/admin/dashboard",
-    icon: LayoutDashboard,
+    icon: LayoutDashboardIcon,
   },
   {
     title: "Users",
     url: "/admin/users",
-    icon: Users,
+    icon: UsersIcon,
   },
   {
     title: "Roles",
     url: "/admin/roles",
-    icon: Shield,
+    icon: ShieldIcon,
   },
   {
     title: "Permissions",
     url: "/admin/permissions",
-    icon: Key,
+    icon: KeyIcon,
   },
   {
     title: "Organizations",
     url: "/admin/organizations",
-    icon: Building,
+    icon: BuildingIcon,
   },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
+      <SidebarHeader>
+        <div className="flex items-center p-2">
+          <Logo />
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
@@ -63,34 +79,45 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={pathname === item.url}>
-                    <a href={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.url}
+                    tooltip={item.title}
+                  >
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Admin</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={pathname === item.url}>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+        {session?.user?.role === "admin" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   )
