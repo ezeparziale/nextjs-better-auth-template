@@ -43,6 +43,11 @@ export const auth = betterAuth({
         required: false,
         fieldName: "updated_by",
       },
+      metadata: {
+        type: "json",
+        required: false,
+        fieldName: "metadata",
+      },
     },
   },
   emailAndPassword: {
