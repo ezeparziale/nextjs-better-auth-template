@@ -98,6 +98,7 @@ export default function SignUpForm() {
                     id={field.name}
                     aria-invalid={fieldState.invalid}
                     placeholder="Your name"
+                    autoFocus
                     disabled={!!isLoading}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

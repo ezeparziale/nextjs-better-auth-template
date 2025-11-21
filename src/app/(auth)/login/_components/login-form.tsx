@@ -110,6 +110,7 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
                     placeholder="you@example.com"
                     type="email"
                     autoComplete="email webauthn"
+                    autoFocus
                     disabled={!!submittingMethod}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

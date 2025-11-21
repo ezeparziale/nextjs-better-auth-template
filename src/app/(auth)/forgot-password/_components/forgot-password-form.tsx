@@ -72,6 +72,7 @@ export default function ForgotPasswordForm() {
                     aria-invalid={fieldState.invalid}
                     type="email"
                     aria-label="Email address to receive reset link"
+                    autoFocus
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
