@@ -1,6 +1,6 @@
 import { GlobeIcon, PaletteIcon, ShieldCheckIcon, ZapIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { GitHubIcon } from "./ui/icons"
+import { GitHubIcon } from "@/components/ui/icons"
 
 export function Features() {
   return (

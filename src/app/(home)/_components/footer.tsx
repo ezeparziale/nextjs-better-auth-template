@@ -1,5 +1,5 @@
-import Logo from "./logo"
-import { ThemeToggle } from "./theme-toggle"
+import Logo from "@/components/logo"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function Footer() {
   return (
