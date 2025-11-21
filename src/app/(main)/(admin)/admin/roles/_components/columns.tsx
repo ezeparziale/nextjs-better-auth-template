@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Role } from "@/lib/auth/rbac-plugin"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { DateDescription } from "@/components/date-description"
 import CellActions from "./cell-actions"
 
 export const columns: ColumnDef<Role>[] = [
@@ -38,17 +39,7 @@ export const columns: ColumnDef<Role>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
-      return (
-        <div className="flex flex-col text-sm">
-          <span className="font-medium">{date.toLocaleDateString("es-ES")}</span>
-          <span className="text-xs text-gray-500">
-            {date.toLocaleTimeString("es-ES", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
-        </div>
-      )
+      return <DateDescription date={date} />
     },
   },
   {
@@ -58,17 +49,7 @@ export const columns: ColumnDef<Role>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("updatedAt"))
-      return (
-        <div className="flex flex-col text-sm">
-          <span className="font-medium">{date.toLocaleDateString("es-ES")}</span>
-          <span className="text-xs text-gray-500">
-            {date.toLocaleTimeString("es-ES", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
-        </div>
-      )
+      return <DateDescription date={date} />
     },
   },
   {
