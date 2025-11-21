@@ -2,9 +2,8 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth/auth-client"
 import { resetPasswordFormSchema, type ResetPasswordForm } from "@/schemas/auth"
@@ -16,14 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
 
@@ -31,7 +23,7 @@ type FormData = ResetPasswordForm
 
 export default function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+
   const form = useForm<FormData>({
     resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: {
@@ -40,8 +32,9 @@ export default function ResetPasswordForm({ token }: { token: string }) {
     },
   })
 
+  const { isSubmitting } = form.formState
+
   async function onSubmit(values: FormData) {
-    setIsLoading(true)
     try {
       const result = await authClient.resetPassword({
         token,
@@ -58,8 +51,6 @@ export default function ResetPasswordForm({ token }: { token: string }) {
       }
     } catch {
       toast.error("Something went wrong")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -70,37 +61,48 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         <CardDescription>Enter your new password below</CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
+        <form id="form-reset-password" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup>
+            <Controller
               name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <PasswordInput disabled={isLoading} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
               control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm password</FormLabel>
-                  <FormControl>
-                    <PasswordInput disabled={isLoading} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                  <PasswordInput
+                    {...field}
+                    aria-label="New Password"
+                    autoFocus
+                    disabled={isSubmitting}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
               )}
             />
-            <div className="flex flex-col gap-2">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
+            <Controller
+              name="confirmPassword"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                  <PasswordInput
+                    {...field}
+                    aria-label="Confirm Password"
+                    autoFocus
+                    disabled={isSubmitting}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <div className="flex flex-col gap-4">
+              <Button
+                type="submit"
+                form="form-reset-password"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
                   <>
                     <Spinner />
                     Resetting password…
@@ -109,12 +111,17 @@ export default function ResetPasswordForm({ token }: { token: string }) {
                   "Reset"
                 )}
               </Button>
-              <Button variant="outline" className="w-full" disabled={isLoading} asChild>
+              <Button
+                variant="ghost"
+                className="w-full"
+                disabled={isSubmitting}
+                asChild
+              >
                 <Link href="/login">Cancel</Link>
               </Button>
             </div>
-          </form>
-        </Form>
+          </FieldGroup>
+        </form>
       </CardContent>
     </Card>
   )
