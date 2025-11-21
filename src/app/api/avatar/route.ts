@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { del, put } from "@vercel/blob"
 import { auth } from "@/lib/auth/auth"
 import { generateAvatarFilename } from "@/lib/avatar-utils"
-import prismadb from "@/lib/prismadb"
+import { db } from "@/lib/db"
 
 const imageProviders = [
   "https://lh3.googleusercontent.com",
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Update user in database
-    await prismadb.user.update({
+    await db.user.update({
       where: {
         id: userId,
       },
@@ -85,7 +85,7 @@ export async function DELETE(request: NextRequest) {
       await del(session.user.image)
     }
 
-    await prismadb.user.update({
+    await db.user.update({
       where: {
         id: session.user.id,
       },
