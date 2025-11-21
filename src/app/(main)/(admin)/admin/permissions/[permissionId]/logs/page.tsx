@@ -39,14 +39,12 @@ export default async function LogsPermissionAdminPage(props: { params: Params })
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <div className="rounded-md border">
-        <AuditInfo
-          createdAt={permission.createdAt}
-          updatedAt={permission.updatedAt}
-          createdBy={permission.createdBy}
-          updatedBy={permission.updatedBy}
-        />
-      </div>
+      <AuditInfo
+        createdAt={permission.createdAt}
+        updatedAt={permission.updatedAt}
+        createdBy={permission.createdBy}
+        updatedBy={permission.updatedBy}
+      />
     </div>
   )
 }

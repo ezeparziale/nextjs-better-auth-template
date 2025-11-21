@@ -40,14 +40,12 @@ export default async function LogsUserAdminPage(props: { params: Params }) {
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <div className="rounded-md border">
-        <AuditInfo
-          createdAt={user.createdAt}
-          updatedAt={user.updatedAt}
-          createdBy={user.createdBy}
-          updatedBy={user.updatedBy}
-        />
-      </div>
+      <AuditInfo
+        createdAt={user.createdAt}
+        updatedAt={user.updatedAt}
+        createdBy={user.createdBy}
+        updatedBy={user.updatedBy}
+      />
     </div>
   )
 }

@@ -39,14 +39,12 @@ export default async function LogsRoleAdminPage(props: { params: Params }) {
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <div className="rounded-md border">
-        <AuditInfo
-          createdAt={role.createdAt}
-          updatedAt={role.updatedAt}
-          createdBy={role.createdBy}
-          updatedBy={role.updatedBy}
-        />
-      </div>
+      <AuditInfo
+        createdAt={role.createdAt}
+        updatedAt={role.updatedAt}
+        createdBy={role.createdBy}
+        updatedBy={role.updatedBy}
+      />
     </div>
   )
 }
