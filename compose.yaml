@@ -1,8 +1,8 @@
 services:
   db:
     image: postgres:17.5
-    hostname: postgres_db
-    container_name: postgres_db
+    hostname: ${DATABASE_HOSTNAME}
+    container_name: db
     restart: always
     user: ${DATABASE_USER}
     ports:
@@ -10,7 +10,7 @@ services:
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=${DATABASE_DB}
+      - POSTGRES_DB=${DATABASE_NAME}
     volumes:
       - postgres-db:/var/lib/postgresql/data
     networks:
