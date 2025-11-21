@@ -2,9 +2,9 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { getRole } from "@/data/auth/get-role"
 import { PageHeader } from "@/components/page-header"
 import EditRoleForm from "../_components/edit-role-form"
-import { getRole } from "../get-role"
 
 const PAGE = {
   title: "Edit role",

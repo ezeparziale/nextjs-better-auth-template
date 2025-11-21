@@ -2,9 +2,9 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { getRole } from "@/data/auth/get-role"
 import { AuditInfo } from "@/components/audit-info"
 import { PageHeader } from "@/components/page-header"
-import { getRole } from "../get-role"
 
 const PAGE = {
   title: "Logs",

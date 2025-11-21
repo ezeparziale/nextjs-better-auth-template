@@ -2,9 +2,9 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { getPermission } from "@/data/auth/get-permission"
 import { PageHeader } from "@/components/page-header"
 import EditPermissionForm from "../_components/edit-permission-form"
-import { getPermission } from "../get-permission"
 
 const PAGE = {
   title: "Edit permission",

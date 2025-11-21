@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
+import { getRole } from "@/data/auth/get-role"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
 import DeleteRoleButton from "../_components/delete-role-button"
-import { getRole } from "./get-role"
 
 const getSideBarNavItems = (id: string): NavItem[] => {
   const baseHref = `/admin/roles/${id}`

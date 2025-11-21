@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
+import { getUser } from "@/data/auth/get-user"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
 import DeleteUserButton from "../_components/delete-user-button"
-import { getUser } from "./get-user"
 
 const getSideBarNavItems = (id: string): NavItem[] => {
   const baseHref = `/admin/users/${id}`

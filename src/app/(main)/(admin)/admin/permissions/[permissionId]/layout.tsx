@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
+import { getPermission } from "@/data/auth/get-permission"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
 import DeletePermissionButton from "../_components/delete-permission-button"
-import { getPermission } from "./get-permission"
 
 const getSideBarNavItems = (id: string): NavItem[] => {
   const baseHref = `/admin/permissions/${id}`
