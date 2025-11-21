@@ -26,10 +26,10 @@ import {
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field"
-import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
+import { SocialButtons } from "@/components/auth/social-buttons"
 import PasskeyButton from "./passkey-button"
 
 type FormData = LogInForm
@@ -78,12 +78,6 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
     } finally {
       setSubmittingMethod(null)
     }
-  }
-
-  const handleSocialSignIn = async (provider: "github" | "google") => {
-    setSubmittingMethod(provider)
-    await signIn.social({ provider, callbackURL: callbackUrl || "/dashboard" })
-    setSubmittingMethod(null)
   }
 
   return (
@@ -163,44 +157,13 @@ export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
             <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
               Or continue with
             </FieldSeparator>
-            <Button
-              type="button"
-              variant="outline"
-              className="relative w-full"
-              onClick={() => handleSocialSignIn("github")}
-              disabled={!!submittingMethod}
-            >
-              {lastMethod === "github" && (
-                <Badge className="absolute -top-2 -right-2">Last used</Badge>
-              )}
-              {submittingMethod === "github" ? (
-                <Spinner />
-              ) : (
-                <>
-                  <GitHubIcon />
-                  GitHub
-                </>
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="relative w-full"
-              onClick={() => handleSocialSignIn("google")}
-              disabled={!!submittingMethod}
-            >
-              {lastMethod === "google" && (
-                <Badge className="absolute -top-2 -right-2">Last used</Badge>
-              )}
-              {submittingMethod === "google" ? (
-                <Spinner />
-              ) : (
-                <>
-                  <GoogleIcon />
-                  Google
-                </>
-              )}
-            </Button>
+            <SocialButtons
+              callbackUrl={callbackUrl}
+              lastMethod={lastMethod}
+              isLoading={submittingMethod}
+              onLoadingChange={setSubmittingMethod}
+              className="bg-background/50 hover:bg-background/80"
+            />
           </FieldGroup>
         </form>
       </CardContent>

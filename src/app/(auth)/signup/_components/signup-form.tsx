@@ -6,7 +6,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { signIn, signUp } from "@/lib/auth/auth-client"
+import { signUp } from "@/lib/auth/auth-client"
 import { signUpFormSchema, type SignUpForm } from "@/schemas/auth"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,10 +25,10 @@ import {
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field"
-import { GitHubIcon, GoogleIcon } from "@/components/ui/icons"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
 import { Spinner } from "@/components/ui/spinner"
+import { SocialButtons } from "@/components/auth/social-buttons"
 
 type FormData = SignUpForm
 
@@ -68,12 +68,6 @@ export default function SignUpForm() {
     } finally {
       setIsLoading(null)
     }
-  }
-
-  const handleSocialSignUp = async (provider: "github" | "google") => {
-    setIsLoading(provider)
-    await signIn.social({ provider, callbackURL: "/dashboard" })
-    setIsLoading(null)
   }
 
   return (
@@ -168,39 +162,7 @@ export default function SignUpForm() {
             <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
               Or continue with
             </FieldSeparator>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialSignUp("github")}
-              disabled={!!isLoading}
-            >
-              {isLoading === "github" ? (
-                <Spinner />
-              ) : (
-                <>
-                  <GitHubIcon />
-                  GitHub
-                </>
-              )}
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => handleSocialSignUp("google")}
-              disabled={!!isLoading}
-            >
-              {isLoading === "google" ? (
-                <Spinner />
-              ) : (
-                <>
-                  <GoogleIcon />
-                  Google
-                </>
-              )}
-            </Button>
+            <SocialButtons isLoading={isLoading} onLoadingChange={setIsLoading} />
           </FieldGroup>
         </form>
       </CardContent>
