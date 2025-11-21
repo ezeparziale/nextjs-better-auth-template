@@ -116,11 +116,19 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (user, ctx) => {
+          let createdBy = null
+
+          if (ctx?.path === "/callback/:id" || ctx?.path === "/sign-up/email") {
+            createdBy = user.email
+          } else {
+            createdBy = ctx?.context.session?.user.email || null
+          }
+
           return {
             data: {
               ...user,
-              createdBy: ctx?.context.session?.user.email || null,
-              updatedBy: ctx?.context.session?.user.email || null,
+              createdBy: createdBy,
+              updatedBy: createdBy,
             },
           }
         },
@@ -130,11 +138,13 @@ export const auth = betterAuth({
       },
       update: {
         before: async (user, ctx) => {
-          return {
-            data: {
-              ...user,
-              updatedBy: ctx?.context.session?.user.email || null,
-            },
+          if (ctx) {
+            return {
+              data: {
+                ...user,
+                updatedBy: ctx.context.session?.user.email || null,
+              },
+            }
           }
         },
       },
