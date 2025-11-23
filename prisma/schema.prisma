@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -39,6 +40,17 @@ model User {
   updated_by String?
 
   metadata Json?
+
+  bio          String?
+  phone        String?
+  website_url  String?
+  linkedin_url String?
+  github_url   String?
+  x_url        String?
+  job_title    String?
+  company      String?
+  department   String?
+  location     String?
 
   @@map("users")
 }

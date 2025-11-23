@@ -4,11 +4,11 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { getUser } from "@/data/auth/get-user"
 import { PageHeader } from "@/components/page-header"
-import EditUserForm from "../_components/edit-user-form"
+import EditUserForm from "./_components/edit-user-form"
 
 const PAGE = {
-  title: "Edit user",
-  description: "Edit the user's settings.",
+  title: "User settings",
+  description: "Manage user settings and information.",
   callbackUrl: "/admin/users",
   section: "settings",
 }
@@ -40,6 +40,16 @@ export default async function NewUserAdminPage(props: { params: Params }) {
     id: user.id,
     name: user.name,
     email: user.email,
+    bio: user.bio,
+    phone: user.phone,
+    websiteUrl: user.websiteUrl,
+    linkedinUrl: user.linkedinUrl,
+    githubUrl: user.githubUrl,
+    xUrl: user.xUrl,
+    jobTitle: user.jobTitle,
+    company: user.company,
+    department: user.department,
+    location: user.location,
   }
 
   return (

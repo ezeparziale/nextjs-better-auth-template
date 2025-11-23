@@ -48,6 +48,56 @@ export const auth = betterAuth({
         required: false,
         fieldName: "metadata",
       },
+      bio: {
+        type: "string",
+        required: false,
+        fieldName: "bio",
+      },
+      phone: {
+        type: "string",
+        required: false,
+        fieldName: "phone",
+      },
+      websiteUrl: {
+        type: "string",
+        required: false,
+        fieldName: "website_url",
+      },
+      linkedinUrl: {
+        type: "string",
+        required: false,
+        fieldName: "linkedin_url",
+      },
+      githubUrl: {
+        type: "string",
+        required: false,
+        fieldName: "github_url",
+      },
+      xUrl: {
+        type: "string",
+        required: false,
+        fieldName: "x_url",
+      },
+      jobTitle: {
+        type: "string",
+        required: false,
+        fieldName: "job_title",
+      },
+      company: {
+        type: "string",
+        required: false,
+        fieldName: "company",
+      },
+      department: {
+        type: "string",
+        required: false,
+        fieldName: "department",
+      },
+      location: {
+        type: "string",
+        required: false,
+        fieldName: "location",
+      },
     },
   },
   emailAndPassword: {
