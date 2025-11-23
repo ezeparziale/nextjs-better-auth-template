@@ -14,6 +14,10 @@ const getSideBarNavItems = (id: string): NavItem[] => {
       href: `${baseHref}/settings`,
     },
     {
+      name: "Account",
+      href: `${baseHref}/account`,
+    },
+    {
       name: "Sessions",
       href: `${baseHref}/sessions`,
     },
