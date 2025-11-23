@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
+import { CheckIcon, XIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
@@ -37,26 +38,37 @@ export const columns: ColumnDef<UserWithRole>[] = [
   },
   {
     accessorKey: "emailVerified",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Verified" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email verified" />
+    ),
     cell: ({ row }) => {
       const verified = row.getValue("emailVerified") as boolean
       return (
-        <Badge
-          variant={verified ? "green-subtle" : "blue-subtle"}
-          className="font-normal"
-        >
-          {verified ? "Verified" : "Pending"}
-        </Badge>
+        <div className="flex items-center pl-4">
+          {verified ? (
+            <div className="flex size-6 items-center justify-center rounded-md bg-emerald-500/15">
+              <CheckIcon className="size-3.5 text-emerald-600" />
+            </div>
+          ) : (
+            <div className="flex size-6 items-center justify-center rounded-md bg-zinc-500/15">
+              <XIcon className="size-3.5 text-zinc-500" />
+            </div>
+          )}
+        </div>
       )
     },
   },
   {
     accessorKey: "role",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Rol" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
     cell: ({ row }) => {
       const role = row.getValue("role") as string
 
-      return <Badge variant="secondary">{role}</Badge>
+      return (
+        <Badge variant="secondary" className="capitalize">
+          {role}
+        </Badge>
+      )
     },
   },
   {
