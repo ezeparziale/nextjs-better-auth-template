@@ -1,3 +1,4 @@
+import { passkey } from "@better-auth/passkey"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import {
@@ -6,7 +7,6 @@ import {
   lastLoginMethod,
   twoFactor,
 } from "better-auth/plugins"
-import { passkey } from "better-auth/plugins/passkey"
 import { db } from "../db"
 import {
   sendNewLoginEmail,
