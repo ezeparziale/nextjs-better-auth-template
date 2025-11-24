@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { PageHeader } from "@/components/page-header"
 import CreateUserButton from "./_components/create-user-button"
+import { ExportUsersButton } from "./_components/export-users-button"
 import { UsersProvider } from "./_components/users-context"
 import UsersTable from "./_components/users-table"
 
@@ -43,7 +44,10 @@ export default async function UsersAdminPage(props: { searchParams: SearchParams
         title={PAGE.title}
         description={PAGE.description}
         divider
-        actions={[<CreateUserButton key="action-create-user" />]}
+        actions={[
+          <ExportUsersButton key="action-export-users" />,
+          <CreateUserButton key="action-create-user" />,
+        ]}
       />
       <UsersProvider>
         <UsersTable initialParams={searchParams} />
