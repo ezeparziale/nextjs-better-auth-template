@@ -89,6 +89,8 @@ export default function BanUnbanUserDialog({
           )
           setIsOpen(false)
           emitUsersRefresh({ resetPagination: false })
+          setReason("")
+          setBanExpiresIn("forever")
         }
       } catch {
         toast.error("Something went wrong")
