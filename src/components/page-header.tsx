@@ -65,7 +65,9 @@ export function PageHeader({
           <p className="text-muted-foreground text-sm">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="shrink-0">{actions}</div> : null}
+      {actions ? (
+        <div className="flex shrink-0 items-center gap-2">{actions}</div>
+      ) : null}
     </div>
   )
 }
