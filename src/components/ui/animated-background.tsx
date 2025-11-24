@@ -81,7 +81,7 @@ export function AnimatedBackground() {
       />
 
       {/* Grid Pattern Overlay */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] bg-center" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] bg-size-[14px_24px]" />
     </div>
   )
 }
