@@ -32,12 +32,7 @@ export function ThemeToggle({ isDropDown = true }: { isDropDown?: boolean }) {
           asChild
           className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            aria-label="Choose a theme"
-          >
+          <Button variant="ghost" size="icon" aria-label="Choose a theme">
             <SunIcon className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
             <MoonIcon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
             <span className="sr-only">Toggle theme</span>
