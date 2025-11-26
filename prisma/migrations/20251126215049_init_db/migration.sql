@@ -16,6 +16,17 @@ CREATE TABLE "users" (
     "ban_expires" TIMESTAMP(3),
     "created_by" TEXT,
     "updated_by" TEXT,
+    "metadata" JSONB,
+    "bio" TEXT,
+    "phone" TEXT,
+    "website_url" TEXT,
+    "linkedin_url" TEXT,
+    "github_url" TEXT,
+    "x_url" TEXT,
+    "job_title" TEXT,
+    "company" TEXT,
+    "department" TEXT,
+    "location" TEXT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -148,13 +159,37 @@ CREATE TABLE "roles_permissions" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
+CREATE INDEX "users_email_idx" ON "users"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
+
+-- CreateIndex
+CREATE INDEX "session_userId_token_idx" ON "session"("userId", "token");
+
+-- CreateIndex
+CREATE INDEX "account_userId_idx" ON "account"("userId");
+
+-- CreateIndex
+CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
+
+-- CreateIndex
+CREATE INDEX "two_factor_secret_idx" ON "two_factor"("secret");
+
+-- CreateIndex
+CREATE INDEX "passkey_user_id_idx" ON "passkey"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "roles_key_key" ON "roles"("key");
 
 -- CreateIndex
+CREATE INDEX "roles_key_idx" ON "roles"("key");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "permissions_key_key" ON "permissions"("key");
+
+-- CreateIndex
+CREATE INDEX "permissions_key_idx" ON "permissions"("key");
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
