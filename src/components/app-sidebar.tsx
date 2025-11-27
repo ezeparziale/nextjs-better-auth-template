@@ -54,11 +54,6 @@ const adminItems = [
     url: "/admin/permissions",
     icon: KeyIcon,
   },
-  {
-    title: "Organizations",
-    url: "/admin/organizations",
-    icon: BuildingIcon,
-  },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
