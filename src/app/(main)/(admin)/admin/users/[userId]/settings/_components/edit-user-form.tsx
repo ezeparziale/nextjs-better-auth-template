@@ -18,16 +18,34 @@ import { Textarea } from "@/components/ui/textarea"
 const editUserSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.email("Invalid email address").min(1, "Email is required"),
-  bio: z.string().max(500).optional(),
-  phone: z.string().max(20).optional(),
-  websiteUrl: z.string().url().optional().or(z.literal("")),
-  linkedinUrl: z.string().url().optional().or(z.literal("")),
-  githubUrl: z.string().url().optional().or(z.literal("")),
-  xUrl: z.string().url().optional().or(z.literal("")),
-  jobTitle: z.string().max(100).optional(),
-  company: z.string().max(100).optional(),
-  department: z.string().max(100).optional(),
-  location: z.string().max(100).optional(),
+  bio: z
+    .string()
+    .max(500, { message: "Bio must be less than 500 characters" })
+    .optional(),
+  phone: z
+    .string()
+    .max(20, { message: "Phone number must be less than 20 characters" })
+    .optional(),
+  websiteUrl: z.url({ message: "Invalid URL" }).optional().or(z.literal("")),
+  linkedinUrl: z.url({ message: "Invalid URL" }).optional().or(z.literal("")),
+  githubUrl: z.url({ message: "Invalid URL" }).optional().or(z.literal("")),
+  xUrl: z.url({ message: "Invalid URL" }).optional().or(z.literal("")),
+  jobTitle: z
+    .string()
+    .max(100, { message: "Job title must be less than 100 characters" })
+    .optional(),
+  company: z
+    .string()
+    .max(100, { message: "Company must be less than 100 characters" })
+    .optional(),
+  department: z
+    .string()
+    .max(100, { message: "Department must be less than 100 characters" })
+    .optional(),
+  location: z
+    .string()
+    .max(100, { message: "Location must be less than 100 characters" })
+    .optional(),
 })
 
 type FormData = z.infer<typeof editUserSchema>
@@ -94,22 +112,7 @@ export default function EditUserForm({ user }: { user: User }) {
         toast.error(error.message || "Failed to update user")
       } else {
         toast.success(`User ${data.email ?? ""} updated successfully`)
-
-        form.reset({
-          name: data.name,
-          email: data.email,
-          bio: data.bio,
-          phone: data.phone,
-          websiteUrl: data.websiteUrl,
-          linkedinUrl: data.linkedinUrl,
-          githubUrl: data.githubUrl,
-          xUrl: data.xUrl,
-          jobTitle: data.jobTitle,
-          company: data.company,
-          department: data.department,
-          location: data.location,
-        })
-
+        form.reset({ ...values })
         router.refresh()
         refetch()
       }
