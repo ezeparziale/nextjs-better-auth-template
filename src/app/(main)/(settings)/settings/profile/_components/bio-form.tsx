@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
-import { authClient, useSession } from "@/lib/auth/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -15,29 +15,23 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { Textarea } from "@/components/ui/textarea"
 
 const schema = z.object({
-  name: z
+  bio: z
     .string()
-    .min(1, { message: "Name is required" })
-    .max(32, { message: "Name must be less than 32 characters" })
-    .regex(/^[a-zA-Z\s'-]+$/, {
-      message: "Name can only contain letters, spaces, hyphens, and apostrophes",
-    })
-    .transform((val) => val.trim()),
+    .max(500, { message: "Bio must be less than 500 characters" })
+    .optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
-export default function NameForm({ name }: { name: string }) {
-  const { refetch } = useSession()
-
+export default function BioForm({ bio }: { bio: string | null | undefined }) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     values: {
-      name,
+      bio: bio ?? "",
     },
     mode: "onChange",
   })
@@ -51,8 +45,7 @@ export default function NameForm({ name }: { name: string }) {
       if (result.error) {
         toast.error(result.error.message)
       } else {
-        toast.success("Name updated successfully.")
-        refetch()
+        toast.success("Bio updated successfully.")
         form.reset({ ...values })
       }
     } catch {
@@ -63,23 +56,23 @@ export default function NameForm({ name }: { name: string }) {
   return (
     <Card className="pb-0">
       <CardHeader>
-        <CardTitle>Name</CardTitle>
-        <CardDescription>Enter your fullname or a display name.</CardDescription>
+        <CardTitle>Bio</CardTitle>
+        <CardDescription>Write a short bio about yourself.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="form-profile-name" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="form-profile-bio" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="name"
+              name="bio"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
-                  <Input
+                  <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
+                  <Textarea
                     {...field}
                     id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    aria-label="Name user"
+                    placeholder="Tell us a little bit about yourself"
+                    className="resize-none"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -92,7 +85,7 @@ export default function NameForm({ name }: { name: string }) {
       <CardFooter className="bg-sidebar flex items-center justify-end rounded-b-xl border-t py-4!">
         <Button
           type="submit"
-          form="form-profile-name"
+          form="form-profile-bio"
           size="sm"
           disabled={isSubmitting || !isDirty}
         >

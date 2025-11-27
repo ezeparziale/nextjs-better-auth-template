@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
-import { authClient, useSession } from "@/lib/auth/auth-client"
+import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,25 +19,19 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 
 const schema = z.object({
-  name: z
+  phone: z
     .string()
-    .min(1, { message: "Name is required" })
-    .max(32, { message: "Name must be less than 32 characters" })
-    .regex(/^[a-zA-Z\s'-]+$/, {
-      message: "Name can only contain letters, spaces, hyphens, and apostrophes",
-    })
-    .transform((val) => val.trim()),
+    .max(20, { message: "Phone number must be less than 20 characters" })
+    .optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
-export default function NameForm({ name }: { name: string }) {
-  const { refetch } = useSession()
-
+export default function PhoneForm({ phone }: { phone: string | null | undefined }) {
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     values: {
-      name,
+      phone: phone ?? "",
     },
     mode: "onChange",
   })
@@ -51,8 +45,7 @@ export default function NameForm({ name }: { name: string }) {
       if (result.error) {
         toast.error(result.error.message)
       } else {
-        toast.success("Name updated successfully.")
-        refetch()
+        toast.success("Phone number updated successfully.")
         form.reset({ ...values })
       }
     } catch {
@@ -63,23 +56,22 @@ export default function NameForm({ name }: { name: string }) {
   return (
     <Card className="pb-0">
       <CardHeader>
-        <CardTitle>Name</CardTitle>
-        <CardDescription>Enter your fullname or a display name.</CardDescription>
+        <CardTitle>Phone</CardTitle>
+        <CardDescription>Add a phone number to your profile.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="form-profile-name" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="form-profile-phone" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
-              name="name"
+              name="phone"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Phone</FieldLabel>
                   <Input
                     {...field}
                     id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    aria-label="Name user"
+                    placeholder="+1 (555) 000-0000"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -92,7 +84,7 @@ export default function NameForm({ name }: { name: string }) {
       <CardFooter className="bg-sidebar flex items-center justify-end rounded-b-xl border-t py-4!">
         <Button
           type="submit"
-          form="form-profile-name"
+          form="form-profile-phone"
           size="sm"
           disabled={isSubmitting || !isDirty}
         >
