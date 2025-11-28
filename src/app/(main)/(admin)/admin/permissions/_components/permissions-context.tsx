@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, use, useState } from "react"
 
 type PermissionsContextType = {
   refreshTrigger: number
@@ -17,14 +17,14 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
   }
 
   return (
-    <PermissionsContext.Provider value={{ refreshTrigger, refreshPermissions }}>
+    <PermissionsContext value={{ refreshTrigger, refreshPermissions }}>
       {children}
-    </PermissionsContext.Provider>
+    </PermissionsContext>
   )
 }
 
 export function usePermissionsContext() {
-  const context = useContext(PermissionsContext)
+  const context = use(PermissionsContext)
   if (!context) {
     throw new Error("usePermissionsContext must be used within PermissionsProvider")
   }

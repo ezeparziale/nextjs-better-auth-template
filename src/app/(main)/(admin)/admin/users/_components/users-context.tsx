@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, use, useState } from "react"
 
 type UsersContextType = {
   refreshTrigger: number
@@ -17,14 +17,12 @@ export function UsersProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <UsersContext.Provider value={{ refreshTrigger, refreshUsers }}>
-      {children}
-    </UsersContext.Provider>
+    <UsersContext value={{ refreshTrigger, refreshUsers }}>{children}</UsersContext>
   )
 }
 
 export function useUsersContext() {
-  const context = useContext(UsersContext)
+  const context = use(UsersContext)
   if (!context) {
     throw new Error("useUsersContext must be used within UsersProvider")
   }

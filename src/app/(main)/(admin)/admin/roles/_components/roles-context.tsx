@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, use, useState } from "react"
 
 type RolesContextType = {
   refreshTrigger: number
@@ -17,14 +17,12 @@ export function RolesProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <RolesContext.Provider value={{ refreshTrigger, refreshRoles }}>
-      {children}
-    </RolesContext.Provider>
+    <RolesContext value={{ refreshTrigger, refreshRoles }}>{children}</RolesContext>
   )
 }
 
 export function useRolesContext() {
-  const context = useContext(RolesContext)
+  const context = use(RolesContext)
   if (!context) {
     throw new Error("useRolesContext must be used within RolesProvider")
   }
