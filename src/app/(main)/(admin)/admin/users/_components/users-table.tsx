@@ -17,6 +17,7 @@ import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
 import { DataTableLoadingRow } from "@/components/ui/data-table/data-table-loading-row"
 import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
+import { useDataTable } from "@/components/ui/data-table/data-table-provider"
 import { DataTableSearch } from "@/components/ui/data-table/data-table-search"
 import { DataTableSearchNotFound } from "@/components/ui/data-table/data-table-search-not-found"
 import { DataTableViewOptions } from "@/components/ui/data-table/data-table-view-options"
@@ -29,7 +30,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { columns } from "./columns"
-import { USERS_EVENTS, UsersRefreshDetail } from "./events"
 
 type QueryParams = {
   searchValue?: string | undefined
@@ -73,8 +73,6 @@ export default function UsersTable({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [refreshKey, setRefreshKey] = useState(0)
-
   const [data, setData] = useState<UserWithRole[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -108,20 +106,13 @@ export default function UsersTable({
     setPagination((prev) => ({ ...prev, pageIndex: 0 }))
   }
 
+  const { refreshKey, shouldResetPagination } = useDataTable()
+
   useEffect(() => {
-    const handleRefresh = (event: Event) => {
-      const customEvent = event as CustomEvent<UsersRefreshDetail>
-
-      if (customEvent.detail?.resetPagination) {
-        setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-      }
-
-      setRefreshKey((prev) => prev + 1)
+    if (shouldResetPagination > 0) {
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
     }
-
-    window.addEventListener(USERS_EVENTS.REFRESH, handleRefresh)
-    return () => window.removeEventListener(USERS_EVENTS.REFRESH, handleRefresh)
-  }, [])
+  }, [shouldResetPagination])
 
   useEffect(() => {
     const fetchData = async () => {

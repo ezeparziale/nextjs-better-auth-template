@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
+import { useDataTable } from "@/components/ui/data-table/data-table-provider"
 import {
   Dialog,
   DialogClose,
@@ -17,7 +18,6 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { emitUsersRefresh } from "./events"
 
 export default function DeleteUserDialog({
   userId,
@@ -33,6 +33,7 @@ export default function DeleteUserDialog({
   goToTableAfterDelete?: boolean
 }) {
   const router = useRouter()
+  const { refreshTable } = useDataTable()
 
   const formSchema = z.object({
     confirmString: z.literal(userEmail, {
@@ -65,7 +66,7 @@ export default function DeleteUserDialog({
           router.push("/admin/users")
           return
         }
-        emitUsersRefresh()
+        refreshTable({ resetPagination: true })
       }
     } catch {
       toast.error("Something went wrong")

@@ -2,10 +2,10 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { DataTableProvider } from "@/components/ui/data-table/data-table-provider"
 import { PageHeader } from "@/components/page-header"
 import CreateUserButton from "./_components/create-user-button"
 import { ExportUsersButton } from "./_components/export-users-button"
-import { UsersProvider } from "./_components/users-context"
 import UsersTable from "./_components/users-table"
 
 const PAGE = {
@@ -49,9 +49,9 @@ export default async function UsersAdminPage(props: { searchParams: SearchParams
           <CreateUserButton key="action-create-user" />,
         ]}
       />
-      <UsersProvider>
+      <DataTableProvider>
         <UsersTable initialParams={searchParams} />
-      </UsersProvider>
+      </DataTableProvider>
     </div>
   )
 }

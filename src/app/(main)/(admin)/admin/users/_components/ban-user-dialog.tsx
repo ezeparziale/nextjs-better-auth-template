@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
+import { useDataTable } from "@/components/ui/data-table/data-table-provider"
 import {
   Dialog,
   DialogClose,
@@ -23,7 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
-import { emitUsersRefresh } from "./events"
 
 interface BanUnbanUserDialogProps {
   userId: string
@@ -56,6 +56,7 @@ export default function BanUnbanUserDialog({
   isOpen,
   setIsOpen,
 }: BanUnbanUserDialogProps) {
+  const { refreshTable } = useDataTable()
   const [isPending, startTransition] = useTransition()
   const [reason, setReason] = useState("")
   const [banExpiresIn, setBanExpiresIn] = useState<BanDurationOption>("forever")
@@ -88,7 +89,7 @@ export default function BanUnbanUserDialog({
             `User ${userEmail} ${isBanned ? "unbanned" : "banned"} successfully!`,
           )
           setIsOpen(false)
-          emitUsersRefresh({ resetPagination: false })
+          refreshTable({ resetPagination: false })
           setReason("")
           setBanExpiresIn("forever")
         }

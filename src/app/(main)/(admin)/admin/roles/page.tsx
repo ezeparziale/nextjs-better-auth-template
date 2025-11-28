@@ -2,9 +2,9 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { DataTableProvider } from "@/components/ui/data-table/data-table-provider"
 import { PageHeader } from "@/components/page-header"
 import CreateRoleButton from "./_components/create-role-button"
-import { RolesProvider } from "./_components/roles-context"
 import RolesTable from "./_components/roles-table"
 
 const PAGE = {
@@ -44,9 +44,9 @@ export default async function RolesPage(props: { searchParams: SearchParams }) {
         actions={[<CreateRoleButton key="action-create-role" />]}
         mobileActionsBelow={false}
       />
-      <RolesProvider>
+      <DataTableProvider>
         <RolesTable initialParams={searchParams} />
-      </RolesProvider>
+      </DataTableProvider>
     </div>
   )
 }

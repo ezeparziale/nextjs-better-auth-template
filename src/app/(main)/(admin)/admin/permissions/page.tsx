@@ -2,9 +2,9 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { DataTableProvider } from "@/components/ui/data-table/data-table-provider"
 import { PageHeader } from "@/components/page-header"
 import CreatePermissionButton from "./_components/create-permission-button"
-import { PermissionsProvider } from "./_components/permissions-context"
 import PermissionsTable from "./_components/permissions-table"
 
 const PAGE = {
@@ -44,9 +44,9 @@ export default async function PermissionsPage(props: { searchParams: SearchParam
         actions={[<CreatePermissionButton key="action-create-permission" />]}
         mobileActionsBelow={false}
       />
-      <PermissionsProvider>
+      <DataTableProvider>
         <PermissionsTable initialParams={searchParams} />
-      </PermissionsProvider>
+      </DataTableProvider>
     </div>
   )
 }

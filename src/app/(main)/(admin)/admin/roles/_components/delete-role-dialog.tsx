@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
+import { useDataTable } from "@/components/ui/data-table/data-table-provider"
 import {
   Dialog,
   DialogClose,
@@ -17,7 +18,6 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { emitRolesRefresh } from "./events"
 
 export default function DeleteRoleDialog({
   roleId,
@@ -33,6 +33,7 @@ export default function DeleteRoleDialog({
   goToTableAfterDelete?: boolean
 }) {
   const router = useRouter()
+  const { refreshTable } = useDataTable()
   const formSchema = z.object({
     confirmString: z.literal(roleKey, {
       error: "Incorrect role key",
@@ -64,7 +65,7 @@ export default function DeleteRoleDialog({
           router.push("/admin/roles")
           return
         }
-        emitRolesRefresh()
+        refreshTable({ resetPagination: true })
       }
     } catch {
       toast.error("Something went wrong")
