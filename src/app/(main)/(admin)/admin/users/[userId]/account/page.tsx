@@ -48,7 +48,7 @@ export default async function AccountUserAdminPage(props: { params: Params }) {
       />
       <BanUserCard
         userId={user.id}
-        isBanned={user.banned}
+        isBanned={!!user.banned}
         email={user.email}
         banReason={user.banReason}
         banExpires={user.banExpires}
