@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
-import { useDataTable } from "@/components/ui/data-table/data-table-provider"
+import { useDataTable } from "@/components/ui/data-table"
 import {
   Dialog,
   DialogClose,

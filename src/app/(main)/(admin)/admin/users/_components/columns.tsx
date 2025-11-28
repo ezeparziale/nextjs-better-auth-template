@@ -5,7 +5,7 @@ import { UserWithRole } from "better-auth/plugins/admin"
 import { CheckIcon, XIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { DataTableColumnHeader } from "@/components/ui/data-table"
 import { DateDescription } from "@/components/date-description"
 import CellActions from "./cell-actions"
 

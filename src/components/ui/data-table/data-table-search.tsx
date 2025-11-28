@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState } from "react"
 import { Search, X } from "lucide-react"
 import { useDebouncedCallback } from "use-debounce"

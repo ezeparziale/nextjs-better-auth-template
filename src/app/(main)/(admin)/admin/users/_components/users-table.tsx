@@ -13,14 +13,16 @@ import {
 import { UserWithRole } from "better-auth/plugins/admin"
 import { UserIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
-import { DataTableLoading } from "@/components/ui/data-table/data-table-loading"
-import { DataTableLoadingRow } from "@/components/ui/data-table/data-table-loading-row"
-import { DataTableNoData } from "@/components/ui/data-table/data-table-no-data"
-import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
-import { useDataTable } from "@/components/ui/data-table/data-table-provider"
-import { DataTableSearch } from "@/components/ui/data-table/data-table-search"
-import { DataTableSearchNotFound } from "@/components/ui/data-table/data-table-search-not-found"
-import { DataTableViewOptions } from "@/components/ui/data-table/data-table-view-options"
+import {
+  DataTableLoading,
+  DataTableLoadingRow,
+  DataTableNoData,
+  DataTablePagination,
+  DataTableSearch,
+  DataTableSearchNotFound,
+  DataTableViewOptions,
+  useDataTable,
+} from "@/components/ui/data-table"
 import {
   Table,
   TableBody,

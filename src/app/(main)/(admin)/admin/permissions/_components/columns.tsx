@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Permission } from "@/lib/auth/rbac-plugin"
 import { Badge } from "@/components/ui/badge"
-import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { DataTableColumnHeader } from "@/components/ui/data-table"
 import { DateDescription } from "@/components/date-description"
 import CellActions from "./cell-actions"
 
