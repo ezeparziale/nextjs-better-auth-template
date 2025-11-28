@@ -112,6 +112,7 @@ model TwoFactor {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([secret])
+  @@index([userId])
   @@map("two_factor")
 }
 
@@ -131,6 +132,7 @@ model Passkey {
   aaguid       String?
 
   @@index([userId])
+  @@index([credentialID])
   @@map("passkey")
 }
 
