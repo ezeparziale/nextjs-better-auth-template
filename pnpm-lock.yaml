@@ -112,6 +112,9 @@ importers:
       nodemailer:
         specifier: 7.0.9
         version: 7.0.9
+      pg:
+        specifier: 8.16.3
+        version: 8.16.3
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -164,6 +167,9 @@ importers:
       "@types/nodemailer":
         specifier: 7.0.2
         version: 7.0.2
+      "@types/pg":
+        specifier: 8.15.6
+        version: 8.15.6
       "@types/react":
         specifier: 19.2.2
         version: 19.2.2
@@ -3127,6 +3133,12 @@ packages:
     resolution:
       {
         integrity: sha512-Zo6uOA9157WRgBk/ZhMpTQ/iCWLMk7OIs/Q9jvHarMvrzUUP/MDdPHL2U1zpf57HrrWGv4nYQn5uIxna0xY3xw==,
+      }
+
+  "@types/pg@8.15.6":
+    resolution:
+      {
+        integrity: sha512-NoaMtzhxOrubeL/7UZuNTrejB4MPAJ0RpxZqXQf2qXuVlTPuG6Y8p4u9dKRaue4yjmC7ZhzVO2/Yyyn25znrPQ==,
       }
 
   "@types/react-dom@19.2.2":
@@ -9752,6 +9764,12 @@ snapshots:
       "@types/node": 22.18.12
     transitivePeerDependencies:
       - aws-crt
+
+  "@types/pg@8.15.6":
+    dependencies:
+      "@types/node": 22.18.12
+      pg-protocol: 1.10.3
+      pg-types: 2.2.0
 
   "@types/react-dom@19.2.2(@types/react@19.2.2)":
     dependencies:
