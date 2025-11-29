@@ -1,4 +1,9 @@
-import { BASE_ERROR_CODES, type BetterAuthPlugin, type Session } from "better-auth"
+import {
+  BASE_ERROR_CODES,
+  Where,
+  type BetterAuthPlugin,
+  type Session,
+} from "better-auth"
 import {
   APIError,
   createAuthEndpoint,
@@ -530,6 +535,216 @@ export const adminPlusPlugin = () => {
           await ctx.context.internalAdapter.deleteSessions(user.id)
 
           return ctx.json({ success: true })
+        },
+      ),
+      listUsersAdvanced: createAuthEndpoint(
+        "/admin-plus/list-users",
+        {
+          method: "GET",
+          use: [adminPlusMiddleware],
+          query: z.object({
+            searchValue: z.string().optional().meta({
+              description: 'The value to search for. Eg: "some name"',
+            }),
+            searchField: z
+              .enum(["email", "name"])
+              .meta({
+                description:
+                  'The field to search in, defaults to email. Can be `email` or `name`. Eg: "name"',
+              })
+              .optional(),
+            searchOperator: z
+              .enum(["contains", "starts_with", "ends_with"])
+              .meta({
+                description:
+                  'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
+              })
+              .optional(),
+            limit: z
+              .string()
+              .meta({
+                description: "The number of users to return",
+              })
+              .or(z.number())
+              .optional(),
+            offset: z
+              .string()
+              .meta({
+                description: "The offset to start from",
+              })
+              .or(z.number())
+              .optional(),
+            sortBy: z
+              .string()
+              .meta({
+                description: "The field to sort by",
+              })
+              .optional(),
+            sortDirection: z
+              .enum(["asc", "desc"])
+              .meta({
+                description: "The direction to sort by",
+              })
+              .optional(),
+            filters: z
+              .string()
+              .meta({
+                description: "A JSON string representing an array of filters.",
+              })
+              .optional(),
+          }),
+          metadata: {
+            openapi: {
+              operationId: "listUsersAdvanced",
+              summary: "List users",
+              description: "List users",
+              responses: {
+                200: {
+                  description: "List of users",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          users: {
+                            type: "array",
+                            items: {
+                              $ref: "#/components/schemas/User",
+                            },
+                          },
+                          total: {
+                            type: "number",
+                          },
+                          limit: {
+                            type: "number",
+                          },
+                          offset: {
+                            type: "number",
+                          },
+                        },
+                        required: ["users", "total"],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        async (ctx) => {
+          const session = ctx.context.session
+
+          ensureUserIsAdmin(session)
+
+          const where: Where[] = []
+
+          if (ctx.query?.searchValue) {
+            where.push({
+              field: ctx.query.searchField || "email",
+              operator: ctx.query.searchOperator || "contains",
+              value: ctx.query.searchValue,
+            })
+          }
+
+          if (ctx.query.filters) {
+            try {
+              const filters = JSON.parse(ctx.query.filters) as Where[]
+              for (const filter of filters) {
+                let filterValue = filter.value as
+                  | string
+                  | number
+                  | boolean
+                  | string[]
+                  | number[]
+                  | boolean[]
+                  | undefined
+
+                if (filter.operator === "in") {
+                  try {
+                    if (typeof filterValue === "string") {
+                      if (filterValue.startsWith("[")) {
+                        filterValue = JSON.parse(filterValue)
+                      } else {
+                        filterValue = filterValue.split(",").map((v) => v.trim())
+                      }
+                    }
+                  } catch {
+                    if (typeof filterValue === "string") {
+                      filterValue = filterValue.split(",").map((v) => v.trim())
+                    }
+                  }
+                  if (!Array.isArray(filterValue)) {
+                    throw new APIError("BAD_REQUEST", {
+                      message: "Value must be an array",
+                    })
+                  }
+                  const boolValues: boolean[] = []
+                  let isAllBooleans = true
+                  for (const v of filterValue) {
+                    if (v === "true" || v === true) {
+                      boolValues.push(true)
+                    } else if (v === "false" || v === false) {
+                      boolValues.push(false)
+                    } else {
+                      isAllBooleans = false
+                      break
+                    }
+                  }
+
+                  if (isAllBooleans) {
+                    if (boolValues.includes(true) && boolValues.includes(false)) {
+                      continue
+                    }
+                    filterValue = boolValues
+                  }
+                } else if (filterValue === "true") {
+                  filterValue = true
+                } else if (filterValue === "false") {
+                  filterValue = false
+                }
+
+                if (filterValue !== undefined) {
+                  where.push({
+                    field: filter.field,
+                    operator: filter.operator || "eq",
+                    value: filterValue as unknown as string[],
+                  })
+                }
+              }
+            } catch {
+              throw new APIError("BAD_REQUEST", {
+                message: "Invalid filters format",
+              })
+            }
+          }
+
+          try {
+            const users = await ctx.context.internalAdapter.listUsers(
+              Number(ctx.query?.limit) || undefined,
+              Number(ctx.query?.offset) || undefined,
+              ctx.query?.sortBy
+                ? {
+                    field: ctx.query.sortBy,
+                    direction: ctx.query.sortDirection || "asc",
+                  }
+                : undefined,
+              where.length ? where : undefined,
+            )
+            const total = await ctx.context.internalAdapter.countTotalUsers(
+              where.length ? where : undefined,
+            )
+            return ctx.json({
+              users: users as UserWithRole[],
+              total: total,
+              limit: Number(ctx.query?.limit) || undefined,
+              offset: Number(ctx.query?.offset) || undefined,
+            })
+          } catch {
+            return ctx.json({
+              users: [],
+              total: 0,
+            })
+          }
         },
       ),
     },
