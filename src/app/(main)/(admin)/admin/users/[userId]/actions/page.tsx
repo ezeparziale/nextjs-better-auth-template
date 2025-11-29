@@ -33,7 +33,7 @@ export default async function ActionsUserAdminPage(props: { params: Params }) {
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const { hasCredentialAccount } = await auth.api.userHasCredentialAccount({
     body: { userId },

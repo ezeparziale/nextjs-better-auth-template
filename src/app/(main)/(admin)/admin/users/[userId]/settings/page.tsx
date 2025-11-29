@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 type Params = Promise<{ userId: string }>
 
-export default async function NewUserAdminPage(props: { params: Params }) {
+export default async function SettingsUserAdminPage(props: { params: Params }) {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
@@ -30,7 +30,7 @@ export default async function NewUserAdminPage(props: { params: Params }) {
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const user = await getUser(userId)
 

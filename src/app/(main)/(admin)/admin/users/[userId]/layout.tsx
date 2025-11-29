@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
 import { getUser } from "@/data/auth/get-user"
 import { DataTableProvider } from "@/components/ui/data-table"
@@ -52,15 +51,15 @@ export default async function UserLayout({
 
   const user = await getUser(userId)
 
-  if (!user) return notFound()
-
   return (
     <div className="space-y-6">
       <DataTableProvider>
         <PageHeader
-          title={`Edit ${user.email}`}
-          description={`ID: ${user.id}`}
-          actions={<DeleteUserButton userId={user.id} userEmail={user.email} />}
+          title={`Edit ${user?.email}`}
+          description={`ID: ${user?.id}`}
+          actions={
+            <DeleteUserButton userId={user?.id ?? ""} userEmail={user?.email ?? ""} />
+          }
           divider
           backLink="/admin/users"
         />

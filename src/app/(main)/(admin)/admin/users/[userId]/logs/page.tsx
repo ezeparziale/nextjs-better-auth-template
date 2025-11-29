@@ -25,13 +25,12 @@ export default async function LogsUserAdminPage(props: { params: Params }) {
     headers: await headers(),
   })
 
-  const params = await props.params
-  const userId = params.userId
+  const { userId } = await props.params
 
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const user = await getUser(userId)
 
