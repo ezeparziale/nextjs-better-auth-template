@@ -22,14 +22,14 @@ const errorTypes: { [key: string]: { message: string; svg?: React.FC } } = {
   default: { message: "Something went wrong!", svg: CrashedError },
 }
 
-type SearchParams = Promise<{ error: string; error_description: string }>
+type SearchParams = { error?: string; error_description?: string }
 
 export default async function ErrorPage(props: { searchParams: SearchParams }) {
   const searchParams = await props.searchParams
 
   const { error: errorParam, error_description } = searchParams
   const errorMessage =
-    errorParam && errorTypes[errorParam] ? errorTypes[errorParam] : errorTypes.Default
+    errorParam && errorTypes[errorParam] ? errorTypes[errorParam] : errorTypes.default
 
   const ErrorSvg = errorMessage.svg
 
