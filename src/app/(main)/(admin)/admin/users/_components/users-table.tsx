@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
@@ -11,9 +12,11 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
-import { UserIcon } from "lucide-react"
+import { UserIcon, XIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
+import { Button } from "@/components/ui/button"
 import {
+  DataTableFacetedFilter,
   DataTableLoading,
   DataTableLoadingRow,
   DataTableNoData,
@@ -41,9 +44,7 @@ type QueryParams = {
   offset?: string | number | undefined
   sortBy?: string | undefined
   sortDirection?: "asc" | "desc" | undefined
-  filterField?: string | undefined
-  filterValue?: string | number | boolean | undefined
-  filterOperator?: "contains" | "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | undefined
+  filters?: string | undefined
 }
 
 type InitialParams = {
@@ -52,6 +53,7 @@ type InitialParams = {
   search?: string
   sortBy?: string
   sortDirection?: "asc" | "desc"
+  [key: string]: string | undefined
 }
 
 const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
@@ -66,6 +68,8 @@ const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
   updatedBy: false,
 }
 
+const RESERVED_PARAMS = ["page", "pageSize", "search", "sortBy", "sortDirection"]
+
 export default function UsersTable({
   initialParams,
 }: {
@@ -79,6 +83,18 @@ export default function UsersTable({
   const [loading, setLoading] = useState(true)
 
   const [searchInput, setSearchInput] = useState(initialParams.search || "")
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    const filters: ColumnFiltersState = []
+    Object.entries(initialParams).forEach(([key, value]) => {
+      if (!RESERVED_PARAMS.includes(key) && value) {
+        filters.push({
+          id: key,
+          value: value.split(","),
+        })
+      }
+    })
+    return filters
+  })
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (initialParams.sortBy) {
       return [
@@ -131,12 +147,29 @@ export default function UsersTable({
           queryParams.searchOperator = "contains"
         }
 
+        if (columnFilters.length > 0) {
+          const filters = columnFilters
+            .map((filter) => {
+              const value = filter.value as string[]
+              if (value.length === 0) return null
+              return {
+                field: filter.id,
+                operator: value.length > 1 ? "in" : "eq",
+                value: value.length > 1 ? value : value[0],
+              }
+            })
+            .filter(Boolean)
+          if (filters.length > 0) {
+            queryParams.filters = JSON.stringify(filters)
+          }
+        }
+
         if (sorting.length > 0) {
           queryParams.sortBy = sorting[0].id
           queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
         }
 
-        const { data, error } = await authClient.admin.listUsers({
+        const { data, error } = await authClient.adminPlus.listUsers({
           query: queryParams,
         })
 
@@ -154,13 +187,28 @@ export default function UsersTable({
       }
     }
     fetchData()
-  }, [pagination.pageIndex, pagination.pageSize, searchInput, sorting, refreshKey])
+  }, [
+    pagination.pageIndex,
+    pagination.pageSize,
+    searchInput,
+    sorting,
+    refreshKey,
+    columnFilters,
+  ])
 
   useEffect(() => {
     const params = new URLSearchParams()
 
     if (searchInput) {
       params.set("search", searchInput)
+    }
+
+    if (columnFilters.length > 0) {
+      columnFilters.forEach((filter) => {
+        if (Array.isArray(filter.value) && filter.value.length > 0) {
+          params.set(filter.id, filter.value.join(","))
+        }
+      })
     }
 
     if (pagination.pageIndex > 0) {
@@ -183,6 +231,7 @@ export default function UsersTable({
     }
   }, [
     searchInput,
+    columnFilters,
     pagination.pageIndex,
     pagination.pageSize,
     sorting,
@@ -199,16 +248,21 @@ export default function UsersTable({
       pagination,
       sorting,
       columnVisibility,
+      columnFilters,
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
     manualSorting: true,
     autoResetPageIndex: false,
+    manualFiltering: true,
   })
+
+  const isFiltered = table.getState().columnFilters.length > 0
 
   if (loading && data.length === 0) {
     return <DataTableLoading table={table} rowCount={pagination.pageSize} />
@@ -216,13 +270,55 @@ export default function UsersTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-1 flex-wrap items-center gap-2">
         <DataTableSearch
           value={searchInput}
           onChange={handleSearchChange}
           onClear={handleClearSearch}
           placeholder="Search email…"
         />
+        {table.getColumn("banned") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("banned")}
+            title="Status"
+            options={[
+              { label: "Banned", value: "true" },
+              { label: "Active", value: "false" },
+            ]}
+          />
+        )}
+        {table.getColumn("emailVerified") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("emailVerified")}
+            title="Email"
+            options={[
+              {
+                label: "Verified",
+                value: "true",
+              },
+              {
+                label: "Unverified",
+                value: "false",
+              },
+            ]}
+          />
+        )}
+        {table.getColumn("role") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("role")}
+            title="Role"
+            options={[
+              { label: "Admin", value: "admin" },
+              { label: "User", value: "user" },
+            ]}
+          />
+        )}
+        {isFiltered && (
+          <Button variant="ghost" size="sm" onClick={() => table.resetColumnFilters()}>
+            Reset
+            <XIcon />
+          </Button>
+        )}
         <DataTableViewOptions table={table} />
       </div>
       <div className="rounded-md border">
