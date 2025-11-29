@@ -48,7 +48,7 @@ export function DataTableSearch({
   }
 
   return (
-    <InputGroup className="max-w-sm flex-1">
+    <InputGroup className="h-8 max-w-sm min-w-[150px] flex-1 lg:w-[250px]">
       <InputGroupAddon align="inline-start" className="cursor-default">
         <Search className="text-muted-foreground size-4" />
       </InputGroupAddon>
