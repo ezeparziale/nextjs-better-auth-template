@@ -142,15 +142,19 @@ export default function UserSessionsList({
             </TableHeader>
             <TableBody>
               {sessions.length === 0 && (
-                <Empty className="my-4 w-full border border-dashed">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <MonitorIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>No sessions found</EmptyTitle>
-                    <EmptyDescription>User has no sessions.</EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
+                <TableRow>
+                  <TableCell colSpan={3} className="h-24 text-center">
+                    <Empty className="my-4 w-full border border-dashed">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <MonitorIcon />
+                        </EmptyMedia>
+                        <EmptyTitle>No sessions found</EmptyTitle>
+                        <EmptyDescription>User has no sessions.</EmptyDescription>
+                      </EmptyHeader>
+                    </Empty>
+                  </TableCell>
+                </TableRow>
               )}
               {sessions.map((session) => (
                 <TableRow key={session.id}>

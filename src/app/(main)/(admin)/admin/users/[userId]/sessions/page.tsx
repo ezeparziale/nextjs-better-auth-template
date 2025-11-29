@@ -3,7 +3,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { PageHeader } from "@/components/page-header"
-import UserSessionsList from "../_components/user-sessions-list"
+import UserSessionsList from "./_components/user-sessions-list"
 
 const PAGE = {
   title: "User sessions",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 type Params = Promise<{ userId: string }>
 
-export default async function NewUserAdminPage(props: { params: Params }) {
+export default async function SessionsUserAdminPage(props: { params: Params }) {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
@@ -29,7 +29,7 @@ export default async function NewUserAdminPage(props: { params: Params }) {
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const { sessions } = await auth.api.listUserSessions({
     body: {
