@@ -1,6 +1,6 @@
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/generated/prisma/client"
 import { auth } from "@/lib/auth/auth"
 import { db } from "@/lib/db"
 
