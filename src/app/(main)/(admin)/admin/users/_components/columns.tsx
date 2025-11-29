@@ -35,6 +35,7 @@ export const columns: ColumnDef<UserWithRole>[] = [
   {
     accessorKey: "email",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
+    enableHiding: false,
   },
   {
     accessorKey: "emailVerified",
@@ -56,6 +57,9 @@ export const columns: ColumnDef<UserWithRole>[] = [
           )}
         </div>
       )
+    },
+    meta: {
+      displayName: "Email Verified",
     },
   },
   {
@@ -82,6 +86,9 @@ export const columns: ColumnDef<UserWithRole>[] = [
         </Badge>
       )
     },
+    meta: {
+      displayName: "Status",
+    },
   },
   {
     accessorKey: "createdAt",
@@ -91,6 +98,9 @@ export const columns: ColumnDef<UserWithRole>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
       return <DateDescription date={date} />
+    },
+    meta: {
+      displayName: "Created at",
     },
   },
   {
@@ -102,18 +112,27 @@ export const columns: ColumnDef<UserWithRole>[] = [
       const date = new Date(row.getValue("updatedAt"))
       return <DateDescription date={date} />
     },
+    meta: {
+      displayName: "Updated at",
+    },
   },
   {
     accessorKey: "createdBy",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created By" />
     ),
+    meta: {
+      displayName: "Created By",
+    },
   },
   {
     accessorKey: "updatedBy",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated By" />
     ),
+    meta: {
+      displayName: "Updated By",
+    },
   },
   {
     id: "actions",
