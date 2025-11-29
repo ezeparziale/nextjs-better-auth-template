@@ -1,5 +1,7 @@
+import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
+import { auth } from "@/lib/auth/auth"
 import { getPermission } from "@/data/auth/get-permission"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
@@ -34,24 +36,28 @@ export default async function PermissionAdminLayout({
   children: React.ReactNode
   params: Params
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
   const permissionId = (await params).permissionId
 
   const sidebarNavItems = getSideBarNavItems(permissionId)
 
   const permission = await getPermission(permissionId)
 
-  if (!permission) return notFound()
+  if (session && !permission) return notFound()
 
   return (
     <div className="space-y-6">
       <DataTableProvider>
         <PageHeader
-          title={`Edit ${permission.name}`}
-          description={`ID: ${permission.id}`}
+          title={`Edit ${permission?.name}`}
+          description={`ID: ${permission?.id}`}
           actions={
             <DeletePermissionButton
-              permissionId={permission.id}
-              permissionKey={permission.key}
+              permissionId={permission?.id ?? ""}
+              permissionKey={permission?.key ?? ""}
             />
           }
           divider

@@ -1,5 +1,7 @@
+import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
+import { auth } from "@/lib/auth/auth"
 import { getRole } from "@/data/auth/get-role"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
@@ -31,21 +33,27 @@ export default async function RoleAdminLayout({
   children: React.ReactNode
   params: Params
 }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
   const roleId = (await params).roleId
 
   const sidebarNavItems = getSideBarNavItems(roleId)
 
   const role = await getRole(roleId)
 
-  if (!role) return notFound()
+  if (session && !role) return notFound()
 
   return (
     <div className="space-y-6">
       <DataTableProvider>
         <PageHeader
-          title={`Edit ${role.name}`}
-          description={`ID: ${role.id}`}
-          actions={<DeleteRoleButton roleId={role.id} roleKey={role.key} />}
+          title={`Edit ${role?.name}`}
+          description={`ID: ${role?.id}`}
+          actions={
+            <DeleteRoleButton roleId={role?.id ?? ""} roleKey={role?.key ?? ""} />
+          }
           divider
           backLink="/admin/roles"
         />
