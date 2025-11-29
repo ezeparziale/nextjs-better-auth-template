@@ -167,22 +167,37 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
                   </Tooltip>
                 </div>
               </div>
-              <Textarea
-                {...field}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                placeholder="Enter JSON metadata here"
-                autoFocus
-                disabled={isSubmitting}
-                rows={20}
-                className="font-mono"
-                onPaste={handlePaste}
-              />
+              <div className="bg-background relative flex w-full rounded-lg border">
+                <div
+                  className="text-muted-foreground bg-muted/40 flex min-w-10 flex-col items-end border-r px-3 py-2 text-xs select-none"
+                  aria-hidden="true"
+                >
+                  {Array.from(
+                    { length: field.value.split("\n").length },
+                    (_, i) => i + 1,
+                  ).map((n) => (
+                    <div key={n} className="leading-5">
+                      {n}
+                    </div>
+                  ))}
+                </div>
+                <Textarea
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Enter JSON metadata here"
+                  autoFocus
+                  disabled={isSubmitting}
+                  rows={20}
+                  className="flex-1 resize-none rounded-l-none border-0 bg-transparent p-3 font-mono leading-5"
+                  onPaste={handlePaste}
+                />
+              </div>
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-        <div>
+        <div className="flex flex-col gap-4">
           <Button
             type="submit"
             form="form-metadata"
@@ -192,6 +207,16 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
           >
             {isSubmitting && <Spinner />}
             Save
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={isSubmitting || !isDirty}
+            className="w-full md:w-1/5"
+            onClick={() => form.reset()}
+            variant="ghost"
+          >
+            Reset
           </Button>
         </div>
       </FieldGroup>
