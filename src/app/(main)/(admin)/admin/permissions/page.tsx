@@ -26,12 +26,16 @@ type SearchParams = Promise<{
   sortDirection?: "asc" | "desc"
 }>
 
-export default async function PermissionsPage(props: { searchParams: SearchParams }) {
+export default async function PermissionsAdminPage(props: {
+  searchParams: SearchParams
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
+
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const searchParams = await props.searchParams
 

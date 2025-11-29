@@ -38,7 +38,7 @@ const getSideBarNavItems = (id: string): NavItem[] => {
 
 type Params = Promise<{ userId: string }>
 
-export default async function UserLayout({
+export default async function UserAdminLayout({
   children,
   params,
 }: {

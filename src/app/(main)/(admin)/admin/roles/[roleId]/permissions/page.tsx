@@ -29,7 +29,7 @@ export default async function PermissionsRoleAdminPage(props: { params: Params }
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${roleId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const { options: permissionsOptions } = await auth.api.getPermissionsOptions({
     query: {},

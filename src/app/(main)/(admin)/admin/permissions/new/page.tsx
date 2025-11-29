@@ -23,7 +23,7 @@ export default async function NewPermissionAdminPage() {
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   return (
     <div className="space-y-6">

@@ -30,7 +30,7 @@ export default async function LogsPermissionAdminPage(props: { params: Params })
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${permissionId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const permission = await getPermission(permissionId)
 

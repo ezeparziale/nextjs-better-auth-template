@@ -30,7 +30,7 @@ export default async function SettingsRoleAdminPage(props: { params: Params }) {
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${roleId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
   const role = await getRole(roleId)
 

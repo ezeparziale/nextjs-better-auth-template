@@ -24,7 +24,7 @@ const getSideBarNavItems = (id: string): NavItem[] => {
 
 type Params = Promise<{ roleId: string }>
 
-export default async function RolesLayout({
+export default async function RoleAdminLayout({
   children,
   params,
 }: {
