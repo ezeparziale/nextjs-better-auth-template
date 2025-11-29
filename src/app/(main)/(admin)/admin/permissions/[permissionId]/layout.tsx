@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
 import { getPermission } from "@/data/auth/get-permission"
+import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
 import DeletePermissionButton from "../_components/delete-permission-button"
@@ -43,22 +44,24 @@ export default async function UserLayout({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`Edit ${permission.name}`}
-        description={`ID: ${permission.id}`}
-        actions={
-          <DeletePermissionButton
-            permissionId={permission.id}
-            permissionKey={permission.key}
-          />
-        }
-        divider
-        backLink="/admin/permissions"
-      />
-      <div className="flex flex-col gap-6 md:flex-row">
-        <SidebarNav items={sidebarNavItems} />
-        <div className="flex-1">{children}</div>
-      </div>
+      <DataTableProvider>
+        <PageHeader
+          title={`Edit ${permission.name}`}
+          description={`ID: ${permission.id}`}
+          actions={
+            <DeletePermissionButton
+              permissionId={permission.id}
+              permissionKey={permission.key}
+            />
+          }
+          divider
+          backLink="/admin/permissions"
+        />
+        <div className="flex flex-col gap-6 md:flex-row">
+          <SidebarNav items={sidebarNavItems} />
+          <div className="flex-1">{children}</div>
+        </div>
+      </DataTableProvider>
     </div>
   )
 }

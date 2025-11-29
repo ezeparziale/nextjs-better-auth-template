@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
 import { getUser } from "@/data/auth/get-user"
+import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
 import DeleteUserButton from "../_components/delete-user-button"
@@ -55,17 +56,19 @@ export default async function UserLayout({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`Edit ${user.email}`}
-        description={`ID: ${user.id}`}
-        actions={<DeleteUserButton userId={user.id} userEmail={user.email} />}
-        divider
-        backLink="/admin/users"
-      />
-      <div className="flex flex-col gap-6 md:flex-row">
-        <SidebarNav items={sidebarNavItems} />
-        <div className="flex-1">{children}</div>
-      </div>
+      <DataTableProvider>
+        <PageHeader
+          title={`Edit ${user.email}`}
+          description={`ID: ${user.id}`}
+          actions={<DeleteUserButton userId={user.id} userEmail={user.email} />}
+          divider
+          backLink="/admin/users"
+        />
+        <div className="flex flex-col gap-6 md:flex-row">
+          <SidebarNav items={sidebarNavItems} />
+          <div className="flex-1">{children}</div>
+        </div>
+      </DataTableProvider>
     </div>
   )
 }

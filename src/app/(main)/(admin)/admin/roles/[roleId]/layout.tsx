@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
 import { getRole } from "@/data/auth/get-role"
+import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
 import DeleteRoleButton from "../_components/delete-role-button"
@@ -40,17 +41,19 @@ export default async function RolesLayout({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`Edit ${role.name}`}
-        description={`ID: ${role.id}`}
-        actions={<DeleteRoleButton roleId={role.id} roleKey={role.key} />}
-        divider
-        backLink="/admin/roles"
-      />
-      <div className="flex flex-col gap-6 md:flex-row">
-        <SidebarNav items={sidebarNavItems} />
-        <div className="flex-1">{children}</div>
-      </div>
+      <DataTableProvider>
+        <PageHeader
+          title={`Edit ${role.name}`}
+          description={`ID: ${role.id}`}
+          actions={<DeleteRoleButton roleId={role.id} roleKey={role.key} />}
+          divider
+          backLink="/admin/roles"
+        />
+        <div className="flex flex-col gap-6 md:flex-row">
+          <SidebarNav items={sidebarNavItems} />
+          <div className="flex-1">{children}</div>
+        </div>
+      </DataTableProvider>
     </div>
   )
 }
