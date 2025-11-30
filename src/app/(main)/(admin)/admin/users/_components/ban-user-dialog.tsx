@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import React, { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,13 @@ interface BanUnbanUserDialogProps {
   isBanned: boolean
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setBannedData?: React.Dispatch<
+    React.SetStateAction<{
+      banned: boolean | null | undefined
+      banReason: string | null | undefined
+      banExpires: Date | null | undefined
+    }>
+  >
 }
 
 type BanDurationOption =
@@ -55,6 +62,7 @@ export default function BanUnbanUserDialog({
   isBanned,
   isOpen,
   setIsOpen,
+  setBannedData,
 }: BanUnbanUserDialogProps) {
   const { refreshTable } = useDataTable()
   const [isPending, startTransition] = useTransition()
@@ -92,6 +100,14 @@ export default function BanUnbanUserDialog({
           refreshTable({ resetPagination: false })
           setReason("")
           setBanExpiresIn("forever")
+          if (setBannedData) {
+            const { user } = response.data
+            setBannedData({
+              banned: user.banned,
+              banReason: user.banReason,
+              banExpires: user.banExpires,
+            })
+          }
         }
       } catch {
         toast.error("Something went wrong")

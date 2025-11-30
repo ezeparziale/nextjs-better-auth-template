@@ -4,8 +4,11 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { getUser } from "@/data/auth/get-user"
 import { PageHeader } from "@/components/page-header"
-import { BanUserCard } from "./_components/ban-user-card"
-import { EmailVerifiedCard } from "./_components/email-verified-card"
+import AccountStatusCard from "./_components/account-status-card"
+import ImpersonateUserCard from "./_components/impersonate-user-card"
+import { ResetPasswordCard } from "./_components/reset-password-card"
+import { SetRoleCard } from "./_components/set-role-card"
+import { SetTemporaryPasswordCard } from "./_components/set-temporary-password-card"
 
 const PAGE = {
   title: "Account",
@@ -37,21 +40,28 @@ export default async function AccountUserAdminPage(props: { params: Params }) {
 
   if (!user) notFound()
 
+  const { hasCredentialAccount } = await auth.api.userHasCredentialAccount({
+    body: { userId },
+    headers: await headers(),
+  })
+
   return (
     <div className="space-y-6">
       <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <EmailVerifiedCard
-        userId={user.id}
-        emailVerified={user.emailVerified}
-        email={user.email}
+      <AccountStatusCard
+        data={{
+          userId: user.id,
+          email: user.email,
+          banned: user.banned,
+          emailVerified: user.emailVerified,
+          banReason: user.banReason,
+          banExpires: user.banExpires,
+        }}
       />
-      <BanUserCard
-        userId={user.id}
-        isBanned={!!user.banned}
-        email={user.email}
-        banReason={user.banReason}
-        banExpires={user.banExpires}
-      />
+      <SetRoleCard userId={userId} currentRole={user.role ?? "user"} />
+      <SetTemporaryPasswordCard userId={userId} />
+      <ResetPasswordCard userId={userId} hasCredentialAccount={hasCredentialAccount} />
+      <ImpersonateUserCard userId={userId} />
     </div>
   )
 }
