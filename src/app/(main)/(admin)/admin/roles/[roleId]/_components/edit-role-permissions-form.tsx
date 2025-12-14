@@ -144,17 +144,17 @@ export default function EditRolePermissionsForm({
                 </Field>
               )}
             />
-            <div className="flex flex-col gap-4">
+            <div className="mt-6 flex flex-col gap-4 md:flex-row">
               <Button
                 type="submit"
                 form="form-edit-role-permissions"
-                className="w-full md:w-1/5"
+                className="w-full md:w-32"
                 disabled={isSubmitting || !isDirty}
                 size="sm"
               >
                 {isSubmitting && <Spinner />} Save
               </Button>
-              <Button size="sm" className="w-full md:w-1/5" variant="outline" asChild>
+              <Button size="sm" className="w-full md:w-32" variant="outline" asChild>
                 <Link href="/admin/roles">Cancel</Link>
               </Button>
             </div>

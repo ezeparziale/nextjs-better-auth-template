@@ -197,24 +197,22 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
             </Field>
           )}
         />
-        <div className="flex flex-col gap-4">
+        <div className="mt-6 flex flex-col gap-4 md:flex-row">
           <Button
             type="submit"
             form="form-metadata"
-            size="sm"
             disabled={isSubmitting || !isDirty}
-            className="w-full md:w-1/5"
+            size="sm"
           >
-            {isSubmitting && <Spinner />}
-            Save
+            {isSubmitting && <Spinner />} Save
           </Button>
           <Button
             type="button"
             size="sm"
             disabled={isSubmitting || !isDirty}
-            className="w-full md:w-1/5"
+            className="w-full md:w-32"
             onClick={() => form.reset()}
-            variant="ghost"
+            variant="outline"
           >
             Reset
           </Button>
