@@ -3,7 +3,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { PageHeader } from "@/components/page-header"
-import EditRolePermissionsForm from "../_components/edit-role-permissions-form"
+import EditRolePermissionsForm from "./_components/edit-role-permissions-form"
 
 const PAGE = {
   title: "Manage role permissions",

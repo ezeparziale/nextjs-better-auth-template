@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { getRole } from "@/data/auth/get-role"
 import { PageHeader } from "@/components/page-header"
-import EditRoleForm from "../_components/edit-role-form"
+import EditRoleForm from "./_components/edit-role-form"
 
 const PAGE = {
   title: "Edit role",
