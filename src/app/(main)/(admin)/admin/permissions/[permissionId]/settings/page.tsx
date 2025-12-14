@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { getPermission } from "@/data/auth/get-permission"
 import { PageHeader } from "@/components/page-header"
-import EditPermissionForm from "../_components/edit-permission-form"
+import EditPermissionForm from "./_components/edit-permission-form"
 
 const PAGE = {
   title: "Edit permission",

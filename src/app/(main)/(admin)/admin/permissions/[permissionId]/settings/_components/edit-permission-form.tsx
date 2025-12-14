@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { editPermissionSchema } from "../../_components/schemas"
+import { editPermissionSchema } from "../../../_components/schemas"
 
 type FormData = z.infer<typeof editPermissionSchema>
 

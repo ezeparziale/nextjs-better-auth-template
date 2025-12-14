@@ -98,14 +98,14 @@ export default function EditPermissionRolesForm({
     return (
       <Card>
         <CardContent>
-          <div className="w-full md:w-2/3">
-            <div className="space-y-2">
+          <div className="flex w-full flex-col gap-7 md:w-2/3">
+            <div className="flex flex-col gap-3">
               <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-10 w-full max-w-[400px]" />
+              <Skeleton className="h-9 w-full max-w-[400px]" />
             </div>
-            <div className="mt-6 flex flex-col gap-4">
-              <Skeleton className="h-9 w-full md:w-1/5" />
-              <Skeleton className="h-9 w-full md:w-1/5" />
+            <div className="mt-6 flex flex-col gap-4 md:flex-row">
+              <Skeleton className="h-9 w-full md:w-32" />
+              <Skeleton className="h-9 w-full md:w-32" />
             </div>
           </div>
         </CardContent>
