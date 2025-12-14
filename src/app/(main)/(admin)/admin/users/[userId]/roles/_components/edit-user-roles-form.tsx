@@ -1,0 +1,166 @@
+"use client"
+
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm } from "react-hook-form"
+import { toast } from "sonner"
+import * as z from "zod"
+import { Option } from "@/types/types"
+import { authClient } from "@/lib/auth/auth-client"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Spinner } from "@/components/ui/spinner"
+
+const editUserRolesSchema = z.object({
+  roleIds: z.array(z.string()),
+})
+
+type FormData = z.infer<typeof editUserRolesSchema>
+
+export default function EditUserRolesForm({
+  userId,
+  rolesOptions,
+}: {
+  userId: string
+  rolesOptions: Option[]
+}) {
+  const [isLoading, setIsLoading] = useState(true)
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(editUserRolesSchema),
+    defaultValues: { roleIds: [] },
+  })
+
+  // Fetch current roles for the user
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        setIsLoading(true)
+        const { data, error } = await authClient.rbac.getUserRoles({
+          query: { userId },
+        })
+
+        if (error) {
+          toast.error(error.message || "Failed to load roles")
+          return
+        }
+
+        if (data.roles) {
+          form.setValue(
+            "roleIds",
+            data.roles.map((r) => r.id),
+          )
+          form.reset({
+            roleIds: data.roles.map((r) => r.id),
+          })
+        }
+      } catch {
+        toast.error("Something went wrong while fetching roles")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRoles()
+  }, [userId, form])
+
+  async function onSubmit(values: FormData) {
+    try {
+      const { error } = await authClient.rbac.setUserRoles({
+        userId: userId,
+        roleIds: values.roleIds,
+      })
+
+      if (error) {
+        toast.error(error.message || "Failed to update roles")
+      } else {
+        toast.success("Roles updated successfully")
+        form.reset({ roleIds: values.roleIds })
+      }
+    } catch {
+      toast.error("Something went wrong while saving roles")
+    }
+  }
+
+  const { isSubmitting, isDirty } = form.formState
+
+  if (isLoading)
+    return (
+      <Card>
+        <CardContent>
+          <div className="flex w-full flex-col gap-7 md:w-2/3">
+            <div className="flex flex-col gap-3">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-9 w-full max-w-[400px]" />
+            </div>
+            <div className="mt-6 flex flex-col gap-4 md:flex-row">
+              <Skeleton className="h-9 w-full md:w-32" />
+              <Skeleton className="h-9 w-full md:w-32" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+
+  return (
+    <Card>
+      <CardContent>
+        <form id="form-edit-user-roles" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup className="w-full md:w-2/3">
+            <Controller
+              name="roleIds"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Roles</FieldLabel>
+                  <MultiSelect
+                    {...field}
+                    values={field.value}
+                    onValuesChange={field.onChange}
+                    disabled={isSubmitting}
+                  >
+                    <MultiSelectTrigger className="w-full max-w-[400px]">
+                      <MultiSelectValue placeholder="Select roles..." />
+                    </MultiSelectTrigger>
+                    <MultiSelectContent>
+                      {rolesOptions.map((option) => (
+                        <MultiSelectItem value={option.value} key={option.value}>
+                          {option.label}
+                        </MultiSelectItem>
+                      ))}
+                    </MultiSelectContent>
+                  </MultiSelect>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <div className="mt-6 flex flex-col gap-4 md:flex-row">
+              <Button
+                type="submit"
+                form="form-edit-user-roles"
+                className="w-full md:w-32"
+                disabled={isSubmitting || !isDirty}
+                size="sm"
+              >
+                {isSubmitting && <Spinner />} Save
+              </Button>
+              <Button size="sm" className="w-full md:w-32" variant="outline" asChild>
+                <Link href="/admin/roles">Cancel</Link>
+              </Button>
+            </div>
+          </FieldGroup>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}

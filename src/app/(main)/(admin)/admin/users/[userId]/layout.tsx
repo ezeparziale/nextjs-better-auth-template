@@ -29,6 +29,10 @@ const getSideBarNavItems = (id: string): NavItem[] => {
       href: `${baseHref}/metadata`,
     },
     {
+      name: "Roles",
+      href: `${baseHref}/roles`,
+    },
+    {
       name: "Logs",
       href: `${baseHref}/logs`,
     },
