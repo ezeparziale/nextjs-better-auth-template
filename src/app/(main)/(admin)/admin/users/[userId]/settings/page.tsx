@@ -3,8 +3,6 @@ import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { getUser } from "@/data/auth/get-user"
-import { PageHeader } from "@/components/page-header"
-import AdminAvatarForm from "./_components/admin-avatar-form"
 import EditUserForm from "./_components/edit-user-form"
 
 const PAGE = {
@@ -55,12 +53,6 @@ export default async function SettingsUserAdminPage(props: { params: Params }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <AdminAvatarForm
-        userId={user.id}
-        initialImage={user.image}
-        userName={user.name}
-      />
       <EditUserForm user={userDTO} />
     </div>
   )
