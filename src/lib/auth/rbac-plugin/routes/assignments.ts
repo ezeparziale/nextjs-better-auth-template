@@ -242,7 +242,7 @@ export const removePermissionFromRole = <O extends RBACPluginOptions>(options: O
       ensureUserIsAdmin(session)
 
       // Delete assignment
-      await ctx.context.adapter.delete<RolePermission>({
+      await ctx.context.adapter.deleteMany({
         model: "rolePermission",
         where: [
           {
