@@ -980,6 +980,8 @@ export const getPermissionsOptions = <O extends RBACPluginOptions>(options: O) =
  * `authClient.rbac.getPermissionRoles`
  */
 export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
+  const paginationConfig = createPaginationConfig(options)
+
   return createAuthEndpoint(
     "/rbac/get-permission-roles",
     {
@@ -993,6 +995,46 @@ export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
           permissionKey: z.string().optional().meta({
             description: "The key of the permission.",
           }),
+          searchValue: z.string().optional().meta({
+            description: "The value to search in roles.",
+          }),
+          searchField: z.enum(["name", "key"]).optional().meta({
+            description:
+              "The field to search in, defaults to name. Can be `name` or `key`.",
+          }),
+          searchOperator: z
+            .enum(["contains", "starts_with", "ends_with"])
+            .meta({
+              description:
+                'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
+            })
+            .optional(),
+          limit: z
+            .string()
+            .meta({ description: "The number of roles to return." })
+            .or(z.number())
+            .optional()
+            .default(paginationConfig.defaultLimit),
+          offset: z
+            .string()
+            .meta({
+              description: "The offset to start from.",
+            })
+            .or(z.number())
+            .optional()
+            .default(paginationConfig.defaultOffset),
+          sortBy: z
+            .string()
+            .meta({
+              description: "The field to sort by.",
+            })
+            .optional(),
+          sortDirection: z
+            .enum(["asc", "desc"])
+            .meta({
+              description: "The direction to sort by.",
+            })
+            .optional(),
         })
         .refine((data) => data.permissionId || data.permissionKey, {
           message: "Either permissionId or permissionKey is required.",
@@ -1002,7 +1044,7 @@ export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
           operationId: "rbac.getPermissionRoles",
           summary: "Get all roles that include a specific permission",
           description:
-            "Returns all roles associated with a given permission, identified by its ID or key.",
+            "Returns all roles associated with a given permission, identified by its ID or key, with pagination, search and sorting support.",
           responses: {
             200: {
               description: "List of roles that include the given permission",
@@ -1019,6 +1061,15 @@ export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
                         items: {
                           $ref: "#/components/schemas/Role",
                         },
+                      },
+                      total: {
+                        type: "number",
+                      },
+                      limit: {
+                        type: "number",
+                      },
+                      offset: {
+                        type: "number",
                       },
                     },
                   },
@@ -1053,6 +1104,7 @@ export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
       if (options.disabledEndpoints?.includes("getPermissionRoles")) {
         throw new APIError("NOT_FOUND")
       }
+
       const session = ctx.context.session
 
       ensureUserIsAdmin(session)
@@ -1087,23 +1139,81 @@ export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
         where: [{ field: "permissionId", value: permission.id }],
       })
 
-      // Retrieve the actual roles associated with the permission
-      const roles = (
-        await Promise.all(
-          rolePermissions.map((rp) =>
-            ctx.context.adapter.findOne<Role>({
-              model: "role",
-              where: [{ field: "id", value: rp.roleId }],
-            }),
-          ),
-        )
-      ).filter((role): role is Role => role !== null)
+      // Extract role IDs
+      const roleIds = rolePermissions.map((rp) => rp.roleId)
 
-      // Return the permission and the list of associated roles
-      return ctx.json({
-        permission,
-        roles: roles.filter(Boolean),
-      })
+      // If there are no roles, return empty result
+      if (roleIds.length === 0) {
+        return ctx.json({
+          permission,
+          roles: [],
+          total: 0,
+          limit: Number(ctx.query?.limit),
+          offset: Number(ctx.query?.offset),
+        })
+      }
+
+      // Build where clause for roles
+      const where: Where[] = [
+        {
+          field: "id",
+          operator: "in",
+          value: roleIds,
+        },
+      ]
+
+      // Add search filter if provided
+      if (ctx.query?.searchValue) {
+        where.push({
+          field: ctx.query.searchField || "name",
+          operator: ctx.query.searchOperator || "contains",
+          value: ctx.query.searchValue,
+        })
+      }
+
+      const { limit, offset } = getPaginationParams(
+        ctx.query?.limit,
+        ctx.query?.offset,
+        paginationConfig,
+      )
+
+      try {
+        // Get paginated, sorted and filtered roles
+        const roles = await ctx.context.adapter.findMany<Role>({
+          model: "role",
+          limit,
+          offset,
+          sortBy: ctx.query?.sortBy
+            ? {
+                field: ctx.query.sortBy,
+                direction: ctx.query.sortDirection || "asc",
+              }
+            : undefined,
+          where: where.length ? where : undefined,
+        })
+
+        // Get total count of filtered roles
+        const total = await ctx.context.adapter.count({
+          model: "role",
+          where: where.length ? where : undefined,
+        })
+
+        return ctx.json({
+          permission,
+          roles,
+          total,
+          limit: Number(ctx.query?.limit),
+          offset: Number(ctx.query?.offset),
+        })
+      } catch {
+        return ctx.json({
+          permission,
+          roles: [],
+          total: 0,
+          limit: Number(ctx.query?.limit),
+          offset: Number(ctx.query?.offset),
+        })
+      }
     },
   )
 }
