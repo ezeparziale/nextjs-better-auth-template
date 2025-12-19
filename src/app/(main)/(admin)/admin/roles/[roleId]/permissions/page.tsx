@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
-import { PageHeader } from "@/components/page-header"
-import EditRolePermissionsForm from "./_components/edit-role-permissions-form"
+import { DataTableProvider } from "@/components/ui/data-table"
+import RolePermissionsClient from "./_components/role-permissions-client"
 
 const PAGE = {
   title: "Manage role permissions",
@@ -17,9 +17,20 @@ export const metadata: Metadata = {
   description: PAGE.description,
 }
 
+type SearchParams = Promise<{
+  page?: string
+  pageSize?: string
+  search?: string
+  sortBy?: string
+  sortDirection?: "asc" | "desc"
+}>
+
 type Params = Promise<{ roleId: string }>
 
-export default async function PermissionsRoleAdminPage(props: { params: Params }) {
+export default async function PermissionsRoleAdminPage(props: {
+  params: Params
+  searchParams: SearchParams
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
@@ -31,18 +42,17 @@ export default async function PermissionsRoleAdminPage(props: { params: Params }
 
   if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
-  const { options: permissionsOptions } = await auth.api.getPermissionsOptions({
-    query: {},
-    headers: await headers(),
-  })
+  const searchParams = await props.searchParams
 
   return (
     <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
-      <EditRolePermissionsForm
-        roleId={roleId}
-        permissionsOptions={permissionsOptions}
-      />
+      <DataTableProvider>
+        <RolePermissionsClient
+          roleId={roleId}
+          page={PAGE}
+          initialParams={searchParams}
+        />
+      </DataTableProvider>
     </div>
   )
 }
