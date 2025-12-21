@@ -118,12 +118,12 @@ export default function AddPermissionDialog({
       <DialogTrigger asChild>
         <Button size="sm">
           <PlusIcon />
-          Manage Permissions
+          Manage permissions
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Manage Permissions</DialogTitle>
+          <DialogTitle>Manage permissions</DialogTitle>
           <DialogDescription>
             Add or remove permissions for this role.
           </DialogDescription>
