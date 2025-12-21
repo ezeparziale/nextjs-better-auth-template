@@ -1,5 +1,6 @@
 import { Table } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -11,15 +12,26 @@ import {
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
+  showSelectedRows?: boolean
 }
 
-export function DataTablePagination<TData>({ table }: DataTablePaginationProps<TData>) {
+export function DataTablePagination<TData>({
+  table,
+  showSelectedRows = false,
+}: DataTablePaginationProps<TData>) {
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="text-muted-foreground hidden flex-1 text-sm sm:flex">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
-      </div>
+    <div
+      className={cn(
+        "flex items-center justify-end px-2",
+        showSelectedRows && "justify-between",
+      )}
+    >
+      {showSelectedRows && (
+        <div className="text-muted-foreground hidden flex-1 text-sm sm:flex">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+      )}
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
