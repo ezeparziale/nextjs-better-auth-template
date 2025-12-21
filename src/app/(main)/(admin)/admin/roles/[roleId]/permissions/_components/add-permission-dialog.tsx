@@ -1,8 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { PlusIcon } from "lucide-react"
+import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
+import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import {
   MultiSelect,
   MultiSelectContent,
@@ -21,6 +25,13 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from "@/components/ui/multi-select"
+import { Spinner } from "@/components/ui/spinner"
+
+const addPermissionSchema = z.object({
+  permissionIds: z.array(z.string()),
+})
+
+type FormData = z.infer<typeof addPermissionSchema>
 
 interface AddPermissionDialogProps {
   roleId: string
@@ -32,12 +43,17 @@ export default function AddPermissionDialog({
   onPermissionAdded,
 }: AddPermissionDialogProps) {
   const [open, setOpen] = useState(false)
-  const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [permissionsOptions, setPermissionsOptions] = useState<
     { value: string; label: string }[]
   >([])
   const [isLoading, setIsLoading] = useState(false)
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(addPermissionSchema),
+    defaultValues: {
+      permissionIds: [],
+    },
+  })
 
   useEffect(() => {
     if (open) {
@@ -56,7 +72,9 @@ export default function AddPermissionDialog({
           }
 
           if (assignedRes.data?.permissions) {
-            setSelectedPermissionIds(assignedRes.data.permissions.map((p) => p.id))
+            form.reset({
+              permissionIds: assignedRes.data.permissions.map((p) => p.id),
+            })
           }
         } catch {
           toast.error("Failed to load data")
@@ -65,22 +83,20 @@ export default function AddPermissionDialog({
         }
       }
       fetchData()
+    } else {
+      form.reset({ permissionIds: [] })
     }
-  }, [open, roleId])
+  }, [open, roleId, form])
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
-    if (!newOpen) {
-      setSelectedPermissionIds([])
-    }
   }
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
+  const onSubmit = async (values: FormData) => {
     try {
       const { error } = await authClient.rbac.updateRole({
         id: roleId,
-        permissionIds: selectedPermissionIds,
+        permissionIds: values.permissionIds,
       })
 
       if (error) {
@@ -92,10 +108,10 @@ export default function AddPermissionDialog({
       }
     } catch {
       toast.error("Something went wrong")
-    } finally {
-      setIsSubmitting(false)
     }
   }
+
+  const { isSubmitting, isDirty } = form.formState
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -105,7 +121,7 @@ export default function AddPermissionDialog({
           Manage Permissions
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Manage Permissions</DialogTitle>
           <DialogDescription>
@@ -113,39 +129,53 @@ export default function AddPermissionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <MultiSelect
-            values={selectedPermissionIds}
-            onValuesChange={setSelectedPermissionIds}
-            disabled={isLoading}
-          >
-            <MultiSelectTrigger>
-              <MultiSelectValue
-                placeholder={isLoading ? "Loading..." : "Select permissions"}
-              />
-            </MultiSelectTrigger>
-            <MultiSelectContent>
-              {permissionsOptions.map((option) => (
-                <MultiSelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </MultiSelectItem>
-              ))}
-            </MultiSelectContent>
-          </MultiSelect>
-        </div>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="py-4">
+            <Controller
+              name="permissionIds"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="w-full">
+                  <FieldLabel>Permissions</FieldLabel>
+                  <MultiSelect
+                    values={field.value}
+                    onValuesChange={field.onChange}
+                    disabled={isLoading}
+                  >
+                    <MultiSelectTrigger className="w-full">
+                      <MultiSelectValue
+                        placeholder={isLoading ? "Loading..." : "Select permissions"}
+                      />
+                    </MultiSelectTrigger>
+                    <MultiSelectContent>
+                      {permissionsOptions.map((option) => (
+                        <MultiSelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MultiSelectItem>
+                      ))}
+                    </MultiSelectContent>
+                  </MultiSelect>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading || isSubmitting}>
-            {isSubmitting ? "Saving..." : `Save (${selectedPermissionIds.length})`}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={isSubmitting}
+              type="button"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading || isSubmitting || !isDirty}>
+              {isSubmitting && <Spinner />}
+              Save
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )
