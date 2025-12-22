@@ -495,7 +495,7 @@ export const removeRoleFromUser = <O extends RBACPluginOptions>(options: O) => {
       ensureUserIsAdmin(session)
 
       // Delete assignment
-      await ctx.context.adapter.delete<UserRole>({
+      await ctx.context.adapter.deleteMany({
         model: "userRole",
         where: [
           {
