@@ -69,6 +69,8 @@ export type RBACEndpoint =
   | "getUserRoles"
   | "getUserPermissions"
   | "setUserRoles"
+  | "getRoleUsers"
+  | "getUsersOptions"
 
 export interface RBACPluginOptions {
   /**

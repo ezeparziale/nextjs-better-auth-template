@@ -66,11 +66,13 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       deleteRole: routes.deleteRole(opts),
       getRolesOptions: routes.getRolesOptions(opts),
       getRolePermissions: routes.getRolePermissions(opts),
+      getRoleUsers: routes.getRoleUsers(opts),
 
       // Users
       getUserRoles: routes.getUserRoles(opts),
       getUserPermissions: routes.getUserPermissions(opts),
       setUserRoles: routes.setUserRoles(opts),
+      getUsersOptions: routes.getUsersOptions(opts),
     },
     $ERROR_CODES: RBAC_ERROR_CODES,
     options,
