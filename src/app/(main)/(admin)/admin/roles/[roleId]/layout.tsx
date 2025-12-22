@@ -20,6 +20,10 @@ const getSideBarNavItems = (id: string): NavItem[] => {
       name: "Permissions",
       href: `${baseHref}/permissions`,
     },
+    {
+      name: "Users",
+      href: `${baseHref}/users`,
+    },
     { name: "Logs", href: `${baseHref}/logs` },
   ]
 }
