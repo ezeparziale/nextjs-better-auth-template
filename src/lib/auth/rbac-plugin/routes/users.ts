@@ -1,3 +1,4 @@
+import type { Where } from "better-auth"
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
 import { ensureUserIsAdmin, rbacMiddleware } from "../call"
@@ -496,6 +497,189 @@ export const setUserRoles = <O extends RBACPluginOptions>(options: O) => {
         removed: toDelete.length,
         kept: kept.length,
       })
+    },
+  )
+}
+
+/**
+ * ### Endpoint
+ *
+ * GET `/rbac/get-users-options`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.getUsersOptions`
+ *
+ * **client:**
+ * `authClient.rbac.getUsersOptions`
+ */
+export const getUsersOptions = <O extends RBACPluginOptions>(options: O) => {
+  return createAuthEndpoint(
+    "/rbac/get-users-options",
+    {
+      method: "GET",
+      use: [rbacMiddleware],
+      query: z.object({
+        onlyActive: z
+          .string()
+          .transform((val) => val === "true")
+          .or(z.boolean())
+          .optional()
+          .default(true)
+          .meta({
+            description: "Filter to return only active users. Defaults to true.",
+          }),
+        search: z.string().optional().meta({
+          description: "Search term to filter users by email.",
+        }),
+        limit: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .or(z.number())
+          .optional()
+          .meta({
+            description: "Maximum number of results to return.",
+          }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.getUsersOptions",
+          summary: "Get users as select options",
+          description:
+            "Get users formatted as value/label pairs for select components. Supports search and limit parameters.",
+          responses: {
+            200: {
+              description: "Successfully retrieved users options",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      options: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          required: ["value", "label"],
+                          properties: {
+                            value: {
+                              type: "string",
+                              description: "User ID",
+                            },
+                            label: {
+                              type: "string",
+                              description: "User email address",
+                            },
+                          },
+                        },
+                      },
+                    },
+                    required: ["options"],
+                  },
+                  examples: {
+                    withResults: {
+                      summary: "Successful response with users",
+                      value: {
+                        options: [
+                          {
+                            value: "user_123abc",
+                            label: "john.doe@example.com",
+                          },
+                          {
+                            value: "user_456def",
+                            label: "jane.smith@example.com",
+                          },
+                          {
+                            value: "user_789ghi",
+                            label: "admin@example.com",
+                          },
+                        ],
+                      },
+                    },
+                    emptyResults: {
+                      summary: "No users found",
+                      value: {
+                        options: [],
+                      },
+                    },
+                    searchFiltered: {
+                      summary: "Filtered by search term",
+                      value: {
+                        options: [
+                          {
+                            value: "user_123abc",
+                            label: "john.doe@example.com",
+                          },
+                          {
+                            value: "user_456def",
+                            label: "johnny.smith@example.com",
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("getUsersOptions")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      const where: Where[] = []
+
+      if (ctx.query?.onlyActive) {
+        where.push({
+          field: "emailVerified",
+          value: true,
+        })
+      }
+
+      try {
+        const users = await ctx.context.adapter.findMany<User>({
+          model: "user",
+          where: where.length ? where : undefined,
+          sortBy: {
+            field: "email",
+            direction: "asc",
+          },
+        })
+
+        // Filter by search term if provided
+        let filteredUsers = users
+        if (ctx.query?.search) {
+          const searchLower = ctx.query.search.toLowerCase()
+          filteredUsers = users.filter((user) =>
+            user.email.toLowerCase().includes(searchLower),
+          )
+        }
+
+        // Apply limit if provided
+        if (ctx.query?.limit && ctx.query.limit > 0) {
+          filteredUsers = filteredUsers.slice(0, ctx.query.limit)
+        }
+
+        const options = filteredUsers.map((user) => ({
+          value: user.id,
+          label: user.email,
+        }))
+
+        return ctx.json({
+          options,
+        })
+      } catch {
+        return ctx.json({
+          options: [],
+        })
+      }
     },
   )
 }
