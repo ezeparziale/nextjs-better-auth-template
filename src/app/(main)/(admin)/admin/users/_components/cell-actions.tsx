@@ -5,8 +5,8 @@ import {
   BanIcon,
   CopyIcon,
   MoreHorizontalIcon,
+  PencilIcon,
   Trash2Icon,
-  UserCogIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -30,9 +30,9 @@ export default function CellActions({ row }: { row: UserWithRole }) {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="size-8 p-0">
+          <Button variant="ghost">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -43,13 +43,13 @@ export default function CellActions({ row }: { row: UserWithRole }) {
               toast.info("ID copied to clipboard")
             }}
           >
-            <CopyIcon className="size-4" /> Copy ID
+            <CopyIcon /> Copy ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => router.push(`/admin/users/${row.id}/settings`)}
           >
-            <UserCogIcon className="size-4" />
+            <PencilIcon />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -57,7 +57,7 @@ export default function CellActions({ row }: { row: UserWithRole }) {
               setIsBanUserDialogOpen(true)
             }}
           >
-            <BanIcon className="size-4" />
+            <BanIcon />
             {row.banned ? "Unban" : "Ban"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -67,7 +67,7 @@ export default function CellActions({ row }: { row: UserWithRole }) {
               setIsDeleteDialogOpen(true)
             }}
           >
-            <Trash2Icon className="size-4" />
+            <Trash2Icon />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

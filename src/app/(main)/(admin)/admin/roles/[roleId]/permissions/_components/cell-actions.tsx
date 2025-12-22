@@ -29,7 +29,7 @@ export default function CellActions({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="size-8 p-0">
+          <Button variant="ghost">
             <span className="sr-only">Open menu</span>
             <MoreHorizontalIcon />
           </Button>
