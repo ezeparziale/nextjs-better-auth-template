@@ -3,13 +3,14 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { DataTableProvider } from "@/components/ui/data-table"
-import RolePermissionsClient from "./_components/role-permissions-client"
+import { PageHeader } from "@/components/page-header"
+import AddPermissionDialog from "./_components/add-permission-dialog"
+import RolePermissionsTable from "./_components/role-permissions-table"
 
 const PAGE = {
   title: "Manage role permissions",
   description: "Assign or remove permissions from this role.",
-  callbackUrl: "/admin/roles",
-  section: "permissions",
+  getCallbackUrl: (roleId: string) => `/admin/roles/${roleId}/permissions`,
 }
 
 export const metadata: Metadata = {
@@ -37,8 +38,7 @@ export default async function PermissionsRoleAdminPage(props: {
 
   const { roleId } = await props.params
 
-  if (!session)
-    redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${roleId}/${PAGE.section}`)
+  if (!session) redirect(`/login?callbackUrl=${PAGE.getCallbackUrl(roleId)}`)
 
   if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
 
@@ -47,11 +47,15 @@ export default async function PermissionsRoleAdminPage(props: {
   return (
     <div className="space-y-6">
       <DataTableProvider>
-        <RolePermissionsClient
-          roleId={roleId}
-          page={PAGE}
-          initialParams={searchParams}
+        <PageHeader
+          title={PAGE.title}
+          description={PAGE.description}
+          isSection
+          actions={[
+            <AddPermissionDialog roleId={roleId} key="btn-action-add-permission" />,
+          ]}
         />
+        <RolePermissionsTable roleId={roleId} initialParams={searchParams} />
       </DataTableProvider>
     </div>
   )

@@ -1,182 +1,103 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { PlusIcon } from "lucide-react"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import {
-  MultiSelect,
-  MultiSelectContent,
-  MultiSelectItem,
-  MultiSelectTrigger,
-  MultiSelectValue,
-} from "@/components/ui/multi-select"
-import { Spinner } from "@/components/ui/spinner"
-
-const addPermissionSchema = z.object({
-  permissionIds: z.array(z.string()),
-})
-
-type FormData = z.infer<typeof addPermissionSchema>
+import { useDataTable } from "@/components/ui/data-table"
+import type { MultiSelectAsyncOption } from "@/components/ui/multi-select-async"
+import AssignItemsDialog from "@/components/assign-items-dialog"
 
 interface AddPermissionDialogProps {
   roleId: string
-  onPermissionAdded: (options?: { resetPagination?: boolean }) => void
 }
 
-export default function AddPermissionDialog({
-  roleId,
-  onPermissionAdded,
-}: AddPermissionDialogProps) {
-  const [open, setOpen] = useState(false)
-  const [permissionsOptions, setPermissionsOptions] = useState<
-    { value: string; label: string }[]
-  >([])
-  const [isLoading, setIsLoading] = useState(false)
+const LIMIT = 5
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(addPermissionSchema),
-    defaultValues: {
-      permissionIds: [],
-    },
-  })
+export default function AddPermissionDialog({ roleId }: AddPermissionDialogProps) {
+  const { refreshTable } = useDataTable()
 
-  useEffect(() => {
-    if (open) {
-      const fetchData = async () => {
-        setIsLoading(true)
-        try {
-          const [optionsRes, assignedRes] = await Promise.all([
-            authClient.rbac.getPermissionsOptions({ query: {} }),
-            authClient.rbac.getRolePermissions({
-              query: { roleId, limit: 10000 },
-            }),
-          ])
+  const fetchAssignedPermissions = async (roleId: string) => {
+    const allPermissions: Array<{ id: string; name: string }> = []
+    let page = 0
+    const pageSize = 100
+    let hasMore = true
 
-          if (optionsRes.data) {
-            setPermissionsOptions(optionsRes.data.options || [])
-          }
-
-          if (assignedRes.data?.permissions) {
-            form.reset({
-              permissionIds: assignedRes.data.permissions.map((p) => p.id),
-            })
-          }
-        } catch {
-          toast.error("Failed to load data")
-        } finally {
-          setIsLoading(false)
-        }
-      }
-      fetchData()
-    } else {
-      form.reset({ permissionIds: [] })
-    }
-  }, [open, roleId, form])
-
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen)
-  }
-
-  const onSubmit = async (values: FormData) => {
-    try {
-      const { error } = await authClient.rbac.updateRole({
-        id: roleId,
-        permissionIds: values.permissionIds,
+    while (hasMore) {
+      const assignedRes = await authClient.rbac.getRolePermissions({
+        query: {
+          roleId,
+          limit: pageSize,
+          offset: page * pageSize,
+        },
       })
 
-      if (error) {
-        toast.error(error.message || "Failed to update permissions")
+      if (assignedRes.data?.permissions && assignedRes.data.permissions.length > 0) {
+        allPermissions.push(...assignedRes.data.permissions)
+
+        if (assignedRes.data.permissions.length < pageSize) {
+          hasMore = false
+        } else {
+          page++
+        }
       } else {
-        toast.success("Permissions updated successfully")
-        handleOpenChange(false)
-        onPermissionAdded({ resetPagination: true })
+        hasMore = false
       }
-    } catch {
-      toast.error("Something went wrong")
+    }
+
+    return allPermissions
+  }
+
+  const fetchAvailablePermissions = async (
+    search: string,
+  ): Promise<MultiSelectAsyncOption[]> => {
+    const params: { search?: string; limit?: number } = {}
+
+    if (search) {
+      params.search = search
+    }
+
+    params.limit = LIMIT
+
+    const response = await authClient.rbac.getPermissionsOptions({ query: params })
+
+    if (response.data?.options) {
+      return response.data.options.map((option) => ({
+        value: option.value,
+        label: option.label,
+      }))
+    }
+
+    return []
+  }
+
+  const updatePermissions = async (roleId: string, permissionIds: string[]) => {
+    const result = await authClient.rbac.updateRole({
+      id: roleId,
+      permissionIds,
+    })
+
+    return {
+      error: result.error ? { message: result.error.message } : undefined,
     }
   }
 
-  const { isSubmitting, isDirty } = form.formState
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <PlusIcon />
-          Manage permissions
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Manage permissions</DialogTitle>
-          <DialogDescription>
-            Add or remove permissions for this role.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="py-4">
-            <Controller
-              name="permissionIds"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="w-full">
-                  <FieldLabel>Permissions</FieldLabel>
-                  <MultiSelect
-                    values={field.value}
-                    onValuesChange={field.onChange}
-                    disabled={isLoading}
-                  >
-                    <MultiSelectTrigger className="w-full">
-                      <MultiSelectValue
-                        placeholder={isLoading ? "Loading..." : "Select permissions"}
-                      />
-                    </MultiSelectTrigger>
-                    <MultiSelectContent>
-                      {permissionsOptions.map((option) => (
-                        <MultiSelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MultiSelectItem>
-                      ))}
-                    </MultiSelectContent>
-                  </MultiSelect>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={isSubmitting}
-              type="button"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading || isSubmitting || !isDirty}>
-              {isSubmitting && <Spinner />}
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <AssignItemsDialog
+      resourceId={roleId}
+      title="Manage permissions"
+      description="Add or remove permissions for this role."
+      fieldLabel="Permissions"
+      placeholder="Select permissions"
+      searchPlaceholder="Search permissions…"
+      emptyMessage="No permissions found."
+      buttonText="Manage permissions"
+      fetchAssignedItems={fetchAssignedPermissions}
+      fetchAvailableItems={fetchAvailablePermissions}
+      updateItems={updatePermissions}
+      onItemsUpdated={refreshTable}
+      messages={{
+        success: "Permissions updated successfully",
+        error: "Failed to update permissions",
+        loadError: "Failed to load permissions",
+      }}
+    />
   )
 }

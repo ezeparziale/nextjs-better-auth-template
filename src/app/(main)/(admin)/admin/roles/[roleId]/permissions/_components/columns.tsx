@@ -30,6 +30,9 @@ export const getColumns = (roleId: string): ColumnDef<Permission>[] => [
         </Badge>
       )
     },
+    meta: {
+      displayName: "Active",
+    },
   },
   {
     id: "actions",
