@@ -63,7 +63,7 @@ const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
   banned: true,
   role: true,
   createdAt: false,
-  updatedAt: false,
+  updatedAt: true,
   createdBy: false,
   updatedBy: false,
 }
@@ -104,7 +104,12 @@ export default function UsersTable({
         },
       ]
     }
-    return []
+    return [
+      {
+        id: "updatedAt",
+        desc: true,
+      },
+    ]
   })
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
