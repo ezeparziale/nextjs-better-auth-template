@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Session } from "better-auth"
 import { formatDistanceToNow } from "date-fns"
 import {
@@ -78,13 +78,22 @@ export function SessionCard({
     addSuffix: true,
   })
 
-  const expiresAt = new Date(
-    session.expiresAt ||
-      new Date(session.createdAt).getTime() + 30 * 24 * 60 * 60 * 1000,
+  const expiresAt = useMemo(
+    () =>
+      new Date(
+        session.expiresAt ||
+          new Date(session.createdAt).getTime() + 30 * 24 * 60 * 60 * 1000,
+      ),
+    [session],
   )
-  const daysUntilExpiry = Math.ceil(
-    (expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  )
+
+  const [daysUntilExpiry, setDaysUntilExpiry] = useState<number | null>(null)
+
+  useEffect(() => {
+    setDaysUntilExpiry(
+      Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+    )
+  }, [expiresAt])
 
   const handleRevokeClick = () => setShowConfirmDialog(true)
 
@@ -97,7 +106,7 @@ export function SessionCard({
     <>
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <CardTitle className="flex items-center gap-2">
               <span className="bg-muted inline-flex size-8 items-center justify-center rounded-md p-2">
                 {getDeviceIcon(deviceType)}
@@ -141,16 +150,20 @@ export function SessionCard({
                 <CardDescription title={new Date(session.createdAt).toISOString()}>
                   <span>Last active {formattedDate}</span>
                 </CardDescription>
-                {daysUntilExpiry > 0 ? (
-                  <CardDescription className="text-xs" title={expiresAt.toISOString()}>
-                    Expires in {daysUntilExpiry}{" "}
-                    {daysUntilExpiry === 1 ? "day" : "days"}
-                  </CardDescription>
-                ) : (
-                  <CardDescription className="text-destructive text-xs">
-                    Session expired
-                  </CardDescription>
-                )}
+                {daysUntilExpiry !== null &&
+                  (daysUntilExpiry > 0 ? (
+                    <CardDescription
+                      className="text-xs"
+                      title={expiresAt.toISOString()}
+                    >
+                      Expires in {daysUntilExpiry}{" "}
+                      {daysUntilExpiry === 1 ? "day" : "days"}
+                    </CardDescription>
+                  ) : (
+                    <CardDescription className="text-destructive text-xs">
+                      Session expired
+                    </CardDescription>
+                  ))}
               </>
             )}
           </div>
