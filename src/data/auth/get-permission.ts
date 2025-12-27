@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth/auth"
 
 export async function getPermission(permissionId: string) {
   try {
-    const { permission } = await auth.api.getPermission({
+    const { permission } = await auth.api.rbacGetPermission({
       query: { id: permissionId },
       headers: await headers(),
     })

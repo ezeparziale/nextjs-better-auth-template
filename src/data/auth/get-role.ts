@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth/auth"
 
 export async function getRole(roleId: string) {
   try {
-    const { role } = await auth.api.getRole({
+    const { role } = await auth.api.rbacGetRole({
       query: { id: roleId },
       headers: await headers(),
     })
