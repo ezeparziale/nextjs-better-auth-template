@@ -118,26 +118,10 @@ export default function AssignItemsDialog({
         setIsLoadingAssigned(true)
         try {
           const allItems: Array<{ id: string; name: string }> = []
-          let page = 0
-          const pageSize = 10000
-          let hasMore = true
+          const items = await fetchAssignedItems(resourceId)
 
-          // Fetch all items in pages of 10000
-          while (hasMore) {
-            const items = await fetchAssignedItems(resourceId)
-
-            if (items && items.length > 0) {
-              allItems.push(...items)
-
-              // Check if there are more pages
-              if (items.length < pageSize) {
-                hasMore = false
-              } else {
-                page++
-              }
-            } else {
-              hasMore = false
-            }
+          if (items && items.length > 0) {
+            allItems.push(...items)
           }
 
           if (allItems.length > 0) {
