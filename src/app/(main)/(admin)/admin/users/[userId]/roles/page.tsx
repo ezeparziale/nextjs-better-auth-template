@@ -10,7 +10,7 @@ import UserRolesTable from "./_components/user-roles-table"
 
 const PAGE = {
   title: "User roles",
-  description: "Manage user roles.",
+  description: "Assign or remove roles from this user.",
   getCallbackUrl: (userId: string) => `/admin/users/${userId}/roles`,
   section: "roles",
 } as const
