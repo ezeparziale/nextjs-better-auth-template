@@ -2,13 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  BuildingIcon,
-  KeyIcon,
-  LayoutDashboardIcon,
-  ShieldIcon,
-  UsersIcon,
-} from "lucide-react"
+import { KeyIcon, LayoutDashboardIcon, ShieldIcon, UsersIcon } from "lucide-react"
 import { useSession } from "@/lib/auth/auth-client"
 import {
   Sidebar,
