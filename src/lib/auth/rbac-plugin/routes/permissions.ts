@@ -883,16 +883,27 @@ export const getPermissionsOptions = <O extends RBACPluginOptions>(options: O) =
           .meta({
             description: "Filter to return only active permissions. Defaults to true.",
           }),
+        search: z.string().optional().meta({
+          description: "Search term to filter permissions by name.",
+        }),
+        limit: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .or(z.number())
+          .optional()
+          .meta({
+            description: "Maximum number of results to return.",
+          }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.getPermissionsOptions",
           summary: "Get permissions as select options",
           description:
-            "Get permissions formatted as value/label pairs for select components",
+            "Get permissions formatted as value/label pairs for select components. Supports search and limit parameters.",
           responses: {
             200: {
-              description: "Permissions options",
+              description: "Successfully retrieved permissions options",
               content: {
                 "application/json": {
                   schema: {
@@ -902,15 +913,61 @@ export const getPermissionsOptions = <O extends RBACPluginOptions>(options: O) =
                         type: "array",
                         items: {
                           type: "object",
+                          required: ["value", "label"],
                           properties: {
                             value: {
                               type: "string",
+                              description: "Permission ID",
                             },
                             label: {
                               type: "string",
+                              description: "Permission name",
                             },
                           },
                         },
+                      },
+                    },
+                    required: ["options"],
+                  },
+                  examples: {
+                    withResults: {
+                      summary: "Successful response with permissions",
+                      value: {
+                        options: [
+                          {
+                            value: "perm_123abc",
+                            label: "users:read",
+                          },
+                          {
+                            value: "perm_456def",
+                            label: "users:write",
+                          },
+                          {
+                            value: "perm_789ghi",
+                            label: "users:delete",
+                          },
+                        ],
+                      },
+                    },
+                    emptyResults: {
+                      summary: "No permissions found",
+                      value: {
+                        options: [],
+                      },
+                    },
+                    searchFiltered: {
+                      summary: "Filtered by search term",
+                      value: {
+                        options: [
+                          {
+                            value: "perm_123abc",
+                            label: "users:read",
+                          },
+                          {
+                            value: "perm_456def",
+                            label: "users:write",
+                          },
+                        ],
                       },
                     },
                   },
@@ -949,7 +1006,21 @@ export const getPermissionsOptions = <O extends RBACPluginOptions>(options: O) =
           },
         })
 
-        const options = permissions.map((permission) => ({
+        // Filter by search term if provided
+        let filteredPermissions = permissions
+        if (ctx.query?.search) {
+          const searchLower = ctx.query.search.toLowerCase()
+          filteredPermissions = permissions.filter((permission) =>
+            permission.name.toLowerCase().includes(searchLower),
+          )
+        }
+
+        // Apply limit if provided
+        if (ctx.query?.limit && ctx.query.limit > 0) {
+          filteredPermissions = filteredPermissions.slice(0, ctx.query.limit)
+        }
+
+        const options = filteredPermissions.map((permission) => ({
           value: permission.id,
           label: permission.name,
         }))
