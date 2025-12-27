@@ -71,6 +71,7 @@ export type RBACEndpoint =
   | "setUserRoles"
   | "getRoleUsers"
   | "getUsersOptions"
+  | "updateUser"
 
 export interface RBACPluginOptions {
   /**

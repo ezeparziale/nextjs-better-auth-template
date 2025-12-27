@@ -1,7 +1,7 @@
 import type { Where } from "better-auth"
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
-import { ensureUserIsAdmin, rbacMiddleware } from "../call"
+import { createPaginationConfig, ensureUserIsAdmin, rbacMiddleware } from "../call"
 import { RBAC_ERROR_CODES } from "../error-codes"
 import type {
   Permission,
@@ -11,6 +11,7 @@ import type {
   User,
   UserRole,
 } from "../types"
+import { getPaginationParams } from "../utils"
 
 /**
  * ### Endpoint
@@ -26,6 +27,8 @@ import type {
  * `authClient.rbac.getUserRoles`
  */
 export const getUserRoles = <O extends RBACPluginOptions>(options: O) => {
+  const paginationConfig = createPaginationConfig(options)
+
   return createAuthEndpoint(
     "/rbac/get-user-roles",
     {
@@ -33,14 +36,55 @@ export const getUserRoles = <O extends RBACPluginOptions>(options: O) => {
       use: [rbacMiddleware],
       query: z.object({
         userId: z.string().meta({
-          description: "The id of the user.",
+          description: "The ID of the user.",
         }),
+        searchValue: z.string().optional().meta({
+          description: "The value to search in roles.",
+        }),
+        searchField: z.enum(["name", "key"]).optional().meta({
+          description:
+            "The field to search in, defaults to name. Can be `name` or `key`.",
+        }),
+        searchOperator: z
+          .enum(["contains", "starts_with", "ends_with"])
+          .meta({
+            description:
+              'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
+          })
+          .optional(),
+        limit: z
+          .string()
+          .meta({ description: "The number of roles to return." })
+          .or(z.number())
+          .optional()
+          .default(paginationConfig.defaultLimit),
+        offset: z
+          .string()
+          .meta({
+            description: "The offset to start from.",
+          })
+          .or(z.number())
+          .optional()
+          .default(paginationConfig.defaultOffset),
+        sortBy: z
+          .string()
+          .meta({
+            description: "The field to sort by.",
+          })
+          .optional(),
+        sortDirection: z
+          .enum(["asc", "desc"])
+          .meta({
+            description: "The direction to sort by.",
+          })
+          .optional(),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.getUserRoles",
           summary: "Get all roles for a user",
-          description: "Get all roles for a user",
+          description:
+            "Get all roles for a user with pagination, search and sorting support",
           responses: {
             200: {
               description: "User roles",
@@ -49,11 +93,23 @@ export const getUserRoles = <O extends RBACPluginOptions>(options: O) => {
                   schema: {
                     type: "object",
                     properties: {
+                      user: {
+                        $ref: "#/components/schemas/User",
+                      },
                       roles: {
                         type: "array",
                         items: {
                           $ref: "#/components/schemas/Role",
                         },
+                      },
+                      total: {
+                        type: "number",
+                      },
+                      limit: {
+                        type: "number",
+                      },
+                      offset: {
+                        type: "number",
                       },
                     },
                   },
@@ -93,54 +149,102 @@ export const getUserRoles = <O extends RBACPluginOptions>(options: O) => {
 
       ensureUserIsAdmin(session)
 
-      // Check if user exists
+      const { userId } = ctx.query
+
+      // Look up the user by ID
       const user = await ctx.context.adapter.findOne<User>({
         model: "user",
-        where: [
-          {
-            field: "id",
-            value: ctx.query.userId,
-          },
-        ],
+        where: [{ field: "id", value: userId }],
       })
 
+      // If the user does not exist, return a 404 error
       if (!user) {
         throw new APIError("NOT_FOUND", {
           message: RBAC_ERROR_CODES.USER_NOT_FOUND,
         })
       }
 
-      // Get user roles
+      // Get all user-role mappings for this user
       const userRoles = await ctx.context.adapter.findMany<UserRole>({
         model: "userRole",
-        where: [
-          {
-            field: "userId",
-            value: ctx.query.userId,
-          },
-        ],
+        where: [{ field: "userId", value: user.id }],
       })
 
-      // Get role details
-      const roles = (
-        await Promise.all(
-          userRoles.map(async (ur) => {
-            return await ctx.context.adapter.findOne<Role>({
-              model: "role",
-              where: [
-                {
-                  field: "id",
-                  value: ur.roleId,
-                },
-              ],
-            })
-          }),
-        )
-      ).filter((role): role is Role => role !== null)
+      // Extract role IDs
+      const roleIds = userRoles.map((ur) => ur.roleId)
 
-      return ctx.json({
-        roles: roles.filter(Boolean),
-      })
+      // If there are no roles, return empty result
+      if (roleIds.length === 0) {
+        return ctx.json({
+          user,
+          roles: [],
+          total: 0,
+          limit: Number(ctx.query?.limit),
+          offset: Number(ctx.query?.offset),
+        })
+      }
+
+      // Build where clause for roles
+      const where: Where[] = [
+        {
+          field: "id",
+          operator: "in",
+          value: roleIds,
+        },
+      ]
+
+      // Add search filter if provided
+      if (ctx.query?.searchValue) {
+        where.push({
+          field: ctx.query.searchField || "name",
+          operator: ctx.query.searchOperator || "contains",
+          value: ctx.query.searchValue,
+        })
+      }
+
+      const { limit, offset } = getPaginationParams(
+        ctx.query?.limit,
+        ctx.query?.offset,
+        paginationConfig,
+      )
+
+      try {
+        // Get paginated, sorted and filtered roles
+        const roles = await ctx.context.adapter.findMany<Role>({
+          model: "role",
+          limit,
+          offset,
+          sortBy: ctx.query?.sortBy
+            ? {
+                field: ctx.query.sortBy,
+                direction: ctx.query.sortDirection || "asc",
+              }
+            : undefined,
+          where: where.length ? where : undefined,
+        })
+
+        // Get total count of filtered roles
+        const total = await ctx.context.adapter.count({
+          model: "role",
+          where: where.length ? where : undefined,
+        })
+
+        return ctx.json({
+          user,
+          roles,
+          total,
+          limit: Number(ctx.query?.limit),
+          offset: Number(ctx.query?.offset),
+        })
+      } catch {
+        return ctx.json({
+          user,
+          roles: [],
+          total: 0,
+          limit: Number(ctx.query?.limit),
+          offset: Number(ctx.query?.offset),
+        })
+      }
     },
   )
 }
@@ -680,6 +784,192 @@ export const getUsersOptions = <O extends RBACPluginOptions>(options: O) => {
           options: [],
         })
       }
+    },
+  )
+}
+
+/**
+ * ### Endpoint
+ *
+ * POST `/rbac/update-user`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.updateUser`
+ *
+ * **client:**
+ * `authClient.rbac.updateUser`
+ */
+export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
+  return createAuthEndpoint(
+    "/rbac/update-user",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        userId: z.string().meta({
+          description: "The id of the user to update.",
+        }),
+        roleIds: z.array(z.string()).optional().meta({
+          description: "Optional array of role IDs to replace current user roles.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.updateUser",
+          summary: "Update user roles",
+          description:
+            "Update user's roles. Replace current roles with the provided array of role IDs.",
+          responses: {
+            200: {
+              description: "User updated",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      user: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "User or role not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                      },
+                      error: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.USER_NOT_FOUND,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("updateUser")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      // Check if user exists
+      const user = await ctx.context.adapter.findOne<User>({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.userId,
+          },
+        ],
+      })
+
+      if (!user) {
+        throw new APIError("NOT_FOUND", {
+          message: RBAC_ERROR_CODES.USER_NOT_FOUND,
+        })
+      }
+
+      // Update roles if provided
+      if (ctx.body.roleIds !== undefined) {
+        // Validate all roles exist
+        if (ctx.body.roleIds.length > 0) {
+          for (const roleId of ctx.body.roleIds) {
+            const role = await ctx.context.adapter.findOne<Role>({
+              model: "role",
+              where: [
+                {
+                  field: "id",
+                  value: roleId,
+                },
+              ],
+            })
+
+            if (!role) {
+              throw new APIError("NOT_FOUND", {
+                message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${roleId}`,
+              })
+            }
+          }
+        }
+
+        // Get current user roles
+        const currentUserRoles = await ctx.context.adapter.findMany<UserRole>({
+          model: "userRole",
+          where: [
+            {
+              field: "userId",
+              value: ctx.body.userId,
+            },
+          ],
+        })
+
+        const currentRoleIds = new Set(currentUserRoles.map((ur) => ur.roleId))
+        const newRoleIds = new Set(ctx.body.roleIds)
+
+        // Find roles to delete (exist in current but not in new)
+        const toDelete = currentUserRoles.filter((ur) => !newRoleIds.has(ur.roleId))
+
+        // Find roles to add (exist in new but not in current)
+        const toAdd = ctx.body.roleIds.filter((roleId) => !currentRoleIds.has(roleId))
+
+        // Delete removed roles in parallel
+        if (toDelete.length > 0) {
+          await Promise.all(
+            toDelete.map((ur) =>
+              ctx.context.adapter.delete<UserRole>({
+                model: "userRole",
+                where: [
+                  {
+                    field: "id",
+                    value: ur.id,
+                  },
+                ],
+              }),
+            ),
+          )
+        }
+
+        // Create new roles in parallel
+        if (toAdd.length > 0) {
+          await Promise.all(
+            toAdd.map((roleId) =>
+              ctx.context.adapter.create<UserRole>({
+                model: "userRole",
+                data: {
+                  userId: ctx.body.userId,
+                  roleId: roleId,
+                  createdAt: new Date(),
+                },
+              }),
+            ),
+          )
+        }
+      }
+
+      return ctx.json({
+        user,
+      })
     },
   )
 }

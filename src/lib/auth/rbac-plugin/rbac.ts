@@ -73,6 +73,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       getUserPermissions: routes.getUserPermissions(opts),
       setUserRoles: routes.setUserRoles(opts),
       getUsersOptions: routes.getUsersOptions(opts),
+      rbacUpdateUser: routes.rbacUpdateUser(opts),
     },
     $ERROR_CODES: RBAC_ERROR_CODES,
     options,

@@ -954,15 +954,27 @@ export const getRolesOptions = <O extends RBACPluginOptions>(options: O) => {
           .meta({
             description: "Filter to return only active roles. Defaults to true.",
           }),
+        search: z.string().optional().meta({
+          description: "Search term to filter roles by name.",
+        }),
+        limit: z
+          .string()
+          .transform((val) => parseInt(val, 10))
+          .or(z.number())
+          .optional()
+          .meta({
+            description: "Maximum number of results to return.",
+          }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.getRolesOptions",
           summary: "Get roles as select options",
-          description: "Get roles formatted as value/label pairs for select components",
+          description:
+            "Get roles formatted as value/label pairs for select components. Supports search and limit parameters.",
           responses: {
             200: {
-              description: "Roles options",
+              description: "Successfully retrieved roles options",
               content: {
                 "application/json": {
                   schema: {
@@ -972,15 +984,61 @@ export const getRolesOptions = <O extends RBACPluginOptions>(options: O) => {
                         type: "array",
                         items: {
                           type: "object",
+                          required: ["value", "label"],
                           properties: {
                             value: {
                               type: "string",
+                              description: "Role ID",
                             },
                             label: {
                               type: "string",
+                              description: "Role name",
                             },
                           },
                         },
+                      },
+                    },
+                    required: ["options"],
+                  },
+                  examples: {
+                    withResults: {
+                      summary: "Successful response with roles",
+                      value: {
+                        options: [
+                          {
+                            value: "role_123abc",
+                            label: "Administrator",
+                          },
+                          {
+                            value: "role_456def",
+                            label: "Editor",
+                          },
+                          {
+                            value: "role_789ghi",
+                            label: "Viewer",
+                          },
+                        ],
+                      },
+                    },
+                    emptyResults: {
+                      summary: "No roles found",
+                      value: {
+                        options: [],
+                      },
+                    },
+                    searchFiltered: {
+                      summary: "Filtered by search term",
+                      value: {
+                        options: [
+                          {
+                            value: "role_123abc",
+                            label: "Administrator",
+                          },
+                          {
+                            value: "role_456def",
+                            label: "Admin Assistant",
+                          },
+                        ],
                       },
                     },
                   },
@@ -1019,7 +1077,21 @@ export const getRolesOptions = <O extends RBACPluginOptions>(options: O) => {
           },
         })
 
-        const options = roles.map((role) => ({
+        // Filter by search term if provided
+        let filteredRoles = roles
+        if (ctx.query?.search) {
+          const searchLower = ctx.query.search.toLowerCase()
+          filteredRoles = roles.filter((role) =>
+            role.name.toLowerCase().includes(searchLower),
+          )
+        }
+
+        // Apply limit if provided
+        if (ctx.query?.limit && ctx.query.limit > 0) {
+          filteredRoles = filteredRoles.slice(0, ctx.query.limit)
+        }
+
+        const options = filteredRoles.map((role) => ({
           value: role.id,
           label: role.name,
         }))
