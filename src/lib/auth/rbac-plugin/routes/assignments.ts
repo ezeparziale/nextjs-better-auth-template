@@ -19,12 +19,12 @@ import type {
  * ### API Methods
  *
  * **server:**
- * `auth.api.assignPermissionToRole`
+ * `auth.api.rbacAssignPermissionToRole`
  *
  * **client:**
  * `authClient.rbac.assignPermissionToRole`
  */
-export const assignPermissionToRole = <O extends RBACPluginOptions>(options: O) => {
+export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/assign-permission-to-role",
     {
@@ -184,12 +184,14 @@ export const assignPermissionToRole = <O extends RBACPluginOptions>(options: O) 
  * ### API Methods
  *
  * **server:**
- * `auth.api.removePermissionFromRole`
+ * `auth.api.rbacRemovePermissionFromRole`
  *
  * **client:**
  * `authClient.rbac.removePermissionFromRole`
  */
-export const removePermissionFromRole = <O extends RBACPluginOptions>(options: O) => {
+export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
+  options: O,
+) => {
   return createAuthEndpoint(
     "/rbac/remove-permission-from-role",
     {
@@ -272,12 +274,12 @@ export const removePermissionFromRole = <O extends RBACPluginOptions>(options: O
  * ### API Methods
  *
  * **server:**
- * `auth.api.assignRoleToUser`
+ * `auth.api.rbacAssignRoleToUser`
  *
  * **client:**
  * `authClient.rbac.assignRoleToUser`
  */
-export const assignRoleToUser = <O extends RBACPluginOptions>(options: O) => {
+export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/assign-role-to-user",
     {
@@ -437,12 +439,12 @@ export const assignRoleToUser = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.removeRoleFromUser`
+ * `auth.api.rbacRemoveRoleFromUser`
  *
  * **client:**
  * `authClient.rbac.removeRoleFromUser`
  */
-export const removeRoleFromUser = <O extends RBACPluginOptions>(options: O) => {
+export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/remove-role-from-user",
     {

@@ -27,12 +27,12 @@ import { validateKey } from "../validation"
  * ### API Methods
  *
  * **server:**
- * `auth.api.listRoles`
+ * `auth.api.rbacListRoles`
  *
  * **client:**
  * `authClient.rbac.listRoles`
  */
-export const listRoles = <O extends RBACPluginOptions>(options: O) => {
+export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
   const paginationConfig = createPaginationConfig(options)
 
   return createAuthEndpoint(
@@ -189,12 +189,12 @@ export const listRoles = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getRole`
+ * `auth.api.rbacGetRole`
  *
  * **client:**
  * `authClient.rbac.getRole`
  */
-export const getRole = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetRole = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/get-role",
     {
@@ -290,12 +290,12 @@ export const getRole = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.createRole`
+ * `auth.api.rbacCreateRole`
  *
  * **client:**
  * `authClient.rbac.createRole`
  */
-export const createRole = <O extends RBACPluginOptions>(options: O) => {
+export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
   const validationOptions = createValidationOptions(options)
 
   return createAuthEndpoint(
@@ -460,12 +460,12 @@ export const createRole = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.updateRole`
+ * `auth.api.rbacUpdateRole`
  *
  * **client:**
  * `authClient.rbac.updateRole`
  */
-export const updateRole = <O extends RBACPluginOptions>(options: O) => {
+export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
   const validationOptions = createValidationOptions(options)
 
   return createAuthEndpoint(
@@ -816,12 +816,12 @@ export const updateRole = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.deleteRole`
+ * `auth.api.rbacDeleteRole`
  *
  * **client:**
  * `authClient.rbac.deleteRole`
  */
-export const deleteRole = <O extends RBACPluginOptions>(options: O) => {
+export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/delete-role",
     {
@@ -933,12 +933,12 @@ export const deleteRole = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getRolesOptions`
+ * `auth.api.rbacGetRolesOptions`
  *
  * **client:**
  * `authClient.rbac.getRolesOptions`
  */
-export const getRolesOptions = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/get-roles-options",
     {
@@ -1116,12 +1116,12 @@ export const getRolesOptions = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getRolePermissions`
+ * `auth.api.rbacGetRolePermissions`
  *
  * **client:**
  * `authClient.rbac.getRolePermissions`
  */
-export const getRolePermissions = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) => {
   const paginationConfig = createPaginationConfig(options)
 
   return createAuthEndpoint(
@@ -1368,12 +1368,12 @@ export const getRolePermissions = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getRoleUsers`
+ * `auth.api.rbacGetRoleUsers`
  *
  * **client:**
  * `authClient.rbac.getRoleUsers`
  */
-export const getRoleUsers = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
   const paginationConfig = createPaginationConfig(options)
 
   return createAuthEndpoint(

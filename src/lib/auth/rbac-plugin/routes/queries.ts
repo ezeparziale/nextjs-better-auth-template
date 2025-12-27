@@ -11,12 +11,12 @@ import type { Permission, RBACPluginOptions, RolePermission, UserRole } from "..
  * ### API Methods
  *
  * **server:**
- * `auth.api.checkPermission`
+ * `auth.api.rbacCheckPermission`
  *
  * **client:**
  * `authClient.rbac.checkPermission`
  */
-export const checkPermission = <O extends RBACPluginOptions>(options: O) => {
+export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/check-permission",
     {
@@ -130,12 +130,12 @@ export const checkPermission = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.hasPermission`
+ * `auth.api.rbacHasPermission`
  *
  * **client:**
  * `authClient.rbac.hasPermission`
  */
-export const hasPermission = <O extends RBACPluginOptions>(options: O) => {
+export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/has-permission",
     {

@@ -20,12 +20,12 @@ import { validateKey } from "../validation"
  * ### API Methods
  *
  * **server:**
- * `auth.api.listPermissions`
+ * `auth.api.rbacListPermissions`
  *
  * **client:**
  * `authClient.rbac.listPermissions`
  */
-export const listPermissions = <O extends RBACPluginOptions>(options: O) => {
+export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => {
   const paginationConfig = createPaginationConfig(options)
 
   return createAuthEndpoint(
@@ -190,12 +190,12 @@ export const listPermissions = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getPermission`
+ * `auth.api.rbacGetPermission`
  *
  * **client:**
  * `authClient.rbac.getPermission`
  */
-export const getPermission = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetPermission = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/get-permission",
     {
@@ -291,12 +291,12 @@ export const getPermission = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.createPermission`
+ * `auth.api.rbacCreatePermission`
  *
  * **client:**
  * `authClient.rbac.createPermission`
  */
-export const createPermission = <O extends RBACPluginOptions>(options: O) => {
+export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) => {
   const validationOptions = createValidationOptions(options)
 
   return createAuthEndpoint(
@@ -481,12 +481,12 @@ export const createPermission = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.updatePermission`
+ * `auth.api.rbacUpdatePermission`
  *
  * **client:**
  * `authClient.rbac.updatePermission`
  */
-export const updatePermission = <O extends RBACPluginOptions>(options: O) => {
+export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) => {
   const validationOptions = createValidationOptions(options)
 
   return createAuthEndpoint(
@@ -745,12 +745,12 @@ export const updatePermission = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.deletePermission`
+ * `auth.api.rbacDeletePermission`
  *
  * **client:**
  * `authClient.rbac.deletePermission`
  */
-export const deletePermission = <O extends RBACPluginOptions>(options: O) => {
+export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/delete-permission",
     {
@@ -862,12 +862,12 @@ export const deletePermission = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getPermissionsOptions`
+ * `auth.api.rbacGetPermissionsOptions`
  *
  * **client:**
  * `authClient.rbac.getPermissionsOptions`
  */
-export const getPermissionsOptions = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/get-permissions-options",
     {
@@ -1045,12 +1045,12 @@ export const getPermissionsOptions = <O extends RBACPluginOptions>(options: O) =
  * ### API Methods
  *
  * **server:**
- * `auth.api.getPermissionRoles`
+ * `auth.api.rbacGetPermissionRoles`
  *
  * **client:**
  * `authClient.rbac.getPermissionRoles`
  */
-export const getPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) => {
   const paginationConfig = createPaginationConfig(options)
 
   return createAuthEndpoint(

@@ -21,12 +21,12 @@ import { getPaginationParams } from "../utils"
  * ### API Methods
  *
  * **server:**
- * `auth.api.getUserRoles`
+ * `auth.api.rbacGetUserRoles`
  *
  * **client:**
  * `authClient.rbac.getUserRoles`
  */
-export const getUserRoles = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
   const paginationConfig = createPaginationConfig(options)
 
   return createAuthEndpoint(
@@ -257,12 +257,12 @@ export const getUserRoles = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getUserPermissions`
+ * `auth.api.rbacGetUserPermissions`
  *
  * **client:**
  * `authClient.rbac.getUserPermissions`
  */
-export const getUserPermissions = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/get-user-permissions",
     {
@@ -408,12 +408,12 @@ export const getUserPermissions = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.setUserRoles`
+ * `auth.api.rbacSetUserRoles`
  *
  * **client:**
  * `authClient.rbac.setUserRoles`
  */
-export const setUserRoles = <O extends RBACPluginOptions>(options: O) => {
+export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/set-user-roles",
     {
@@ -613,12 +613,12 @@ export const setUserRoles = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.getUsersOptions`
+ * `auth.api.rbacGetUsersOptions`
  *
  * **client:**
  * `authClient.rbac.getUsersOptions`
  */
-export const getUsersOptions = <O extends RBACPluginOptions>(options: O) => {
+export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => {
   return createAuthEndpoint(
     "/rbac/get-users-options",
     {
@@ -796,7 +796,7 @@ export const getUsersOptions = <O extends RBACPluginOptions>(options: O) => {
  * ### API Methods
  *
  * **server:**
- * `auth.api.updateUser`
+ * `auth.api.rbacUpdateUser`
  *
  * **client:**
  * `authClient.rbac.updateUser`
