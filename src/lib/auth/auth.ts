@@ -1,12 +1,8 @@
 import { passkey } from "@better-auth/passkey"
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
-import {
-  admin,
-  createAuthMiddleware,
-  lastLoginMethod,
-  twoFactor,
-} from "better-auth/plugins"
+import { createAuthMiddleware } from "better-auth/api"
+import { admin, lastLoginMethod, twoFactor } from "better-auth/plugins"
 import { db } from "../db"
 import {
   sendNewLoginEmail,
