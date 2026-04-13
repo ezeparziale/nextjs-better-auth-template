@@ -12,8 +12,7 @@ overrides:
   socket.io-parser@>=4.0.0 <4.2.6: ">=4.2.6"
   brace-expansion@<1.1.13: ">=1.1.13"
   brace-expansion@>=2.0.0 <2.0.3: ">=2.0.3"
-  picomatch@<2.3.2: ">=2.3.2"
-  picomatch@>=4.0.0 <4.0.4: ">=4.0.4"
+  picomatch: ^4.0.4
   defu@<=6.1.4: ">=6.1.5"
   "@hono/node-server@<1.19.13": ">=1.19.13"
 
@@ -4293,7 +4292,7 @@ packages:
       }
     engines: { node: ">=12.0.0" }
     peerDependencies:
-      picomatch: ">=4.0.4"
+      picomatch: ^4.0.4
     peerDependenciesMeta:
       picomatch:
         optional: true
@@ -5767,13 +5766,6 @@ packages:
       {
         integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==,
       }
-
-  picomatch@4.0.3:
-    resolution:
-      {
-        integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==,
-      }
-    engines: { node: ">=12" }
 
   picomatch@4.0.4:
     resolution:
@@ -10294,7 +10286,7 @@ snapshots:
   micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
-      picomatch: 4.0.3
+      picomatch: 4.0.4
 
   mime-db@1.52.0: {}
 
@@ -10551,8 +10543,6 @@ snapshots:
       split2: 4.2.0
 
   picocolors@1.1.1: {}
-
-  picomatch@4.0.3: {}
 
   picomatch@4.0.4: {}
 
