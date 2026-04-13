@@ -114,9 +114,7 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
       })
 
       if (!role) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       // Check if permission exists
@@ -131,9 +129,7 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
       })
 
       if (!permission) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
       // Check if assignment already exists
@@ -369,9 +365,7 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
       })
 
       if (!user) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.USER_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
       // Check if role exists
@@ -386,9 +380,7 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
       })
 
       if (!role) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       // Check if assignment already exists

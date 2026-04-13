@@ -270,9 +270,7 @@ export const rbacGetRole = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (!role) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       return ctx.json({
@@ -389,9 +387,7 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (existingRole) {
-        throw new APIError("BAD_REQUEST", {
-          message: RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS,
-        })
+        throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS)
       }
 
       // If permissionIds provided, validate they exist
@@ -596,9 +592,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (!existingRole) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       // If updating key, check if new key already exists
@@ -614,9 +608,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         })
 
         if (duplicateRole) {
-          throw new APIError("BAD_REQUEST", {
-            message: RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS,
-          })
+          throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS)
         }
       }
 
@@ -901,9 +893,7 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (!existingRole) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       // Delete role
@@ -1270,9 +1260,7 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
 
       // If the role does not exist, return a 404 error
       if (!role) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       // Get all role-permission mappings for this role
@@ -1522,9 +1510,7 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
 
       // If the role does not exist, return a 404 error
       if (!role) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
       // Get all user-role mappings for this role

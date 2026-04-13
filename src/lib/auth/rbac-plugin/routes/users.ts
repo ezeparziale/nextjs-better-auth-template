@@ -159,9 +159,7 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
 
       // If the user does not exist, return a 404 error
       if (!user) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.USER_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
       // Get all user-role mappings for this user
@@ -342,9 +340,7 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
       })
 
       if (!user) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.USER_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
       // Get user roles
@@ -512,9 +508,7 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (!user) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.USER_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
       // Validate all roles exist
@@ -885,9 +879,7 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (!user) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.USER_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
       // Update roles if provided

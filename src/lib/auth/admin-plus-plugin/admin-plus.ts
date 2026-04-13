@@ -179,9 +179,7 @@ export const adminPlusPlugin = () => {
           })
 
           if (!user) {
-            throw new APIError("NOT_FOUND", {
-              message: ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND,
-            })
+            throw APIError.from("NOT_FOUND", ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND)
           }
 
           // Check if user has credential provider
@@ -333,9 +331,7 @@ export const adminPlusPlugin = () => {
           })
 
           if (!user) {
-            throw new APIError("NOT_FOUND", {
-              message: ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND,
-            })
+            throw APIError.from("NOT_FOUND", ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND)
           }
 
           // Check if user has credential provider
@@ -486,25 +482,19 @@ export const adminPlusPlugin = () => {
           })
 
           if (!user) {
-            throw new APIError("NOT_FOUND", {
-              message: ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND,
-            })
+            throw APIError.from("NOT_FOUND", ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND)
           }
 
           // Check length password
           const minPasswordLength = ctx.context.password.config.minPasswordLength
           if (newPassword.length < minPasswordLength) {
             ctx.context.logger.error("Password is too short")
-            throw new APIError("BAD_REQUEST", {
-              message: BASE_ERROR_CODES.PASSWORD_TOO_SHORT,
-            })
+            throw APIError.from("BAD_REQUEST", BASE_ERROR_CODES.PASSWORD_TOO_SHORT)
           }
           const maxPasswordLength = ctx.context.password.config.maxPasswordLength
           if (newPassword.length > maxPasswordLength) {
             ctx.context.logger.error("Password is too long")
-            throw new APIError("BAD_REQUEST", {
-              message: BASE_ERROR_CODES.PASSWORD_TOO_LONG,
-            })
+            throw APIError.from("BAD_REQUEST", BASE_ERROR_CODES.PASSWORD_TOO_LONG)
           }
 
           // Check if user has existing credential account

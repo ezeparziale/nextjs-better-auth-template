@@ -271,9 +271,7 @@ export const rbacGetPermission = <O extends RBACPluginOptions>(options: O) => {
       })
 
       if (!permission) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
       return ctx.json({
@@ -410,9 +408,7 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
       })
 
       if (existingPermission) {
-        throw new APIError("BAD_REQUEST", {
-          message: RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS,
-        })
+        throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS)
       }
 
       // If roleIds provided, validate they exist
@@ -608,9 +604,7 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
       })
 
       if (!existingPermission) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
       // If updating key, check if new key already exists
@@ -626,9 +620,7 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         })
 
         if (duplicatePermission) {
-          throw new APIError("BAD_REQUEST", {
-            message: RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS,
-          })
+          throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS)
         }
       }
 
@@ -830,9 +822,7 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
       })
 
       if (!existingPermission) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
       // Delete permission
@@ -1199,9 +1189,7 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
 
       // If the permission does not exist, return a 404 error
       if (!permission) {
-        throw new APIError("NOT_FOUND", {
-          message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
-        })
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
       // Get all role-permission mappings that reference this permission
