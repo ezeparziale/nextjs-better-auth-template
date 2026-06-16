@@ -522,7 +522,7 @@ export const adminPlusPlugin = () => {
             })
           }
 
-          await ctx.context.internalAdapter.deleteSessions(user.id)
+          await ctx.context.internalAdapter.deleteSessions([user.id])
 
           return ctx.json({ success: true })
         },
