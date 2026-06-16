@@ -22,7 +22,7 @@
     "**/*": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "@better-auth/passkey": "1.6.2",
+    "@better-auth/passkey": "1.6.19",
     "@hookform/resolvers": "5.2.2",
     "@prisma/adapter-pg": "7.7.0",
     "@prisma/client": "7.7.0",
@@ -44,7 +44,7 @@
     "@react-email/components": "1.0.12",
     "@tanstack/react-table": "8.21.3",
     "@vercel/blob": "2.3.3",
-    "better-auth": "1.6.2",
+    "better-auth": "1.6.19",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
