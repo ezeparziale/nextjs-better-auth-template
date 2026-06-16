@@ -7,6 +7,18 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - "@hono/node-server@1.19.13"
   - postcss@8.5.10
+  - ws@8.20.1
+  - hono@4.12.21
+  - esbuild@0.28.1
+  - ws@8.21.0
+  - js-yaml@4.1.2
+  - "@babel/core@7.29.1"
+  - hono@4.12.25
 overrides:
-  "@hono/node-server@<1.19.13": ">=1.19.13"
-  postcss@<8.5.10: ">=8.5.10"
+  "@babel/core@<=7.29.0": ^7.29.1
+  "@hono/node-server@<1.19.13": ^1.19.13
+  "esbuild@<0.28.1": ^0.28.1
+  "hono@<4.12.25": ^4.12.25
+  "js-yaml@<=4.1.1": ^4.1.2
+  "postcss@<8.5.10": ^8.5.10
+  "ws@<8.21.0": ^8.21.0
