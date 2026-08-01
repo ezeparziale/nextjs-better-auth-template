@@ -83,6 +83,9 @@ CREATE TABLE "two_factor" (
     "secret" TEXT NOT NULL,
     "backup_codes" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
+    "verified" BOOLEAN NOT NULL,
+    "failed_verification_count" INTEGER NOT NULL,
+    "locked_until" TIMESTAMPTZ(3),
 
     CONSTRAINT "two_factor_pkey" PRIMARY KEY ("id")
 );
@@ -177,7 +180,13 @@ CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 CREATE INDEX "two_factor_secret_idx" ON "two_factor"("secret");
 
 -- CreateIndex
+CREATE INDEX "two_factor_user_id_idx" ON "two_factor"("user_id");
+
+-- CreateIndex
 CREATE INDEX "passkey_user_id_idx" ON "passkey"("user_id");
+
+-- CreateIndex
+CREATE INDEX "passkey_credential_id_idx" ON "passkey"("credential_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "roles_key_key" ON "roles"("key");
