@@ -116,7 +116,7 @@ export async function sendPasswordChangedEmail(
   const html = await render(
     reactPasswordChangedEmail({
       userEmail,
-      timestamp: new Date().toLocaleString(),
+      timestamp: new Date().toISOString(),
       secureAccountLink: `${process.env.BETTER_AUTH_URL}/forgot-password`,
       appName: "Nog",
       browser: parsedUA.browser,
