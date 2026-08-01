@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -32,6 +33,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function NameForm({ name }: { name: string }) {
+  const router = useRouter()
   const { refetch } = useSession()
 
   const form = useForm<FormData>({
@@ -52,7 +54,8 @@ export default function NameForm({ name }: { name: string }) {
         toast.error(result.error.message)
       } else {
         toast.success("Name updated successfully.")
-        refetch()
+        await refetch()
+        router.refresh()
         form.reset({ ...values })
       }
     } catch {

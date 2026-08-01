@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -50,6 +51,7 @@ export default function JobDetailsForm({
   department: string | null | undefined
   location: string | null | undefined
 }) {
+  const router = useRouter()
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     values: {
@@ -71,6 +73,7 @@ export default function JobDetailsForm({
         toast.error(result.error.message)
       } else {
         toast.success("Job details updated successfully.")
+        router.refresh()
         form.reset({ ...values })
       }
     } catch {

@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import type React from "react"
 import { useCallback, useState } from "react"
 import { UploadIcon, XIcon, ZoomInIcon } from "lucide-react"
@@ -36,6 +37,7 @@ import { Slider } from "@/components/ui/slider"
 import { Spinner } from "@/components/ui/spinner"
 
 export default function AvatarForm() {
+  const router = useRouter()
   const { data: session, isPending, refetch } = useSession()
 
   // State for image upload and cropping
@@ -126,7 +128,8 @@ export default function AvatarForm() {
       setZoom(1)
 
       // Refetch session to get new avatar
-      refetch()
+      await refetch()
+      router.refresh()
     } catch (error) {
       console.error("Upload error:", error)
       toast.error(error instanceof Error ? error.message : "Failed to upload avatar")
@@ -158,7 +161,8 @@ export default function AvatarForm() {
       }
 
       toast.success("Avatar removed successfully")
-      refetch()
+      await refetch()
+      router.refresh()
     } catch (error) {
       console.error("Delete error:", error)
       toast.error(error instanceof Error ? error.message : "Failed to remove avatar")

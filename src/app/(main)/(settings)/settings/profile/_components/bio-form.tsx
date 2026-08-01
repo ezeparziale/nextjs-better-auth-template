@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -28,6 +29,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function BioForm({ bio }: { bio: string | null | undefined }) {
+  const router = useRouter()
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     values: {
@@ -46,6 +48,7 @@ export default function BioForm({ bio }: { bio: string | null | undefined }) {
         toast.error(result.error.message)
       } else {
         toast.success("Bio updated successfully.")
+        router.refresh()
         form.reset({ ...values })
       }
     } catch {

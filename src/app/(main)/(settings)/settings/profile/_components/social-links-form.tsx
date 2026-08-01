@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -38,6 +39,7 @@ export default function SocialLinksForm({
   githubUrl: string | null | undefined
   xUrl: string | null | undefined
 }) {
+  const router = useRouter()
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     values: {
@@ -59,6 +61,7 @@ export default function SocialLinksForm({
         toast.error(result.error.message)
       } else {
         toast.success("Social links updated successfully.")
+        router.refresh()
         form.reset({ ...values })
       }
     } catch {
