@@ -1,6 +1,5 @@
 "use server"
 
-import { render } from "@react-email/components"
 import {
   APIError,
   AuthContext,
@@ -11,6 +10,7 @@ import {
 } from "better-auth"
 import nodemailer from "nodemailer"
 import SMTPTransport from "nodemailer/lib/smtp-transport"
+import { render } from "react-email"
 import { parseUserAgent } from "../parse-user-agent"
 import { NewLoginEmail } from "./new-login"
 import { reactPasswordChangedEmail } from "./password-changed"
