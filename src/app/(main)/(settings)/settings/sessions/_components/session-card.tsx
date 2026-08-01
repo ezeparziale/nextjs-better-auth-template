@@ -72,7 +72,21 @@ export function SessionCard({
 }: SessionCardProps) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
-  const { deviceType, deviceDescription } = parseUserAgent(session)
+  const [userAgentDetails, setUserAgentDetails] = useState<{
+    deviceType: string
+    deviceDescription: string
+    location: string
+  } | null>(null)
+
+  useEffect(() => {
+    parseUserAgent(session).then((details) => {
+      setUserAgentDetails(details)
+    })
+  }, [session])
+
+  const deviceType = userAgentDetails?.deviceType
+  const deviceDescription = userAgentDetails?.deviceDescription || "Loading..."
+  const location = userAgentDetails?.location || ""
 
   const formattedDate = formatDistanceToNow(new Date(session.createdAt), {
     addSuffix: true,
@@ -176,7 +190,14 @@ export function SessionCard({
               <div className="flex items-center gap-2">
                 <GlobeIcon className="size-3.5" />
                 <span>
-                  {session.ipAddress ? maskIP(session.ipAddress) : "IP not available"}
+                  {session.ipAddress ? (
+                    <>
+                      {maskIP(session.ipAddress)}
+                      {location && ` (${location})`}
+                    </>
+                  ) : (
+                    "IP not available"
+                  )}
                 </span>
               </div>
               <div>User agent: {session.userAgent || "Unknown"}</div>

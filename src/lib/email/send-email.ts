@@ -103,7 +103,7 @@ export async function sendNewLoginEmail(ctx: ExtendedMiddlewareContext) {
   const user = await ctx?.context.internalAdapter.findUserById(session.userId)
 
   if (user) {
-    const { browser, os, location, ipAddress } = parseUserAgent(session)
+    const { browser, os, location, ipAddress } = await parseUserAgent(session)
 
     const html = await render(
       NewLoginEmail({

@@ -1,5 +1,6 @@
 import { Session } from "better-auth"
 import { UAParser } from "ua-parser-js"
+import { getApproximateLocation } from "./geoip"
 
 interface ParsedUserAgent {
   browser: string
@@ -13,7 +14,7 @@ interface ParsedUserAgent {
   ipAddress: string
 }
 
-export function parseUserAgent(session: Session): ParsedUserAgent {
+export async function parseUserAgent(session: Session): Promise<ParsedUserAgent> {
   const parser = new UAParser(session.userAgent || "")
   const result = parser.getResult()
 
@@ -29,6 +30,8 @@ export function parseUserAgent(session: Session): ParsedUserAgent {
     deviceModel ? ` (${deviceModel})` : ""
   }`
 
+  const location = await getApproximateLocation(session.ipAddress)
+
   return {
     browser,
     browserVersion,
@@ -37,7 +40,7 @@ export function parseUserAgent(session: Session): ParsedUserAgent {
     deviceType,
     deviceModel,
     deviceDescription,
-    location: "Unknown", // TODO: get localization
+    location,
     ipAddress: session.ipAddress || "Unknown",
   }
 }
