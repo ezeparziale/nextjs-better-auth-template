@@ -1,6 +1,5 @@
 "use server"
 
-import { Session } from "better-auth"
 import { UAParser } from "ua-parser-js"
 import { getApproximateLocation } from "./geoip"
 
@@ -16,7 +15,10 @@ interface ParsedUserAgent {
   ipAddress: string
 }
 
-export async function parseUserAgent(session: Session): Promise<ParsedUserAgent> {
+export async function parseUserAgent(session: {
+  ipAddress?: string | null
+  userAgent?: string | null
+}): Promise<ParsedUserAgent> {
   const parser = new UAParser(session.userAgent || "")
   const result = parser.getResult()
 

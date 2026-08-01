@@ -15,6 +15,10 @@ interface PasswordChangedEmailProps {
   timestamp: string
   secureAccountLink: string
   appName: string
+  browser: string
+  os: string
+  location: string
+  ipAddress: string
 }
 
 export function PasswordChangedEmail({
@@ -22,6 +26,10 @@ export function PasswordChangedEmail({
   timestamp,
   secureAccountLink,
   appName,
+  browser,
+  os,
+  location,
+  ipAddress,
 }: PasswordChangedEmailProps) {
   const previewText = "Your password has been changed"
 
@@ -40,10 +48,24 @@ export function PasswordChangedEmail({
               successfully.
             </Text>
             <Section className="my-6 rounded border border-solid border-gray-300 bg-gray-50 p-4">
-              <Text className="m-0 mb-2 text-xs leading-5 text-gray-700">
-                Changed at:
+              <Text className="m-0 mb-2 text-xs font-semibold text-gray-700">
+                Change Details:
               </Text>
-              <Text className="m-0 text-sm font-semibold text-black">{timestamp}</Text>
+              <Text className="m-0 mb-1 text-sm text-gray-800">
+                <strong>Changed at:</strong> {timestamp}
+              </Text>
+              <Text className="m-0 mb-1 text-sm text-gray-800">
+                <strong>Browser:</strong> {browser}
+              </Text>
+              <Text className="m-0 mb-1 text-sm text-gray-800">
+                <strong>Operating System:</strong> {os}
+              </Text>
+              <Text className="m-0 mb-1 text-sm text-gray-800">
+                <strong>Location:</strong> {location}
+              </Text>
+              <Text className="m-0 text-sm text-gray-800">
+                <strong>IP Address:</strong> {ipAddress}
+              </Text>
             </Section>
             <Text className="mb-5 text-sm leading-6 text-black">
               If you made this change, you can safely ignore this email. Your account is

@@ -1,5 +1,6 @@
 "use server"
 
+import { headers } from "next/headers"
 import {
   APIError,
   AuthContext,
@@ -66,6 +67,8 @@ export async function sendPasswordChangedEmail(
 ) {
   // Determinar el email y validar el contexto
   let userEmail: string
+  let ipAddress = "Unknown"
+  let userAgent = ""
 
   if (typeof userEmailOrCtx === "string") {
     userEmail = userEmailOrCtx
@@ -82,14 +85,44 @@ export async function sendPasswordChangedEmail(
     }
 
     userEmail = ctx.context.session.user.email
+    ipAddress = ctx.context.session.session.ipAddress || "Unknown"
+    userAgent = ctx.context.session.session.userAgent || ""
   }
+
+  // Fallback to headers if IP/UA is missing or we only got userEmail
+  if (ipAddress === "Unknown" || !userAgent) {
+    try {
+      const headerList = await headers()
+      const ip =
+        headerList.get("x-forwarded-for")?.split(",")[0].trim() ||
+        headerList.get("x-real-ip")
+      if (ip) {
+        ipAddress = ip
+      }
+      const ua = headerList.get("user-agent")
+      if (ua) {
+        userAgent = ua
+      }
+    } catch (e) {
+      console.error("Failed to read headers for password changed email:", e)
+    }
+  }
+
+  const parsedUA = await parseUserAgent({
+    ipAddress,
+    userAgent,
+  })
 
   const html = await render(
     reactPasswordChangedEmail({
       userEmail,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleString(),
       secureAccountLink: `${process.env.BETTER_AUTH_URL}/forgot-password`,
       appName: "Nog",
+      browser: parsedUA.browser,
+      os: parsedUA.os,
+      location: parsedUA.location,
+      ipAddress: parsedUA.ipAddress,
     }),
   )
 
