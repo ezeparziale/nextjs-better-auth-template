@@ -36,7 +36,7 @@ export async function getApproximateLocation(
     const timeout = setTimeout(() => controller.abort(), 3000)
 
     const res = await fetch(
-      `https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,city,regionName,country`,
+      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,city,regionName,country`,
       { signal: controller.signal },
     )
     clearTimeout(timeout)
