@@ -1,3 +1,5 @@
+"use server"
+
 import { Session } from "better-auth"
 import { UAParser } from "ua-parser-js"
 import { getApproximateLocation } from "./geoip"
