@@ -29,8 +29,7 @@ const innerVariants = cva("", {
 })
 
 interface MaxWidthWrapperProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof wrapperVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof wrapperVariants> {}
 
 export default function MaxWidthWrapper({
   children,

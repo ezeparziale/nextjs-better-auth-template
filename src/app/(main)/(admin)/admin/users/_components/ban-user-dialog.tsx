@@ -41,12 +41,7 @@ interface BanUnbanUserDialogProps {
 }
 
 type BanDurationOption =
-  | "1_hour"
-  | "1_day"
-  | "1_week"
-  | "1_month"
-  | "1_year"
-  | "forever"
+  "1_hour" | "1_day" | "1_week" | "1_month" | "1_year" | "forever"
 
 const DURATION_SECONDS: Record<Exclude<BanDurationOption, "forever">, number> = {
   "1_hour": 3600,
