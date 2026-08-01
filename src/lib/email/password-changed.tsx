@@ -38,7 +38,7 @@ export function PasswordChangedEmail({
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="mx-auto my-auto bg-gray-100 px-2 font-sans">
-          <Container className="mx-auto my-10 max-w-[600px] rounded border border-solid border-gray-300 bg-white p-6">
+          <Container className="mx-auto my-10 max-w-150 rounded border border-solid border-gray-300 bg-white p-6">
             <Heading className="mx-0 mb-5 p-0 text-center text-2xl font-semibold text-black">
               Password changed successfully
             </Heading>

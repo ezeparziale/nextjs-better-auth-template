@@ -40,7 +40,7 @@ export function NewLoginEmail({
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
-          <Container className="mx-auto my-10 max-w-[465px] rounded border border-solid border-gray-200 p-5">
+          <Container className="mx-auto my-10 max-w-116.25 rounded border border-solid border-gray-200 p-5">
             <Heading className="mx-0 my-7 p-0 text-center text-2xl font-normal text-black">
               New login detected on your <strong>Nog</strong> account
             </Heading>

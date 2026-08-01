@@ -214,7 +214,7 @@ export default function AvatarForm() {
                 </Avatar>
                 {currentAvatar && (
                   <Button
-                    className="absolute end-0 top-0 size-5 cursor-pointer rounded-full border"
+                    className="absolute inset-e-0 top-0 size-5 cursor-pointer rounded-full border"
                     size="icon"
                     variant="secondary"
                     onClick={handleDelete}
@@ -269,7 +269,7 @@ export default function AvatarForm() {
 
           <div className="space-y-4">
             {/* Cropper */}
-            <div className="bg-muted relative h-[400px] w-full overflow-hidden rounded-lg">
+            <div className="bg-muted relative h-100 w-full overflow-hidden rounded-lg">
               {imageSrc && (
                 <Cropper
                   image={imageSrc}
