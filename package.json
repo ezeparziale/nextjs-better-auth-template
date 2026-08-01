@@ -43,7 +43,7 @@
     "@radix-ui/react-tooltip": "1.2.16",
     "@react-email/components": "1.0.12",
     "@tanstack/react-table": "8.21.3",
-    "@vercel/blob": "2.3.3",
+    "@vercel/blob": "2.6.1",
     "better-auth": "1.6.25",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
