@@ -10,7 +10,7 @@ const PRIVATE_IP_PATTERNS = [
 const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-fA-F:]+$/
 
 const locationCache = new Map<string, { value: string; expires: number }>()
-const CACHE_TTL_MS = 1000 * 60 * 60 // 1 hora
+const CACHE_TTL_MS = 1000 * 60 * 60
 
 function isPrivateOrLocal(ip: string): boolean {
   if (ip === "localhost") return true
