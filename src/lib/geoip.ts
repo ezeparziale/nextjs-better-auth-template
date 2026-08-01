@@ -5,56 +5,78 @@ const PRIVATE_IP_PATTERNS = [
   /^172\.(1[6-9]|2\d|3[01])\./,
   /^::1$/,
   /^fe80:/i,
+  /^fc00:/i,
+  /^fd00:/i,
 ]
 
-const IP_REGEX = /^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-fA-F:]+$/
+const IP_REGEX =
+  /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$|^[0-9a-fA-F:]+$/
 
 const locationCache = new Map<string, { value: string; expires: number }>()
 const CACHE_TTL_MS = 1000 * 60 * 60
+const LOOKUP_TIMEOUT_MS = 3000
 
 function isPrivateOrLocal(ip: string): boolean {
-  if (ip === "localhost") return true
-  return PRIVATE_IP_PATTERNS.some((pattern) => pattern.test(ip))
+  const normalizedIp = ip.trim().toLowerCase()
+
+  if (normalizedIp === "localhost") return true
+
+  return PRIVATE_IP_PATTERNS.some((pattern) => pattern.test(normalizedIp))
 }
 
 export async function getApproximateLocation(
   ip: string | null | undefined,
 ): Promise<string> {
-  if (!ip) return "Unknown"
+  const normalizedIp = ip?.trim()
 
-  if (isPrivateOrLocal(ip)) return "Localhost"
+  if (!normalizedIp) return "Unknown"
+  if (isPrivateOrLocal(normalizedIp)) return "Localhost"
+  if (!IP_REGEX.test(normalizedIp)) return "Unknown"
 
-  if (!IP_REGEX.test(ip)) return "Unknown"
-
-  const cached = locationCache.get(ip)
-  if (cached && cached.expires > Date.now()) {
-    return cached.value
+  const cached = locationCache.get(normalizedIp)
+  if (cached) {
+    if (cached.expires > Date.now()) return cached.value
+    locationCache.delete(normalizedIp)
   }
 
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 3000)
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), LOOKUP_TIMEOUT_MS)
 
+  try {
     const res = await fetch(
-      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,city,regionName,country`,
+      `http://ip-api.com/json/${encodeURIComponent(
+        normalizedIp,
+      )}?fields=status,city,regionName,country`,
       { signal: controller.signal },
     )
-    clearTimeout(timeout)
 
     if (!res.ok) return "Unknown"
 
-    const data = await res.json()
+    const data: {
+      status?: string
+      city?: string
+      regionName?: string
+      country?: string
+    } = await res.json()
 
-    if (data.status === "success") {
-      const location = [data.city, data.regionName, data.country]
-        .filter(Boolean)
-        .join(", ")
-      locationCache.set(ip, { value: location, expires: Date.now() + CACHE_TTL_MS })
-      return location
-    }
+    if (data.status !== "success") return "Unknown"
+
+    const location = [data.city, data.regionName, data.country]
+      .filter(Boolean)
+      .join(", ")
+
+    const value = location || "Unknown"
+
+    locationCache.set(normalizedIp, {
+      value,
+      expires: Date.now() + CACHE_TTL_MS,
+    })
+
+    return value
   } catch (error) {
     console.error("GeoIP lookup failed:", error)
+    return "Unknown"
+  } finally {
+    clearTimeout(timeout)
   }
-
-  return "Unknown"
 }
