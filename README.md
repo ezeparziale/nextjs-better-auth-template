@@ -28,8 +28,11 @@ pages.
   - Delete user account.
 - **Authentication:**
   - Link and unlink social login providers.
+- **Notifications:**
+  - Manage email preferences for important account-related notifications.
 - **Sessions:**
   - View and manage active sessions.
+  - See device, browser, and approximate location details.
 
 ### 👑 Admin
 
@@ -44,8 +47,10 @@ pages.
 - **Welcome:** Sent to new users after they sign up.
 - **Verify Email:** Sent to new users to verify their email address.
 - **Reset Password:** Sent when a user requests to reset their password.
-- **Password Changed:** Sent to users after they have changed their password.
-- **New Login:** Sent to users when a new login is detected.
+- **Password Changed:** Sent to users after they change their password, including device
+  and IP context.
+- **New Login:** Sent to users when a new login is detected, with location-aware
+  details.
 
 ### ✨ Better Auth Plugins
 
@@ -90,10 +95,14 @@ To get started with this template, follow these steps:
    git clone https://github.com/ezeparziale/nextjs-better-auth-template.git
    ```
 2. **Install dependencies:**
+
    ```bash
    cd nextjs-better-auth-template
-   npm install
+   pnpm install
    ```
+
+   > [!WARNING] This project requires Node.js 24 or newer.
+
 3. **Set up environment variables:**
 
    ```bash
@@ -104,7 +113,7 @@ To get started with this template, follow these steps:
 
 4. **Run the development server:**
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ## 🐳 Using Docker Compose
@@ -114,6 +123,6 @@ To set up PostgreSQL using Docker Compose, follow these steps:
 1. Ensure Docker and Docker Compose are installed on your machine.
 2. Start the PostgreSQL container:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
    The PostgreSQL database will be available at `localhost:5432`.

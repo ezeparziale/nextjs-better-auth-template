@@ -50,6 +50,8 @@ model User {
   department   String?
   location     String?
 
+  notificationNewLoginEmail Boolean @default(true) @map("notification_new_login_email")
+
   @@index([email])
   @@map("users")
 }
