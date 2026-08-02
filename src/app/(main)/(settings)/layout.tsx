@@ -9,6 +9,7 @@ const settingsNav = [
   { name: "Profile", href: "/settings/profile" },
   { name: "Sessions", href: "/settings/sessions" },
   { name: "Authentication", href: "/settings/authentication" },
+  { name: "Notifications", href: "/settings/notifications" },
   { name: "Account", href: "/settings/account" },
 ]
 

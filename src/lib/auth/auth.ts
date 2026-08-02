@@ -94,6 +94,10 @@ export const auth = betterAuth({
         required: false,
         fieldName: "location",
       },
+      notificationNewLoginEmail: {
+        type: "boolean",
+        required: false,
+      },
     },
   },
   emailAndPassword: {

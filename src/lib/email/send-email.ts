@@ -12,6 +12,7 @@ import {
 import nodemailer from "nodemailer"
 import SMTPTransport from "nodemailer/lib/smtp-transport"
 import { render } from "react-email"
+import { User as CustomUser } from "../auth/auth"
 import { parseUserAgent } from "../parse-user-agent"
 import { NewLoginEmail } from "./new-login"
 import { reactPasswordChangedEmail } from "./password-changed"
@@ -133,9 +134,15 @@ export async function sendNewLoginEmail(ctx: ExtendedMiddlewareContext) {
 
   if (!session) return
 
-  const user = await ctx?.context.internalAdapter.findUserById(session.userId)
+  const user = (await ctx?.context.internalAdapter.findUserById(
+    session.userId,
+  )) as CustomUser | null
 
   if (user) {
+    if (user.notificationNewLoginEmail === false) {
+      return
+    }
+
     const { browser, os, location, ipAddress } = await parseUserAgent(session)
 
     const html = await render(
