@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { HoverPrefetchLink } from "@/components/hover-prefecth-link"
 import { PageHeader } from "@/components/page-header"
 
 const settingsNav = [
@@ -32,7 +33,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
               (item.href !== "/settings" && pathname.startsWith(item.href))
 
             return (
-              <Link
+              <HoverPrefetchLink
                 key={item.href}
                 href={item.href}
                 className={cn(
@@ -43,7 +44,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                 )}
               >
                 {item.name}
-              </Link>
+              </HoverPrefetchLink>
             )
           })}
         </nav>
