@@ -67,7 +67,7 @@ export function SiteHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/settings/profile">
+                  <Link href="/settings/profile" prefetch={true}>
                     <Settings className="mr-2 size-4" />
                     <span>Settings</span>
                   </Link>
