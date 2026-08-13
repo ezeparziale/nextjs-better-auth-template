@@ -1,3 +1,5 @@
+"use client"
+
 import { Table } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -12,13 +14,10 @@ import {
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
-  showSelectedRows?: boolean
 }
 
-export function DataTablePagination<TData>({
-  table,
-  showSelectedRows = false,
-}: DataTablePaginationProps<TData>) {
+export function DataTablePagination<TData>({ table }: DataTablePaginationProps<TData>) {
+  const showSelectedRows = table.getColumn("select")
   return (
     <div
       className={cn(
