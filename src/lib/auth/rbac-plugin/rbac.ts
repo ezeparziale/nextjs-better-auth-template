@@ -44,6 +44,10 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       rbacRemovePermissionFromRole: routes.rbacRemovePermissionFromRole(opts),
       rbacAssignRoleToUser: routes.rbacAssignRoleToUser(opts),
       rbacRemoveRoleFromUser: routes.rbacRemoveRoleFromUser(opts),
+      rbacBulkAssignRoleToUsers: routes.rbacBulkAssignRoleToUsers(opts),
+      rbacBulkRemoveRoleFromUsers: routes.rbacBulkRemoveRoleFromUsers(opts),
+      rbacBulkAssignPermissionsToRole: routes.rbacBulkAssignPermissionsToRole(opts),
+      rbacBulkRemovePermissionsFromRole: routes.rbacBulkRemovePermissionsFromRole(opts),
 
       // Permissions
       rbacListPermissions: routes.rbacListPermissions(opts),
@@ -62,6 +66,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       rbacListRoles: routes.rbacListRoles(opts),
       rbacGetRole: routes.rbacGetRole(opts),
       rbacCreateRole: routes.rbacCreateRole(opts),
+      rbacCloneRole: routes.rbacCloneRole(opts),
       rbacUpdateRole: routes.rbacUpdateRole(opts),
       rbacDeleteRole: routes.rbacDeleteRole(opts),
       rbacGetRolesOptions: routes.rbacGetRolesOptions(opts),

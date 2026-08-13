@@ -451,6 +451,285 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
 /**
  * ### Endpoint
  *
+ * POST `/rbac/clone-role`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.rbacCloneRole`
+ *
+ * **client:**
+ * `authClient.rbac.cloneRole`
+ */
+export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
+  const validationOptions = createValidationOptions(options)
+
+  return createAuthEndpoint(
+    "/rbac/clone-role",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        id: z.string().meta({
+          description: "The id of the role to clone.",
+        }),
+        name: z.string().meta({
+          description: "The name of the cloned role.",
+        }),
+        key: z.string().meta({
+          description: "The unique key for the cloned role.",
+        }),
+        description: z.string().optional().meta({
+          description: "Optional description of the cloned role.",
+        }),
+        isActive: z.boolean().optional().meta({
+          description:
+            "Optional flag to set role active status. Defaults to the source role value.",
+        }),
+        copyPermissions: z.boolean().optional().default(true).meta({
+          description:
+            "Whether to copy the permissions from the source role. Defaults to true.",
+        }),
+        copyUsers: z.boolean().optional().default(true).meta({
+          description:
+            "Whether to copy the user assignments from the source role. Defaults to true.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.cloneRole",
+          summary: "Clone an existing role",
+          description:
+            "Create a copy of an existing role, optionally copying its permissions.",
+          responses: {
+            200: {
+              description: "Role cloned successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      role: {
+                        $ref: "#/components/schemas/Role",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "Role not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["ROLE_NOT_FOUND"],
+                      },
+                      error: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Role key already exists",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["ROLE_ALREADY_EXISTS"],
+                      },
+                      error: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("cloneRole")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      // Find the source role
+      const sourceRole = await ctx.context.adapter.findOne<Role>({
+        model: "role",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.id,
+          },
+        ],
+      })
+
+      if (!sourceRole) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // Validate the new role key
+      validateKey("role", ctx.body.key, validationOptions)
+
+      // Check if a role with the same key already exists
+      const existingRole = await ctx.context.adapter.findOne<Role>({
+        model: "role",
+        where: [
+          {
+            field: "key",
+            value: ctx.body.key,
+          },
+        ],
+      })
+
+      if (existingRole) {
+        throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS)
+      }
+
+      // Gather permissions to copy from the source role
+      let permissionIds: string[] = []
+      if (ctx.body.copyPermissions) {
+        const rolePermissions = await ctx.context.adapter.findMany<RolePermission>({
+          model: "rolePermission",
+          where: [
+            {
+              field: "roleId",
+              value: sourceRole.id,
+            },
+          ],
+        })
+
+        permissionIds = rolePermissions.map((rp) => rp.permissionId)
+
+        // Validate permissions exist
+        for (const permissionId of permissionIds) {
+          const permission = await ctx.context.adapter.findOne<Permission>({
+            model: "permission",
+            where: [
+              {
+                field: "id",
+                value: permissionId,
+              },
+            ],
+          })
+
+          if (!permission) {
+            throw new APIError("NOT_FOUND", {
+              message: `Permission with id ${permissionId} not found`,
+            })
+          }
+        }
+      }
+
+      // Gather users to copy from the source role
+      let userIds: string[] = []
+      if (ctx.body.copyUsers) {
+        const userRoles = await ctx.context.adapter.findMany<UserRole>({
+          model: "userRole",
+          where: [
+            {
+              field: "roleId",
+              value: sourceRole.id,
+            },
+          ],
+        })
+
+        userIds = userRoles.map((ur) => ur.userId)
+
+        // Validate users exist
+        for (const userId of userIds) {
+          const user = await ctx.context.adapter.findOne<User>({
+            model: "user",
+            where: [
+              {
+                field: "id",
+                value: userId,
+              },
+            ],
+          })
+
+          if (!user) {
+            throw new APIError("NOT_FOUND", {
+              message: `User with id ${userId} not found`,
+            })
+          }
+        }
+      }
+
+      // Create the cloned role
+      const role = await ctx.context.adapter.create<Role>({
+        model: "role",
+        data: {
+          name: ctx.body.name,
+          key: ctx.body.key,
+          description: ctx.body.description ?? sourceRole.description,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isActive: ctx.body.isActive ?? sourceRole.isActive,
+          createdBy: session.user.email,
+          updatedBy: session.user.email,
+        },
+      })
+
+      // Copy permissions to the cloned role
+      if (permissionIds.length > 0) {
+        await Promise.all(
+          permissionIds.map((permissionId) =>
+            ctx.context.adapter.create<RolePermission>({
+              model: "rolePermission",
+              data: {
+                roleId: role.id,
+                permissionId: permissionId,
+                createdAt: new Date(),
+              },
+            }),
+          ),
+        )
+      }
+
+      // Copy user assignments to the cloned role
+      if (userIds.length > 0) {
+        await Promise.all(
+          userIds.map((userId) =>
+            ctx.context.adapter.create<UserRole>({
+              model: "userRole",
+              data: {
+                roleId: role.id,
+                userId: userId,
+                createdAt: new Date(),
+              },
+            }),
+          ),
+        )
+      }
+
+      return ctx.json({
+        role,
+      })
+    },
+  )
+}
+
+/**
+ * ### Endpoint
+ *
  * POST `/rbac/update-role`
  *
  * ### API Methods
