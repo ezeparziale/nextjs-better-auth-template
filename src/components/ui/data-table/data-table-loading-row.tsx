@@ -1,15 +1,16 @@
 "use client"
 
-import { Table as TanstackTable } from "@tanstack/react-table"
+import type { RowData, Table } from "@tanstack/react-table"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TableCell, TableRow } from "@/components/ui/table"
+import { DataTableFeatures } from "./features"
 
-interface DataTableLoadingRowProps<TData> {
-  table: TanstackTable<TData>
+interface DataTableLoadingRowProps<TData extends RowData> {
+  table: Table<DataTableFeatures, TData>
   rowCount?: number
 }
 
-export function DataTableLoadingRow<TData>({
+export function DataTableLoadingRow<TData extends RowData>({
   table,
   rowCount = 3,
 }: DataTableLoadingRowProps<TData>) {

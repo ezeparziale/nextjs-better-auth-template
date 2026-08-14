@@ -1,6 +1,6 @@
 "use client"
 
-import { Table } from "@tanstack/react-table"
+import type { RowData, Table } from "@tanstack/react-table"
 import { Settings2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,8 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DataTableFeatures } from "./features"
 
-export function DataTableViewOptions<TData>({ table }: { table: Table<TData> }) {
+export function DataTableViewOptions<TData extends RowData>({
+  table,
+}: {
+  table: Table<DataTableFeatures, TData>
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

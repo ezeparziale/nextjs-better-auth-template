@@ -1,6 +1,6 @@
 "use client"
 
-import { Table } from "@tanstack/react-table"
+import type { RowData, Table } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -11,13 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DataTableFeatures } from "./features"
 
-interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+interface DataTablePaginationProps<TData extends RowData> {
+  table: Table<DataTableFeatures, TData>
 }
 
-export function DataTablePagination<TData>({ table }: DataTablePaginationProps<TData>) {
-  const showSelectedRows = table.getColumn("select")
+export function DataTablePagination<TData extends RowData>({
+  table,
+}: DataTablePaginationProps<TData>) {
+  const showSelectedRows = table
+    .getAllColumns()
+    .some((column) => column.id === "select")
   return (
     <div
       className={cn(
@@ -35,13 +40,13 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${table.atoms.pagination.get().pageSize}`}
             onValueChange={(value) => {
               table.setPageSize(Number(value))
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue placeholder={table.atoms.pagination.get().pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {[1, 10, 20, 25, 30, 40, 50].map((pageSize) => (
@@ -53,7 +58,7 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          Page {table.atoms.pagination.get().pageIndex + 1} of {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
           <Button
