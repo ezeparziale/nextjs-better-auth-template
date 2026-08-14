@@ -25,7 +25,7 @@ export function DataTableLoading<TData>({
   return (
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <Skeleton className="h-9 w-[250px]" />
+        <Skeleton className="h-8 w-[250px]" />
         <Skeleton className="h-8 w-[100px]" />
       </div>
       <div className="rounded-md border">
@@ -34,7 +34,7 @@ export function DataTableLoading<TData>({
             <TableRow>
               {visibleColumns.map((col) => (
                 <TableHead key={col.id}>
-                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-5 w-24" />
                 </TableHead>
               ))}
             </TableRow>
