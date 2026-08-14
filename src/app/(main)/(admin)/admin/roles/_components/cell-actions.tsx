@@ -1,6 +1,12 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { CopyIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import {
+  CopyIcon,
+  CopyPlusIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react"
 import { toast } from "sonner"
 import { Role } from "@/lib/auth/rbac-plugin"
 import { Button } from "@/components/ui/button"
@@ -12,10 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import CloneRoleDialog from "./clone-role-dialog"
 import DeleteRoleDialog from "./delete-role-dialog"
 
 export default function CellActions({ row }: { row: Role }) {
   const router = useRouter()
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   return (
@@ -44,6 +52,14 @@ export default function CellActions({ row }: { row: Role }) {
             <PencilIcon />
             Edit
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              setIsCloneDialogOpen(true)
+            }}
+          >
+            <CopyPlusIcon />
+            Duplicate
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -56,6 +72,12 @@ export default function CellActions({ row }: { row: Role }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <CloneRoleDialog
+        key={`clone-role-${row.id}`}
+        role={row}
+        isOpen={isCloneDialogOpen}
+        setIsOpen={setIsCloneDialogOpen}
+      />
       <DeleteRoleDialog
         key={`delete-role-${row.id}`}
         roleId={row.id}
