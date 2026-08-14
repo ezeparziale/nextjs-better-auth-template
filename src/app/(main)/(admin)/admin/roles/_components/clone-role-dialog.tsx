@@ -6,7 +6,6 @@ import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { Role } from "@/lib/auth/rbac-plugin"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useDataTable } from "@/components/ui/data-table"
 import {
   Dialog,
@@ -126,7 +125,7 @@ export default function CloneRoleDialog({
         </DialogHeader>
         <form id="form-clone-role" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
-            <div className="flex items-start gap-x-4">
+            <div className="flex items-end justify-between gap-x-4">
               <Controller
                 name="name"
                 control={form.control}
@@ -147,9 +146,9 @@ export default function CloneRoleDialog({
                 name="isActive"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
+                  <Field data-invalid={fieldState.invalid} className="w-auto shrink-0">
                     <FieldLabel htmlFor={field.name}>Active</FieldLabel>
-                    <div className="flex h-10 items-center">
+                    <div className="flex h-10 items-center justify-end">
                       <Switch
                         id={field.name}
                         checked={field.value}
@@ -200,20 +199,16 @@ export default function CloneRoleDialog({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Permissions</FieldLabel>
                   <div className="flex h-10 items-center gap-2">
-                    <Checkbox
+                    <Switch
                       id={field.name}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                       disabled={isSubmitting}
                     />
-                    <label
-                      htmlFor={field.name}
-                      className="text-muted-foreground text-sm"
-                    >
+                    <span className="text-muted-foreground text-sm">
                       Copy permissions from this role
-                    </label>
+                    </span>
                   </div>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -224,20 +219,16 @@ export default function CloneRoleDialog({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Users</FieldLabel>
                   <div className="flex h-10 items-center gap-2">
-                    <Checkbox
+                    <Switch
                       id={field.name}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                       disabled={isSubmitting}
                     />
-                    <label
-                      htmlFor={field.name}
-                      className="text-muted-foreground text-sm"
-                    >
+                    <span className="text-muted-foreground text-sm">
                       Copy users assigned to this role
-                    </label>
+                    </span>
                   </div>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
