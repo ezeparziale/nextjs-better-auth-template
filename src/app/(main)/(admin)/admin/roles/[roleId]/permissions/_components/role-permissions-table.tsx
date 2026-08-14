@@ -6,20 +6,24 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  RowSelectionState,
   SortingState,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { KeyIcon } from "lucide-react"
+import { KeyIcon, MinusIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Permission } from "@/lib/auth/rbac-plugin"
+import { Button } from "@/components/ui/button"
 import {
+  createSelectColumn,
   DataTableLoading,
   DataTableLoadingRow,
   DataTableNoData,
   DataTablePagination,
   DataTableSearch,
   DataTableSearchNotFound,
+  DataTableSelectedActions,
   DataTableViewOptions,
   useDataTable,
 } from "@/components/ui/data-table"
@@ -31,6 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import BulkRemovePermissionsDialog from "./bulk-remove-permissions-dialog"
 import { getColumns } from "./columns"
 
 type QueryParams = {
@@ -94,6 +99,8 @@ export default function RolePermissionsTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [isBulkRemoveOpen, setIsBulkRemoveOpen] = useState(false)
   const [pagination, setPagination] = useState({
     pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
     pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
@@ -203,25 +210,37 @@ export default function RolePermissionsTable({
   ])
 
   const columns = getColumns(roleId)
+  const tableColumns = [createSelectColumn<Permission>(), ...columns]
 
   const table = useReactTable({
     data,
-    columns,
+    columns: tableColumns,
     pageCount: Math.ceil(total / pagination.pageSize),
     state: {
       pagination,
       sorting,
       columnVisibility,
+      rowSelection,
     },
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater) => {
+      setPagination(updater)
+      setRowSelection({})
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
     manualSorting: true,
     autoResetPageIndex: false,
+    enableMultiRowSelection: true,
+    getRowId: (row) => row.id,
   })
+
+  const selectedPermissionIds = table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original.id)
 
   if (loading && data.length === 0) {
     return <DataTableLoading table={table} rowCount={pagination.pageSize} />
@@ -229,13 +248,25 @@ export default function RolePermissionsTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-1 flex-wrap items-center justify-between gap-2">
         <DataTableSearch
           value={searchInput}
           onChange={handleSearchChange}
           onClear={handleClearSearch}
           placeholder="Search name…"
         />
+        <DataTableSelectedActions table={table}>
+          <Button
+            size="sm"
+            type="button"
+            variant="destructive"
+            disabled={selectedPermissionIds.length === 0}
+            onClick={() => setIsBulkRemoveOpen(true)}
+          >
+            <MinusIcon />
+            Remove
+          </Button>
+        </DataTableSelectedActions>
         <DataTableViewOptions table={table} />
       </div>
       <div className="rounded-md border">
@@ -292,6 +323,13 @@ export default function RolePermissionsTable({
         </Table>
       </div>
       <DataTablePagination table={table} />
+      <BulkRemovePermissionsDialog
+        roleId={roleId}
+        permissionIds={selectedPermissionIds}
+        isOpen={isBulkRemoveOpen}
+        setIsOpen={setIsBulkRemoveOpen}
+        onCompleted={() => setRowSelection({})}
+      />
     </div>
   )
 }
