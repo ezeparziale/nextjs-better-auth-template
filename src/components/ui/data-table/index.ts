@@ -1,5 +1,6 @@
 export * from "./data-table-column-header"
 export * from "./data-table-faceted-filter"
+export * from "./features"
 export * from "./data-table-loading-row"
 export * from "./data-table-loading"
 export * from "./data-table-no-data"

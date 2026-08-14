@@ -1,11 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { ColumnDef, Table as TanstackTable } from "@tanstack/react-table"
+import type { ColumnDef, RowData, Table } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { DataTableFeatures, dataTableFeatures } from "./features"
 
-export function createSelectColumn<TData>(): ColumnDef<TData, unknown> {
+export function createSelectColumn<TData extends RowData>(): ColumnDef<
+  typeof dataTableFeatures,
+  TData,
+  unknown
+> {
   return {
     id: "select",
     header: ({ table }) => {
@@ -30,17 +35,15 @@ export function createSelectColumn<TData>(): ColumnDef<TData, unknown> {
     enableSorting: false,
     enableHiding: false,
     enableColumnFilter: false,
-    enableGlobalFilter: false,
-    size: 40,
   }
 }
 
-interface DataTableSelectedActionsProps<TData> {
-  table: TanstackTable<TData>
+interface DataTableSelectedActionsProps<TData extends RowData> {
+  table: Table<DataTableFeatures, TData>
   children?: React.ReactNode
 }
 
-export function DataTableSelectedActions<TData>({
+export function DataTableSelectedActions<TData extends RowData>({
   table,
   children,
 }: DataTableSelectedActionsProps<TData>) {

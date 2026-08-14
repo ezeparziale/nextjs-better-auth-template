@@ -4,13 +4,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
   ColumnFiltersState,
+  ColumnVisibilityState,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
   RowSelectionState,
   SortingState,
-  useReactTable,
-  VisibilityState,
+  useTable,
 } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
 import { ShieldPlusIcon, UserIcon, XIcon } from "lucide-react"
@@ -22,6 +20,7 @@ import {
   DataTableLoading,
   DataTableLoadingRow,
   DataTableNoData,
+  dataTableOptions,
   DataTablePagination,
   DataTableSearch,
   DataTableSearchNotFound,
@@ -60,7 +59,7 @@ type InitialParams = {
   [key: string]: string | undefined
 }
 
-const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
+const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   name: true,
   email: true,
   emailVerified: true,
@@ -115,7 +114,7 @@ export default function UsersTable({
       },
     ]
   })
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -253,7 +252,8 @@ export default function UsersTable({
 
   const tableColumns = [createSelectColumn<UserWithRole>(), ...columns]
 
-  const table = useReactTable({
+  const table = useTable({
+    ...dataTableOptions,
     data,
     columns: tableColumns,
     pageCount: Math.ceil(total / pagination.pageSize),
@@ -272,17 +272,12 @@ export default function UsersTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    manualPagination: true,
-    manualSorting: true,
-    autoResetPageIndex: false,
     manualFiltering: true,
     enableMultiRowSelection: true,
     getRowId: (row) => row.id,
   })
 
-  const isFiltered = table.getState().columnFilters.length > 0
+  const isFiltered = table.state.columnFilters.length > 0
   const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
 
   if (loading && data.length === 0) {
