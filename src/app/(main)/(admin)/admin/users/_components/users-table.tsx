@@ -7,15 +7,17 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  RowSelectionState,
   SortingState,
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
-import { UserIcon, XIcon } from "lucide-react"
+import { ShieldPlusIcon, UserIcon, XIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
+  createSelectColumn,
   DataTableFacetedFilter,
   DataTableLoading,
   DataTableLoadingRow,
@@ -23,6 +25,7 @@ import {
   DataTablePagination,
   DataTableSearch,
   DataTableSearchNotFound,
+  DataTableSelectedActions,
   DataTableViewOptions,
   useDataTable,
 } from "@/components/ui/data-table"
@@ -34,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import BulkAssignRoleDialog from "./bulk-assign-role-dialog"
 import { columns } from "./columns"
 
 type QueryParams = {
@@ -114,6 +118,8 @@ export default function UsersTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [isBulkAssignOpen, setIsBulkAssignOpen] = useState(false)
   const [pagination, setPagination] = useState({
     pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
     pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
@@ -245,29 +251,39 @@ export default function UsersTable({
     searchParams,
   ])
 
+  const tableColumns = [createSelectColumn<UserWithRole>(), ...columns]
+
   const table = useReactTable({
     data,
-    columns,
+    columns: tableColumns,
     pageCount: Math.ceil(total / pagination.pageSize),
     state: {
       pagination,
       sorting,
       columnVisibility,
       columnFilters,
+      rowSelection,
     },
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater) => {
+      setPagination(updater)
+      setRowSelection({})
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
     manualSorting: true,
     autoResetPageIndex: false,
     manualFiltering: true,
+    enableMultiRowSelection: true,
+    getRowId: (row) => row.id,
   })
 
   const isFiltered = table.getState().columnFilters.length > 0
+  const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
 
   if (loading && data.length === 0) {
     return <DataTableLoading table={table} rowCount={pagination.pageSize} />
@@ -275,56 +291,75 @@ export default function UsersTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-1 flex-wrap items-center gap-2">
-        <DataTableSearch
-          value={searchInput}
-          onChange={handleSearchChange}
-          onClear={handleClearSearch}
-          placeholder="Search email…"
-        />
-        {table.getColumn("banned") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("banned")}
-            title="Status"
-            options={[
-              { label: "Banned", value: "true" },
-              { label: "Active", value: "false" },
-            ]}
+      <div className="flex flex-1 flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <DataTableSearch
+            value={searchInput}
+            onChange={handleSearchChange}
+            onClear={handleClearSearch}
+            placeholder="Search email…"
           />
-        )}
-        {table.getColumn("emailVerified") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("emailVerified")}
-            title="Email"
-            options={[
-              {
-                label: "Verified",
-                value: "true",
-              },
-              {
-                label: "Unverified",
-                value: "false",
-              },
-            ]}
-          />
-        )}
-        {table.getColumn("role") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("role")}
-            title="Role"
-            options={[
-              { label: "Admin", value: "admin" },
-              { label: "User", value: "user" },
-            ]}
-          />
-        )}
-        {isFiltered && (
-          <Button variant="ghost" size="sm" onClick={() => table.resetColumnFilters()}>
-            Reset
-            <XIcon />
-          </Button>
-        )}
-        <DataTableViewOptions table={table} />
+          {table.getColumn("banned") && (
+            <DataTableFacetedFilter
+              column={table.getColumn("banned")}
+              title="Status"
+              options={[
+                { label: "Banned", value: "true" },
+                { label: "Active", value: "false" },
+              ]}
+            />
+          )}
+          {table.getColumn("emailVerified") && (
+            <DataTableFacetedFilter
+              column={table.getColumn("emailVerified")}
+              title="Email"
+              options={[
+                {
+                  label: "Verified",
+                  value: "true",
+                },
+                {
+                  label: "Unverified",
+                  value: "false",
+                },
+              ]}
+            />
+          )}
+          {table.getColumn("role") && (
+            <DataTableFacetedFilter
+              column={table.getColumn("role")}
+              title="Role"
+              options={[
+                { label: "Admin", value: "admin" },
+                { label: "User", value: "user" },
+              ]}
+            />
+          )}
+          {isFiltered && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => table.resetColumnFilters()}
+            >
+              Reset
+              <XIcon />
+            </Button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <DataTableSelectedActions table={table}>
+            <Button
+              size="sm"
+              type="button"
+              disabled={selectedUserIds.length === 0}
+              onClick={() => setIsBulkAssignOpen(true)}
+            >
+              <ShieldPlusIcon />
+              Assign role
+            </Button>
+          </DataTableSelectedActions>
+          <DataTableViewOptions table={table} />
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -380,6 +415,12 @@ export default function UsersTable({
         </Table>
       </div>
       <DataTablePagination table={table} />
+      <BulkAssignRoleDialog
+        userIds={selectedUserIds}
+        isOpen={isBulkAssignOpen}
+        setIsOpen={setIsBulkAssignOpen}
+        onCompleted={() => setRowSelection({})}
+      />
     </div>
   )
 }
