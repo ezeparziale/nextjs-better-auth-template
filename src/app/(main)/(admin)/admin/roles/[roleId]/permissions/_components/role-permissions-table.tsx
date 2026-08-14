@@ -3,13 +3,11 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
+  ColumnVisibilityState,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
   RowSelectionState,
   SortingState,
-  useReactTable,
-  VisibilityState,
+  useTable,
 } from "@tanstack/react-table"
 import { KeyIcon, MinusIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
@@ -20,6 +18,7 @@ import {
   DataTableLoading,
   DataTableLoadingRow,
   DataTableNoData,
+  dataTableOptions,
   DataTablePagination,
   DataTableSearch,
   DataTableSearchNotFound,
@@ -60,7 +59,7 @@ type InitialParams = {
   sortDirection?: "asc" | "desc"
 }
 
-const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
+const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   name: true,
   key: true,
   isActive: true,
@@ -96,7 +95,7 @@ export default function RolePermissionsTable({
     }
     return []
   })
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
@@ -212,7 +211,8 @@ export default function RolePermissionsTable({
   const columns = getColumns(roleId)
   const tableColumns = [createSelectColumn<Permission>(), ...columns]
 
-  const table = useReactTable({
+  const table = useTable({
+    ...dataTableOptions,
     data,
     columns: tableColumns,
     pageCount: Math.ceil(total / pagination.pageSize),
@@ -229,11 +229,6 @@ export default function RolePermissionsTable({
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    manualPagination: true,
-    manualSorting: true,
-    autoResetPageIndex: false,
     enableMultiRowSelection: true,
     getRowId: (row) => row.id,
   })

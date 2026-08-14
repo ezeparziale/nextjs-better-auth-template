@@ -1,17 +1,23 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { createColumnHelper } from "@tanstack/react-table"
 import { UserWithRole } from "better-auth/plugins/admin"
 import { CheckIcon, XIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { DataTableColumnHeader } from "@/components/ui/data-table"
+import { DataTableColumnHeader, dataTableFeatures } from "@/components/ui/data-table"
 import { DateDescription } from "@/components/date-description"
 import CellActions from "./cell-actions"
 
-export const columns: ColumnDef<UserWithRole>[] = [
-  {
-    accessorKey: "name",
+type UserWithRoleRow = UserWithRole & {
+  createdBy?: string | null
+  updatedBy?: string | null
+}
+
+const columnHelper = createColumnHelper<typeof dataTableFeatures, UserWithRoleRow>()
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
     cell: ({ row }) => {
       const name = row.original.name ?? ""
@@ -31,14 +37,12 @@ export const columns: ColumnDef<UserWithRole>[] = [
         </div>
       )
     },
-  },
-  {
-    accessorKey: "email",
+  }),
+  columnHelper.accessor("email", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Email" />,
     enableHiding: false,
-  },
-  {
-    accessorKey: "emailVerified",
+  }),
+  columnHelper.accessor("emailVerified", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email verified" />
     ),
@@ -61,9 +65,8 @@ export const columns: ColumnDef<UserWithRole>[] = [
     meta: {
       displayName: "Email Verified",
     },
-  },
-  {
-    accessorKey: "role",
+  }),
+  columnHelper.accessor("role", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
     cell: ({ row }) => {
       const role = row.getValue("role") as string
@@ -74,9 +77,8 @@ export const columns: ColumnDef<UserWithRole>[] = [
         </Badge>
       )
     },
-  },
-  {
-    accessorKey: "banned",
+  }),
+  columnHelper.accessor("banned", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
       const banned = row.getValue("banned") as boolean | undefined
@@ -89,9 +91,8 @@ export const columns: ColumnDef<UserWithRole>[] = [
     meta: {
       displayName: "Status",
     },
-  },
-  {
-    accessorKey: "createdAt",
+  }),
+  columnHelper.accessor("createdAt", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created at" />
     ),
@@ -102,9 +103,8 @@ export const columns: ColumnDef<UserWithRole>[] = [
     meta: {
       displayName: "Created at",
     },
-  },
-  {
-    accessorKey: "updatedAt",
+  }),
+  columnHelper.accessor("updatedAt", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated at" />
     ),
@@ -115,28 +115,26 @@ export const columns: ColumnDef<UserWithRole>[] = [
     meta: {
       displayName: "Updated at",
     },
-  },
-  {
-    accessorKey: "createdBy",
+  }),
+  columnHelper.accessor("createdBy", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created By" />
     ),
     meta: {
       displayName: "Created By",
     },
-  },
-  {
-    accessorKey: "updatedBy",
+  }),
+  columnHelper.accessor("updatedBy", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated By" />
     ),
     meta: {
       displayName: "Updated By",
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     header: "Actions",
     cell: ({ row }) => <CellActions row={row.original} />,
-  },
-]
+  }),
+])

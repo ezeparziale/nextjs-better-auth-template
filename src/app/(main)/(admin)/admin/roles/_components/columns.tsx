@@ -1,26 +1,25 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { createColumnHelper } from "@tanstack/react-table"
 import { Role } from "@/lib/auth/rbac-plugin"
 import { Badge } from "@/components/ui/badge"
-import { DataTableColumnHeader } from "@/components/ui/data-table"
+import { DataTableColumnHeader, dataTableFeatures } from "@/components/ui/data-table"
 import { DateDescription } from "@/components/date-description"
 import CellActions from "./cell-actions"
 
-export const columns: ColumnDef<Role>[] = [
-  {
-    accessorKey: "name",
+const columnHelper = createColumnHelper<typeof dataTableFeatures, Role>()
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-  },
-  {
-    accessorKey: "key",
+  }),
+  columnHelper.accessor("key", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Key" />,
     cell: ({ row }) => {
       return <Badge variant="secondary">{row.getValue("key")}</Badge>
     },
-  },
-  {
-    accessorKey: "isActive",
+  }),
+  columnHelper.accessor("isActive", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
     cell: ({ row }) => {
       const isActive = row.getValue("isActive")
@@ -31,9 +30,8 @@ export const columns: ColumnDef<Role>[] = [
         </Badge>
       )
     },
-  },
-  {
-    accessorKey: "createdAt",
+  }),
+  columnHelper.accessor("createdAt", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created at" />
     ),
@@ -41,9 +39,8 @@ export const columns: ColumnDef<Role>[] = [
       const date = new Date(row.getValue("createdAt"))
       return <DateDescription date={date} />
     },
-  },
-  {
-    accessorKey: "updatedAt",
+  }),
+  columnHelper.accessor("updatedAt", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated at" />
     ),
@@ -51,22 +48,20 @@ export const columns: ColumnDef<Role>[] = [
       const date = new Date(row.getValue("updatedAt"))
       return <DateDescription date={date} />
     },
-  },
-  {
-    accessorKey: "createdBy",
+  }),
+  columnHelper.accessor("createdBy", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created By" />
     ),
-  },
-  {
-    accessorKey: "updatedBy",
+  }),
+  columnHelper.accessor("updatedBy", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated By" />
     ),
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     header: "Actions",
     cell: ({ row }) => <CellActions row={row.original} />,
-  },
-]
+  }),
+])

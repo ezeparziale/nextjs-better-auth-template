@@ -1,41 +1,41 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
+import { createColumnHelper } from "@tanstack/react-table"
 import { Permission } from "@/lib/auth/rbac-plugin/types"
 import { Badge } from "@/components/ui/badge"
-import { DataTableColumnHeader } from "@/components/ui/data-table"
+import { DataTableColumnHeader, dataTableFeatures } from "@/components/ui/data-table"
 import CellActions from "./cell-actions"
 
-export const getColumns = (roleId: string): ColumnDef<Permission>[] => [
-  {
-    accessorKey: "name",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
-  },
-  {
-    accessorKey: "key",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Key" />,
-    cell: ({ row }) => {
-      return <Badge variant="secondary">{row.getValue("key")}</Badge>
-    },
-  },
-  {
-    accessorKey: "isActive",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
-    cell: ({ row }) => {
-      const isActive = row.getValue("isActive")
+const columnHelper = createColumnHelper<typeof dataTableFeatures, Permission>()
 
-      return (
-        <Badge variant={isActive ? "green-subtle" : "red-subtle"}>
-          {isActive ? "Active" : "Inactive"}
-        </Badge>
-      )
-    },
-    meta: {
-      displayName: "Active",
-    },
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <CellActions row={row.original} roleId={roleId} />,
-  },
-]
+export const getColumns = (roleId: string) =>
+  columnHelper.columns([
+    columnHelper.accessor("name", {
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    }),
+    columnHelper.accessor("key", {
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Key" />,
+      cell: ({ row }) => {
+        return <Badge variant="secondary">{row.getValue("key")}</Badge>
+      },
+    }),
+    columnHelper.accessor("isActive", {
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
+      cell: ({ row }) => {
+        const isActive = row.getValue("isActive")
+
+        return (
+          <Badge variant={isActive ? "green-subtle" : "red-subtle"}>
+            {isActive ? "Active" : "Inactive"}
+          </Badge>
+        )
+      },
+      meta: {
+        displayName: "Active",
+      },
+    }),
+    columnHelper.display({
+      id: "actions",
+      cell: ({ row }) => <CellActions row={row.original} roleId={roleId} />,
+    }),
+  ])

@@ -3,12 +3,10 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
+  ColumnVisibilityState,
   flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
   SortingState,
-  useReactTable,
-  VisibilityState,
+  useTable,
 } from "@tanstack/react-table"
 import { KeyIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
@@ -17,6 +15,7 @@ import {
   DataTableLoading,
   DataTableLoadingRow,
   DataTableNoData,
+  dataTableOptions,
   DataTablePagination,
   DataTableSearch,
   DataTableSearchNotFound,
@@ -55,7 +54,7 @@ type InitialParams = {
   sortDirection?: "asc" | "desc"
 }
 
-const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
+const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   name: true,
   key: true,
   isActive: true,
@@ -91,7 +90,7 @@ export default function RoleUsersTable({
     }
     return []
   })
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
   const [pagination, setPagination] = useState({
@@ -204,7 +203,8 @@ export default function RoleUsersTable({
 
   const columns = getColumns(roleId)
 
-  const table = useReactTable({
+  const table = useTable({
+    ...dataTableOptions,
     data,
     columns,
     pageCount: Math.ceil(total / pagination.pageSize),
@@ -216,11 +216,6 @@ export default function RoleUsersTable({
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    manualPagination: true,
-    manualSorting: true,
-    autoResetPageIndex: false,
   })
 
   if (loading && data.length === 0) {
