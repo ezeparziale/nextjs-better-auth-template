@@ -113,51 +113,52 @@ export default function AssignItemsDialog({
 
   // Load assigned items when dialog opens
   useEffect(() => {
-    if (open) {
-      const loadAssignedItems = async () => {
-        setIsLoadingAssigned(true)
-        try {
-          const allItems: Array<{ id: string; name: string }> = []
-          const items = await fetchAssignedItems(resourceId)
+    if (!open) return
 
-          if (items && items.length > 0) {
-            allItems.push(...items)
-          }
+    const loadAssignedItems = async () => {
+      setIsLoadingAssigned(true)
+      try {
+        const allItems: Array<{ id: string; name: string }> = []
+        const items = await fetchAssignedItems(resourceId)
 
-          if (allItems.length > 0) {
-            const itemIds = allItems.map((item) => item.id)
-
-            // Pre-load the selected items' labels into cache
-            const selectedOptions = allItems.map((item) => ({
-              value: item.id,
-              label: item.name,
-            }))
-
-            const newCache = new Map<string, MultiSelectAsyncOption>()
-            selectedOptions.forEach((option) => {
-              newCache.set(option.value, option)
-            })
-            setSelectedItemsCache(newCache)
-
-            form.reset({
-              itemIds,
-            })
-          }
-        } catch {
-          toast.error(messages.loadError || "Failed to load assigned items")
-        } finally {
-          setIsLoadingAssigned(false)
+        if (items && items.length > 0) {
+          allItems.push(...items)
         }
+
+        if (allItems.length > 0) {
+          const itemIds = allItems.map((item) => item.id)
+
+          // Pre-load the selected items' labels into cache
+          const selectedOptions = allItems.map((item) => ({
+            value: item.id,
+            label: item.name,
+          }))
+
+          const newCache = new Map<string, MultiSelectAsyncOption>()
+          selectedOptions.forEach((option) => {
+            newCache.set(option.value, option)
+          })
+          setSelectedItemsCache(newCache)
+
+          form.reset({
+            itemIds,
+          })
+        }
+      } catch {
+        toast.error(messages.loadError || "Failed to load assigned items")
+      } finally {
+        setIsLoadingAssigned(false)
       }
-      loadAssignedItems()
-    } else {
-      form.reset({ itemIds: [] })
-      setSelectedItemsCache(new Map())
     }
+    loadAssignedItems()
   }, [open, resourceId, form, fetchAssignedItems, messages.loadError])
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
+    if (!newOpen) {
+      form.reset({ itemIds: [] })
+      setSelectedItemsCache(new Map())
+    }
   }
 
   const onSubmit = async (values: FormData) => {
