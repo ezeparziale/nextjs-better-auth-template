@@ -138,7 +138,7 @@ export function SessionCard({
                 size="sm"
                 disabled={isRevoking}
                 onClick={handleRevokeClick}
-                aria-label={`Revoke session from ${deviceDescription}}`}
+                aria-label={`Revoke session from ${deviceDescription}`}
                 aria-busy={isRevoking}
               >
                 {isRevoking ? (
