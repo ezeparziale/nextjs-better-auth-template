@@ -19,17 +19,14 @@ const COOLDOWN_SECONDS = 30
 export function CheckYourEmail({ email }: { email: string }) {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [resendCooldown, setResendCooldown] = useState<number>(0)
-  const [isResendDisabled, setIsResendDisabled] = useState<boolean>(false)
+  const isResendDisabled = resendCooldown > 0
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown((prev) => prev - 1)
-      }, 1000)
-    } else {
-      setIsResendDisabled(false)
-    }
+    if (resendCooldown <= 0) return
+
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1)
+    }, 1000)
 
     return () => clearInterval(timer)
   }, [resendCooldown])
@@ -40,7 +37,6 @@ export function CheckYourEmail({ email }: { email: string }) {
       await authClient.sendVerificationEmail({ email })
       toast.success("Verification link resent successfully")
       setResendCooldown(COOLDOWN_SECONDS)
-      setIsResendDisabled(true)
     } catch {
       toast.error("Something went wrong")
     } finally {
