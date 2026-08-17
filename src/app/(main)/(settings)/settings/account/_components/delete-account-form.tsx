@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { CircleAlertIcon } from "lucide-react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
@@ -57,9 +57,11 @@ export function DeleteAccountForm({ userEmail }: { userEmail: string }) {
     },
   })
 
+  const watchedEmail = useWatch({ control: form.control, name: "email" })
+  const watchedConfirmation = useWatch({ control: form.control, name: "confirmation" })
+
   const isConfirmationTextMatching =
-    form.watch("email") === userEmail &&
-    form.watch("confirmation") === CONFIRMATION_TEXT
+    watchedEmail === userEmail && watchedConfirmation === CONFIRMATION_TEXT
 
   async function handleDeleteAccount() {
     setIsLoading(true)

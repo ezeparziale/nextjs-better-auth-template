@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Search, X } from "lucide-react"
 import { useDebouncedCallback } from "use-debounce"
 import {
@@ -27,10 +27,12 @@ export function DataTableSearch({
 }: DataTableSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [localValue, setLocalValue] = useState(value)
+  const [prevValue, setPrevValue] = useState(value)
 
-  useEffect(() => {
+  if (value !== prevValue) {
+    setPrevValue(value)
     setLocalValue(value)
-  }, [value])
+  }
 
   const handleSearch = useDebouncedCallback((query: string) => {
     onChange(query)

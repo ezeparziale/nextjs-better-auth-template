@@ -75,14 +75,8 @@ export function MultiSelectAsync({
   )
   const selectedValues = values ? new Set(values) : internalValues
 
-  // Initialize items map with preloaded options
-  const [items, setItems] = useState<Map<string, ReactNode>>(() => {
-    const initialMap = new Map<string, ReactNode>()
-    preloadedOptions.forEach((option) => {
-      initialMap.set(option.value, option.label)
-    })
-    return initialMap
-  })
+  const [loadedItems, setLoadedItems] = useState<Map<string, ReactNode>>(new Map())
+  const items = mergeLoadedAndPreloaded(loadedItems, preloadedOptions)
 
   const [options, setOptions] = useState<MultiSelectAsyncOption[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -106,24 +100,11 @@ export function MultiSelectAsync({
   }
 
   const onItemAdded = useCallback((value: string, label: ReactNode) => {
-    setItems((prev) => {
+    setLoadedItems((prev) => {
       if (prev.get(value) === label) return prev
       return new Map(prev).set(value, label)
     })
   }, [])
-
-  // Update items when preloadedOptions change
-  useEffect(() => {
-    if (preloadedOptions.length > 0) {
-      setItems((prev) => {
-        const newMap = new Map(prev)
-        preloadedOptions.forEach((option) => {
-          newMap.set(option.value, option.label)
-        })
-        return newMap
-      })
-    }
-  }, [preloadedOptions])
 
   // Fetch options function
   const fetchData = useCallback(
@@ -179,11 +160,12 @@ export function MultiSelectAsync({
   }, [searchValue, open, fetchData, debounceMs])
 
   // Reset search when popover closes
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen)
+    if (!newOpen) {
       setSearchValue("")
     }
-  }, [open])
+  }
 
   return (
     <MultiSelectAsyncContext.Provider
@@ -201,7 +183,11 @@ export function MultiSelectAsync({
         setSearchValue,
       }}
     >
-      <Popover open={open} onOpenChange={disabled ? undefined : setOpen} modal={true}>
+      <Popover
+        open={open}
+        onOpenChange={disabled ? undefined : handleOpenChange}
+        modal={true}
+      >
         {children}
       </Popover>
     </MultiSelectAsyncContext.Provider>
@@ -479,6 +465,18 @@ function useMultiSelectAsyncContext() {
     )
   }
   return context
+}
+
+function mergeLoadedAndPreloaded(
+  loaded: Map<string, ReactNode>,
+  preloaded: MultiSelectAsyncOption[],
+) {
+  if (preloaded.length === 0) return loaded
+  const merged = new Map(loaded)
+  preloaded.forEach((option) => {
+    merged.set(option.value, option.label)
+  })
+  return merged
 }
 
 function debounce<T extends (...args: never[]) => void>(

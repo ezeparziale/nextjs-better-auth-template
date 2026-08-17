@@ -101,13 +101,11 @@ export function SessionCard({
     [session],
   )
 
-  const [daysUntilExpiry, setDaysUntilExpiry] = useState<number | null>(null)
-
-  useEffect(() => {
-    setDaysUntilExpiry(
-      Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-    )
-  }, [expiresAt])
+  const daysUntilExpiry = useMemo(() => {
+    const expTime = expiresAt.getTime()
+    const createdTime = new Date(session.createdAt).getTime()
+    return Math.ceil((expTime - createdTime) / (1000 * 60 * 60 * 24))
+  }, [expiresAt, session.createdAt])
 
   const handleRevokeClick = () => setShowConfirmDialog(true)
 
@@ -138,7 +136,7 @@ export function SessionCard({
                 size="sm"
                 disabled={isRevoking}
                 onClick={handleRevokeClick}
-                aria-label={`Revoke session from ${deviceDescription}}`}
+                aria-label={`Revoke session from ${deviceDescription}`}
                 aria-busy={isRevoking}
               >
                 {isRevoking ? (
