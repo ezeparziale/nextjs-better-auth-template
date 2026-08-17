@@ -135,12 +135,12 @@ export default function UsersTable({
   }
 
   const { refreshKey, shouldResetPagination } = useDataTable()
+  const [prevShouldReset, setPrevShouldReset] = useState(shouldResetPagination)
 
-  useEffect(() => {
-    if (shouldResetPagination > 0) {
-      setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-    }
-  }, [shouldResetPagination])
+  if (shouldResetPagination !== prevShouldReset) {
+    setPrevShouldReset(shouldResetPagination)
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+  }
 
   useEffect(() => {
     const fetchData = async () => {
