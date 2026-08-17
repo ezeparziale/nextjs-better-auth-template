@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState, useSyncExternalStore } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -37,11 +37,11 @@ type FormData = LogInForm
 export default function LogInForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter()
   const [submittingMethod, setSubmittingMethod] = useState<string | null>(null)
-  const [lastMethod, setLastMethod] = useState<string | null>(null)
-
-  useEffect(() => {
-    setLastMethod(authClient.getLastUsedLoginMethod())
-  }, [])
+  const lastMethod = useSyncExternalStore(
+    () => () => {},
+    () => authClient.getLastUsedLoginMethod(),
+    () => null,
+  )
 
   const form = useForm<FormData>({
     resolver: zodResolver(logInFormSchema),
