@@ -19,8 +19,10 @@ export const authClient = createAuthClient({
         const callbackUrl = params.get("callbackUrl")
 
         if (callbackUrl) {
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = `/two-factor?callbackUrl=${encodeURIComponent(callbackUrl)}`
         } else {
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = "/two-factor"
         }
       },
