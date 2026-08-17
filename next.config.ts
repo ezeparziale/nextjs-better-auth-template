@@ -19,10 +19,6 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["pg"],
-  reactCompiler: true,
-  experimental: {
-    turbopackRustReactCompiler: true,
-  },
 }
 
 export default nextConfig
