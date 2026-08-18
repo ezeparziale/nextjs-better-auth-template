@@ -286,14 +286,24 @@ export default function UsersTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-1 flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-1 flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="md:hidden">
           <DataTableSearch
             value={searchInput}
             onChange={handleSearchChange}
             onClear={handleClearSearch}
             placeholder="Search email…"
           />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 md:flex-1">
+          <div className="hidden md:block">
+            <DataTableSearch
+              value={searchInput}
+              onChange={handleSearchChange}
+              onClear={handleClearSearch}
+              placeholder="Search email…"
+            />
+          </div>
           {table.getColumn("banned") && (
             <DataTableFacetedFilter
               column={table.getColumn("banned")}
