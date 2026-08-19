@@ -58,7 +58,7 @@ export function ProviderCard({
         </CardDescription>
         <CardAction>
           {account ? (
-            <AccountActionsMenu providerId={provider} accountId={account.accountId} />
+            <AccountActionsMenu providerId={provider} accountId={account.id} />
           ) : (
             <ProviderLinkButton provider={provider} />
           )}

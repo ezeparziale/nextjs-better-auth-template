@@ -227,7 +227,7 @@ export const auth = betterAuth({
     errorURL: "/error",
   },
   disabledPaths: ["/error"],
-  experimental: { joins: true },
+  advanced: { database: { joins: true } },
 })
 
 export type Session = typeof auth.$Infer.Session

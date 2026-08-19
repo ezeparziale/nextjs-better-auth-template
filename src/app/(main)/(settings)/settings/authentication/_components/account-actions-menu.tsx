@@ -30,7 +30,6 @@ export default function AccountActionsMenu({
     startTransition(async () => {
       try {
         const response = await authClient.unlinkAccount({
-          providerId,
           accountId,
         })
 
