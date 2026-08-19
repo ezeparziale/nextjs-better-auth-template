@@ -89,6 +89,9 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  issuer String
+
+  @@unique([issuer, accountId], map: "account_issuer_accountId_uidx")
   @@index([userId])
   @@map("account")
 }
@@ -112,7 +115,7 @@ model TwoFactor {
   userId                  String    @map("user_id")
   user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   verified                Boolean
-  failedVerificationCount Int       @map("failed_verification_count")
+  failedVerificationCount Int?      @map("failed_verification_count")
   lockedUntil             DateTime? @map("locked_until") @db.Timestamptz(3)
 
   @@index([secret])

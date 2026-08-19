@@ -69,15 +69,21 @@ export default function EnableTwoFactorModal({
     try {
       const result = await authClient.twoFactor.enable({
         password: values.password,
+        method: "totp",
       })
 
       if (result.error) {
         toast.error(result.error.message || "Failed to enable 2FA")
         return
       }
-      setTwoFactorData(result.data)
-      form.reset()
-      setStep("setup")
+      const data = result.data
+      if (data && data?.method == "totp") {
+        setTwoFactorData({ totpURI: data.totpURI, backupCodes: data.backupCodes })
+        form.reset()
+        setStep("setup")
+      } else {
+        throw new Error("expected totp")
+      }
     } catch {
       toast.error("Failed to enable 2FA")
     } finally {

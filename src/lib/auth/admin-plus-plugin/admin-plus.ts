@@ -1,5 +1,6 @@
 import {
   BASE_ERROR_CODES,
+  createLocalAccountIssuer,
   Where,
   type BetterAuthPlugin,
   type Session,
@@ -519,6 +520,7 @@ export const adminPlusPlugin = () => {
               providerId: "credential",
               password: hashedPassword,
               userId: user.id,
+              issuer: createLocalAccountIssuer("credential"),
             })
           }
 
