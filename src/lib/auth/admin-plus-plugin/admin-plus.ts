@@ -13,6 +13,7 @@ import {
 } from "better-auth/api"
 import { UserWithRole } from "better-auth/plugins/admin"
 import * as z from "zod"
+import { parseFiltersParam } from "../shared/filters"
 import { ADMIN_PLUS_ERROR_CODES } from "./error-codes"
 
 export const adminPlusPlugin = () => {
@@ -639,75 +640,7 @@ export const adminPlusPlugin = () => {
           }
 
           if (ctx.query.filters) {
-            try {
-              const filters = JSON.parse(ctx.query.filters) as Where[]
-              for (const filter of filters) {
-                let filterValue = filter.value as
-                  | string
-                  | number
-                  | boolean
-                  | string[]
-                  | number[]
-                  | boolean[]
-                  | undefined
-
-                if (filter.operator === "in") {
-                  try {
-                    if (typeof filterValue === "string") {
-                      if (filterValue.startsWith("[")) {
-                        filterValue = JSON.parse(filterValue)
-                      } else {
-                        filterValue = filterValue.split(",").map((v) => v.trim())
-                      }
-                    }
-                  } catch {
-                    if (typeof filterValue === "string") {
-                      filterValue = filterValue.split(",").map((v) => v.trim())
-                    }
-                  }
-                  if (!Array.isArray(filterValue)) {
-                    throw new APIError("BAD_REQUEST", {
-                      message: "Value must be an array",
-                    })
-                  }
-                  const boolValues: boolean[] = []
-                  let isAllBooleans = true
-                  for (const v of filterValue) {
-                    if (v === "true" || v === true) {
-                      boolValues.push(true)
-                    } else if (v === "false" || v === false) {
-                      boolValues.push(false)
-                    } else {
-                      isAllBooleans = false
-                      break
-                    }
-                  }
-
-                  if (isAllBooleans) {
-                    if (boolValues.includes(true) && boolValues.includes(false)) {
-                      continue
-                    }
-                    filterValue = boolValues
-                  }
-                } else if (filterValue === "true") {
-                  filterValue = true
-                } else if (filterValue === "false") {
-                  filterValue = false
-                }
-
-                if (filterValue !== undefined) {
-                  where.push({
-                    field: filter.field,
-                    operator: filter.operator || "eq",
-                    value: filterValue as unknown as string[],
-                  })
-                }
-              }
-            } catch {
-              throw new APIError("BAD_REQUEST", {
-                message: "Invalid filters format",
-              })
-            }
+            where.push(...parseFiltersParam(ctx.query.filters))
           }
 
           try {

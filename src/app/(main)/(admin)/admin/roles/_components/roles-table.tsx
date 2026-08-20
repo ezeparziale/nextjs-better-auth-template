@@ -3,15 +3,18 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import {
+  ColumnFiltersState,
   ColumnVisibilityState,
   flexRender,
   SortingState,
   useTable,
 } from "@tanstack/react-table"
-import { Shield } from "lucide-react"
+import { Shield, XIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Role } from "@/lib/auth/rbac-plugin"
+import { Button } from "@/components/ui/button"
 import {
+  DataTableFacetedFilter,
   DataTableLoading,
   DataTableLoadingRow,
   DataTableNoData,
@@ -40,9 +43,7 @@ type QueryParams = {
   offset?: string | number | undefined
   sortBy?: string | undefined
   sortDirection?: "asc" | "desc" | undefined
-  filterField?: string | undefined
-  filterValue?: string | number | boolean | undefined
-  filterOperator?: "contains" | "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | undefined
+  filters?: string | undefined
 }
 
 type InitialParams = {
@@ -51,6 +52,7 @@ type InitialParams = {
   search?: string
   sortBy?: string
   sortDirection?: "asc" | "desc"
+  [key: string]: string | undefined
 }
 
 const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
@@ -62,6 +64,8 @@ const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   createdBy: false,
   updatedBy: false,
 }
+
+const RESERVED_PARAMS = ["page", "pageSize", "search", "sortBy", "sortDirection"]
 
 export default function RolesTable({
   initialParams,
@@ -76,6 +80,18 @@ export default function RolesTable({
   const [loading, setLoading] = useState(true)
 
   const [searchInput, setSearchInput] = useState(initialParams.search || "")
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    const filters: ColumnFiltersState = []
+    Object.entries(initialParams).forEach(([key, value]) => {
+      if (!RESERVED_PARAMS.includes(key) && value) {
+        filters.push({
+          id: key,
+          value: value.split(","),
+        })
+      }
+    })
+    return filters
+  })
   const [sorting, setSorting] = useState<SortingState>(() => {
     if (initialParams.sortBy) {
       return [
@@ -133,6 +149,23 @@ export default function RolesTable({
           queryParams.searchOperator = "contains"
         }
 
+        if (columnFilters.length > 0) {
+          const filters = columnFilters
+            .map((filter) => {
+              const value = filter.value as string[]
+              if (value.length === 0) return null
+              return {
+                field: filter.id,
+                operator: value.length > 1 ? "in" : "eq",
+                value: value.length > 1 ? value : value[0],
+              }
+            })
+            .filter(Boolean)
+          if (filters.length > 0) {
+            queryParams.filters = JSON.stringify(filters)
+          }
+        }
+
         if (sorting.length > 0) {
           queryParams.sortBy = sorting[0].id
           queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
@@ -156,13 +189,28 @@ export default function RolesTable({
       }
     }
     fetchData()
-  }, [pagination.pageIndex, pagination.pageSize, searchInput, sorting, refreshKey])
+  }, [
+    pagination.pageIndex,
+    pagination.pageSize,
+    searchInput,
+    sorting,
+    refreshKey,
+    columnFilters,
+  ])
 
   useEffect(() => {
     const params = new URLSearchParams()
 
     if (searchInput) {
       params.set("search", searchInput)
+    }
+
+    if (columnFilters.length > 0) {
+      columnFilters.forEach((filter) => {
+        if (Array.isArray(filter.value) && filter.value.length > 0) {
+          params.set(filter.id, filter.value.join(","))
+        }
+      })
     }
 
     if (pagination.pageIndex > 0) {
@@ -185,6 +233,7 @@ export default function RolesTable({
     }
   }, [
     searchInput,
+    columnFilters,
     pagination.pageIndex,
     pagination.pageSize,
     sorting,
@@ -202,11 +251,16 @@ export default function RolesTable({
       pagination,
       sorting,
       columnVisibility,
+      columnFilters,
     },
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    manualFiltering: true,
   })
+
+  const isFiltered = table.state.columnFilters.length > 0
 
   if (loading && data.length === 0) {
     return <DataTableLoading table={table} rowCount={pagination.pageSize} />
@@ -214,14 +268,48 @@ export default function RolesTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <DataTableSearch
-          value={searchInput}
-          onChange={handleSearchChange}
-          onClear={handleClearSearch}
-          placeholder="Search key…"
-        />
-        <DataTableViewOptions table={table} />
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="md:hidden">
+          <DataTableSearch
+            value={searchInput}
+            onChange={handleSearchChange}
+            onClear={handleClearSearch}
+            placeholder="Search key…"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2 md:flex-1">
+          <div className="hidden md:block">
+            <DataTableSearch
+              value={searchInput}
+              onChange={handleSearchChange}
+              onClear={handleClearSearch}
+              placeholder="Search key…"
+            />
+          </div>
+          {table.getColumn("isActive") && (
+            <DataTableFacetedFilter
+              column={table.getColumn("isActive")}
+              title="Status"
+              options={[
+                { label: "Active", value: "true" },
+                { label: "Inactive", value: "false" },
+              ]}
+            />
+          )}
+          {isFiltered && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => table.resetColumnFilters()}
+            >
+              Reset
+              <XIcon />
+            </Button>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <DataTableViewOptions table={table} />
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>

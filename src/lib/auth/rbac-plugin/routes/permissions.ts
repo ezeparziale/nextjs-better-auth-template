@@ -1,6 +1,7 @@
 import type { Where } from "better-auth"
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
+import { parseFiltersParam } from "../../shared/filters"
 import {
   createPaginationConfig,
   createValidationOptions,
@@ -74,6 +75,12 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
             description: "The direction to sort by.",
           })
           .optional(),
+        filters: z
+          .string()
+          .meta({
+            description: "A JSON string representing an array of filters.",
+          })
+          .optional(),
       }),
       metadata: {
         openapi: {
@@ -137,6 +144,10 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
           operator: ctx.query.searchOperator || "contains",
           value: ctx.query.searchValue,
         })
+      }
+
+      if (ctx.query?.filters) {
+        where.push(...parseFiltersParam(ctx.query.filters))
       }
 
       const { limit, offset } = getPaginationParams(
