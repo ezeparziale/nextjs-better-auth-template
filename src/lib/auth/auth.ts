@@ -146,6 +146,8 @@ export const auth = betterAuth({
     rbacPlugin({
       minPermissionKeyLength: 5,
       permissionKeyPattern: /^[a-z0-9_-]+\.[a-z0-9_-]+$/i,
+      permissionKeyErrorMessage:
+        'Permission key must follow the format "feature.action" (e.g., "user.read").',
       seedPermissions: [
         {
           key: "user1.read",
@@ -160,7 +162,7 @@ export const auth = betterAuth({
           name: "Administrator",
           description: "Full access",
           isActive: true,
-          permissions: ["user1:read"],
+          permissions: ["user1.read"],
         },
       ],
       disabledEndpoints: [],
