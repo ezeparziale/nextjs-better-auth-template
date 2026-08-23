@@ -130,7 +130,7 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
                   <Input
                     {...field}
                     id={field.name}
-                    placeholder="feature:action e.g. posts:create"
+                    placeholder="feature.action e.g. posts.create"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

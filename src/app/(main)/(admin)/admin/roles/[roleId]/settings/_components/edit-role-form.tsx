@@ -134,7 +134,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
                   <Input
                     {...field}
                     id={field.name}
-                    placeholder="feature:action e.g. posts:create"
+                    placeholder="e.g. create_posts"
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
