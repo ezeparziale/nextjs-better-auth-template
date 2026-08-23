@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { getPermission } from "@/data/auth/get-permission"
 import { AuditInfo } from "@/components/audit-info"
 import { PageHeader } from "@/components/page-header"
@@ -30,7 +31,7 @@ export default async function LogsPermissionAdminPage(props: { params: Params })
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${permissionId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
+  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
 
   const permission = await getPermission(permissionId)
 

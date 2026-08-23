@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { getRole } from "@/data/auth/get-role"
 import { PageHeader } from "@/components/page-header"
 import EditRoleForm from "./_components/edit-role-form"
@@ -30,7 +31,7 @@ export default async function SettingsRoleAdminPage(props: { params: Params }) {
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${roleId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
+  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
 
   const role = await getRole(roleId)
 

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import React from "react"
 import { ArrowLeft } from "lucide-react"
+import { ERROR_CODES } from "@/lib/error-codes"
 import { Button } from "@/components/ui/button"
 import { CalledHelp } from "@/components/illustrations/called-help"
 import { CrashedError } from "@/components/illustrations/crashed-error"
@@ -8,17 +9,20 @@ import Logo from "@/components/logo"
 import MaxWidthWrapper from "@/components/max-width-wrapper"
 
 const errorTypes: { [key: string]: { message: string; svg?: React.FC } } = {
-  access_denied: {
+  [ERROR_CODES.ACCESS_DENIED]: {
     message: "Oops! This user account is blocked",
     svg: CalledHelp,
   },
-  access_unauthorized: {
+  [ERROR_CODES.ACCESS_UNAUTHORIZED]: {
     message: "Oops! Access Unauthorized",
     svg: CalledHelp,
   },
-  banned: { message: "Oops! This user account is banned", svg: CalledHelp },
-  confirm_email: { message: "Please confirm your email" },
-  token_expired: { message: "Oops! Token expired", svg: CrashedError },
+  [ERROR_CODES.BANNED]: {
+    message: "Oops! This user account is banned",
+    svg: CalledHelp,
+  },
+  [ERROR_CODES.CONFIRM_EMAIL]: { message: "Please confirm your email" },
+  [ERROR_CODES.TOKEN_EXPIRED]: { message: "Oops! Token expired", svg: CrashedError },
   default: { message: "Something went wrong!", svg: CrashedError },
 }
 

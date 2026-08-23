@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { getUser } from "@/data/auth/get-user"
 import { PageHeader } from "@/components/page-header"
 import { MetadataEditor } from "./_components/metadata-editor"
@@ -30,7 +31,7 @@ export default async function MetadataUserAdminPage(props: { params: Params }) {
   if (!session)
     redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
-  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
+  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
 
   const user = await getUser(userId)
 

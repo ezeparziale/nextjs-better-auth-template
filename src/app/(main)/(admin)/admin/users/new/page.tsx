@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { PageHeader } from "@/components/page-header"
 import CreateUserForm from "../_components/create-user-form"
 
@@ -23,7 +24,7 @@ export default async function NewUserAdminPage() {
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
 
-  if (session.user.role !== "admin") redirect("/dashboard")
+  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
 
   return (
     <div className="space-y-6">

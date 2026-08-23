@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
 import AddPermissionDialog from "./_components/add-permission-dialog"
@@ -40,7 +41,7 @@ export default async function PermissionsRoleAdminPage(props: {
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.getCallbackUrl(roleId)}`)
 
-  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
+  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
 
   const searchParams = await props.searchParams
 

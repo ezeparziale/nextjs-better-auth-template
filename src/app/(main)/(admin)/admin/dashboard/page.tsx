@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
 import { db } from "@/lib/db"
+import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { PageHeader } from "@/components/page-header"
 import { DashboardCharts } from "./_components/dashboard-charts"
 import { DashboardStats } from "./_components/dashboard-stats"
@@ -25,7 +26,7 @@ export default async function DashboardAdminPage() {
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
 
-  if (session.user.role !== "admin") redirect("/error?error=access_unauthorized")
+  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
 
   const [totalUsers, activeSessionGroups, totalRoles, totalPermissions] =
     await Promise.all([
