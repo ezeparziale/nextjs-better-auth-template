@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { HoverPrefetchLink } from "@/components/hover-prefecth-link"
+import { HoverPrefetchLink } from "@/components/hover-prefetch-link"
 import { PageHeader } from "@/components/page-header"
 
 const settingsNav = [
