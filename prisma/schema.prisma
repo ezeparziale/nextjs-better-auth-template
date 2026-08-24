@@ -39,16 +39,16 @@ model User {
 
   metadata Json?
 
-  bio          String?
-  phone        String?
-  website_url  String?
-  linkedin_url String?
-  github_url   String?
-  x_url        String?
-  job_title    String?
-  company      String?
-  department   String?
-  location     String?
+  bio         String?
+  phone       String?
+  websiteUrl  String? @map("website_url")
+  linkedinUrl String? @map("linkedin_url")
+  githubUrl   String? @map("github_url")
+  xUrl        String? @map("x_url")
+  jobTitle    String? @map("job_title")
+  company     String?
+  department  String?
+  location    String?
 
   notificationNewLoginEmail Boolean @default(true) @map("notification_new_login_email")
 
