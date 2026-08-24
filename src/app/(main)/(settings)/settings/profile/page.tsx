@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
-import { getUser } from "@/data/auth/get-user"
+import { getUserSettings } from "@/data/auth/get-user-settings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageHeader } from "@/components/page-header"
 import AvatarForm from "./_components/avatar-form"
@@ -31,7 +31,7 @@ export default async function ProfilePage() {
 
   if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
 
-  const user = await getUser(session.user.id)
+  const user = await getUserSettings(session.user.id)
 
   if (!user) return notFound()
 
@@ -48,9 +48,9 @@ export default async function ProfilePage() {
           <NameForm name={user.name} />
           <AvatarForm />
           <EmailCard
-            email={session.user.email}
+            email={user.email}
             isPrimary={true}
-            isVerified={!!session.user.emailVerified}
+            isVerified={user.emailVerified}
           />
           <BioForm bio={user.bio} />
           <PhoneForm phone={user.phone} />
