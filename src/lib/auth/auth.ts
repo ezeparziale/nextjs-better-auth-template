@@ -57,27 +57,27 @@ export const auth = betterAuth({
       websiteUrl: {
         type: "string",
         required: false,
-        fieldName: "website_url",
+        fieldName: "websiteUrl",
       },
       linkedinUrl: {
         type: "string",
         required: false,
-        fieldName: "linkedin_url",
+        fieldName: "linkedinUrl",
       },
       githubUrl: {
         type: "string",
         required: false,
-        fieldName: "github_url",
+        fieldName: "githubUrl",
       },
       xUrl: {
         type: "string",
         required: false,
-        fieldName: "x_url",
+        fieldName: "xUrl",
       },
       jobTitle: {
         type: "string",
         required: false,
-        fieldName: "job_title",
+        fieldName: "jobTitle",
       },
       company: {
         type: "string",
