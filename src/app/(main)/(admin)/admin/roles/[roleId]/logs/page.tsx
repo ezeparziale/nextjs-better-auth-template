@@ -1,8 +1,6 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { notFound, redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
-import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
+import { notFound } from "next/navigation"
+import { requireAdmin } from "@/lib/auth/guards"
 import { getRole } from "@/data/auth/get-role"
 import { AuditInfo } from "@/components/audit-info"
 import { PageHeader } from "@/components/page-header"
@@ -22,16 +20,9 @@ export const metadata: Metadata = {
 type Params = Promise<{ roleId: string }>
 
 export default async function LogsRoleAdminPage(props: { params: Params }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
   const { roleId } = await props.params
 
-  if (!session)
-    redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${roleId}/${PAGE.section}`)
-
-  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
+  await requireAdmin(`${PAGE.callbackUrl}/${roleId}/${PAGE.section}`)
 
   const role = await getRole(roleId)
 

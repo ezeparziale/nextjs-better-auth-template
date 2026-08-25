@@ -1,8 +1,5 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
-import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
+import { requireAdmin } from "@/lib/auth/guards"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
 import CreateRoleButton from "./_components/create-role-button"
@@ -28,13 +25,7 @@ type SearchParams = Promise<{
 }>
 
 export default async function RolesAdminPage(props: { searchParams: SearchParams }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
-
-  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
+  await requireAdmin(PAGE.callbackUrl)
 
   const searchParams = await props.searchParams
 

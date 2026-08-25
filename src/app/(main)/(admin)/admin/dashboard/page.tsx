@@ -1,9 +1,6 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
+import { requireAdmin } from "@/lib/auth/guards"
 import { db } from "@/lib/db"
-import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
 import { PageHeader } from "@/components/page-header"
 import { DashboardCharts } from "./_components/dashboard-charts"
 import { DashboardStats } from "./_components/dashboard-stats"
@@ -20,13 +17,7 @@ export const metadata: Metadata = {
 }
 
 export default async function DashboardAdminPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
-
-  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
+  await requireAdmin(PAGE.callbackUrl)
 
   const [totalUsers, activeSessionGroups, totalRoles, totalPermissions] =
     await Promise.all([

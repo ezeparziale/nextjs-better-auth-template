@@ -1,8 +1,5 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
-import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
+import { requireAdmin } from "@/lib/auth/guards"
 import { PageHeader } from "@/components/page-header"
 import CreateRoleForm from "../_components/create-role-form"
 
@@ -18,13 +15,7 @@ export const metadata: Metadata = {
 }
 
 export default async function NewRoleAdminPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
-
-  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
+  await requireAdmin(PAGE.callbackUrl)
 
   return (
     <div className="space-y-6">

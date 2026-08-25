@@ -1,8 +1,6 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { notFound, redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
-import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
+import { notFound } from "next/navigation"
+import { requireAdmin } from "@/lib/auth/guards"
 import { getUser } from "@/data/auth/get-user"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
@@ -35,15 +33,9 @@ export default async function RolesUserAdminPage(props: {
   params: Params
   searchParams: SearchParams
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
   const { userId } = await props.params
 
-  if (!session) redirect(`/login?callbackUrl=${PAGE.getCallbackUrl(userId)}`)
-
-  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
+  await requireAdmin(PAGE.getCallbackUrl(userId))
 
   const user = await getUser(userId)
 

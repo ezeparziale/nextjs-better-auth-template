@@ -1,7 +1,6 @@
-import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
-import { auth } from "@/lib/auth/auth"
+import { requireAdmin } from "@/lib/auth/guards"
 import { getUser } from "@/data/auth/get-user"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
@@ -48,9 +47,7 @@ export default async function UserAdminLayout({
   children: React.ReactNode
   params: Params
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  await requireAdmin()
 
   const userId = (await params).userId
 
@@ -58,7 +55,7 @@ export default async function UserAdminLayout({
 
   const user = await getUser(userId)
 
-  if (session && !user) return notFound()
+  if (!user) return notFound()
 
   return (
     <div className="space-y-6">

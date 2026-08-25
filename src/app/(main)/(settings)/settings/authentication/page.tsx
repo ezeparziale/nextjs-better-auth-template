@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { auth } from "@/lib/auth/auth"
+import { requireSession } from "@/lib/auth/guards"
 import { PageHeader } from "@/components/page-header"
 import ProvidersList from "./_components/providers-list"
 import ProvidersListSkeleton from "./_components/providers-list-skeleton"
@@ -19,11 +19,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Authentication() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
+  await requireSession(PAGE.callbackUrl)
 
   const accounts = await auth.api.listUserAccounts({ headers: await headers() })
 
