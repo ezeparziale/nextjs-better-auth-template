@@ -317,8 +317,7 @@ export default function AvatarForm() {
               Cancel
             </Button>
             <Button type="button" onClick={handleUpload} disabled={isUploading}>
-              {isUploading && <Spinner />}
-              <UploadIcon className="size-4" />
+              {isUploading ? <Spinner /> : <UploadIcon />}
               Upload avatar
             </Button>
           </DialogFooter>
