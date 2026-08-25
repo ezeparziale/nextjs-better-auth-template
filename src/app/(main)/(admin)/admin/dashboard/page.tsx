@@ -1,20 +1,18 @@
 import type { Metadata } from "next"
 import { requireAdmin } from "@/lib/auth/guards"
 import { db } from "@/lib/db"
-import { PageHeader } from "@/components/page-header"
+import { definePage } from "@/lib/define-page"
+import { PageShell } from "@/components/page-shell"
 import { DashboardCharts } from "./_components/dashboard-charts"
 import { DashboardStats } from "./_components/dashboard-stats"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Dashboard",
   description: "Admin dashboard.",
   callbackUrl: "/admin/dashboard",
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 export default async function DashboardAdminPage() {
   await requireAdmin(PAGE.callbackUrl)
@@ -32,8 +30,7 @@ export default async function DashboardAdminPage() {
   const activeUsers = activeSessionGroups.length
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} divider />
+    <PageShell page={PAGE} divider>
       <DashboardStats
         totalUsers={totalUsers}
         activeUsers={activeUsers}
@@ -41,6 +38,6 @@ export default async function DashboardAdminPage() {
         totalPermissions={totalPermissions}
       />
       <DashboardCharts />
-    </div>
+    </PageShell>
   )
 }

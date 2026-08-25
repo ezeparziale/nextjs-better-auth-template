@@ -2,23 +2,21 @@ import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth/auth"
 import { requireSession } from "@/lib/auth/guards"
-import { PageHeader } from "@/components/page-header"
+import { definePage } from "@/lib/define-page"
+import { PageShell } from "@/components/page-shell"
 import { CreatePasswordForm } from "./_components/create-password-button"
 import { DeleteAccountForm } from "./_components/delete-account-form"
 import PasskeyManagement from "./_components/passkey-management.tsx"
 import TwoFactorAuth from "./_components/two-factor-auth"
 import { UpdatePasswordForm } from "./_components/update-password-form"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Account",
   description: "Manage your account settings",
   callbackUrl: "/settings/account",
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 export default async function AccountPage() {
   const session = await requireSession(PAGE.callbackUrl)
@@ -30,8 +28,7 @@ export default async function AccountPage() {
   )
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+    <PageShell page={PAGE} isSection>
       {hasPasswordAccount ? (
         <UpdatePasswordForm />
       ) : (
@@ -43,6 +40,6 @@ export default async function AccountPage() {
       />
       <PasskeyManagement passKeys={passKeys} hasPasswordAccount={hasPasswordAccount} />
       <DeleteAccountForm userEmail={session.user.email} />
-    </div>
+    </PageShell>
   )
 }

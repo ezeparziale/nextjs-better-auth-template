@@ -1,21 +1,19 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { requireAdmin } from "@/lib/auth/guards"
+import { definePage } from "@/lib/define-page"
 import { getRole } from "@/data/auth/get-role"
-import { PageHeader } from "@/components/page-header"
+import { PageShell } from "@/components/page-shell"
 import EditRoleForm from "./_components/edit-role-form"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Edit role",
   description: "Edit the role's settings.",
   callbackUrl: "/admin/roles",
   section: "settings",
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 type Params = Promise<{ roleId: string }>
 
@@ -37,9 +35,8 @@ export default async function SettingsRoleAdminPage(props: { params: Params }) {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+    <PageShell page={PAGE} isSection>
       <EditRoleForm role={roleDTO} />
-    </div>
+    </PageShell>
   )
 }

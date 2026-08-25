@@ -1,21 +1,19 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { requireAdmin } from "@/lib/auth/guards"
+import { definePage } from "@/lib/define-page"
 import { getPermission } from "@/data/auth/get-permission"
-import { PageHeader } from "@/components/page-header"
+import { PageShell } from "@/components/page-shell"
 import EditPermissionForm from "./_components/edit-permission-form"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Edit permission",
   description: "Edit the permission's settings.",
   callbackUrl: "/admin/permissions",
   section: "settings",
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 type Params = Promise<{ permissionId: string }>
 
@@ -37,9 +35,8 @@ export default async function SettingsPermissionAdminPage(props: { params: Param
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+    <PageShell page={PAGE} isSection>
       <EditPermissionForm permission={permissionDTO} />
-    </div>
+    </PageShell>
   )
 }
