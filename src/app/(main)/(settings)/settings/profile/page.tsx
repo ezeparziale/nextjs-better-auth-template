@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { notFound, redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
+import { notFound } from "next/navigation"
+import { requireSession } from "@/lib/auth/guards"
 import { getUserSettings } from "@/data/auth/get-user-settings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageHeader } from "@/components/page-header"
@@ -25,11 +24,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ProfilePage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
+  const session = await requireSession(PAGE.callbackUrl)
 
   const user = await getUserSettings(session.user.id)
 

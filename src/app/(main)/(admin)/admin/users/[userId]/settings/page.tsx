@@ -1,8 +1,6 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { notFound, redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
-import { ERROR_CODES, errorUrl } from "@/lib/error-codes"
+import { notFound } from "next/navigation"
+import { requireAdmin } from "@/lib/auth/guards"
 import { getUser } from "@/data/auth/get-user"
 import EditUserForm from "./_components/edit-user-form"
 
@@ -21,16 +19,9 @@ export const metadata: Metadata = {
 type Params = Promise<{ userId: string }>
 
 export default async function SettingsUserAdminPage(props: { params: Params }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
   const { userId } = await props.params
 
-  if (!session)
-    redirect(`/login?callbackUrl=${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
-
-  if (session.user.role !== "admin") redirect(errorUrl(ERROR_CODES.ACCESS_UNAUTHORIZED))
+  await requireAdmin(`${PAGE.callbackUrl}/${userId}/${PAGE.section}`)
 
   const user = await getUser(userId)
 

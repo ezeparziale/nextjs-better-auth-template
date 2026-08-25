@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { requireSession } from "@/lib/auth/guards"
 import { PageHeader } from "@/components/page-header"
 import { SessionsList } from "./_components/sessions-list"
 
@@ -17,11 +17,7 @@ export const metadata: Metadata = {
 }
 
 export default async function SessionsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
+  const session = await requireSession(PAGE.callbackUrl)
 
   const sessions = await auth.api.listSessions({
     headers: await headers(),

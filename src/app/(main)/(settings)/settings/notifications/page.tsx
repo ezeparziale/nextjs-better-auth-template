@@ -1,7 +1,5 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth/auth"
+import { requireSession } from "@/lib/auth/guards"
 import { PageHeader } from "@/components/page-header"
 import NotificationsForm from "./_components/notifications-form"
 
@@ -17,11 +15,7 @@ export const metadata: Metadata = {
 }
 
 export default async function NotificationsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
+  const session = await requireSession(PAGE.callbackUrl)
 
   return (
     <div className="space-y-6">

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/auth"
+import { requireSession } from "@/lib/auth/guards"
 import { PageHeader } from "@/components/page-header"
 import { CreatePasswordForm } from "./_components/create-password-button"
 import { DeleteAccountForm } from "./_components/delete-account-form"
@@ -21,11 +21,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AccountPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-
-  if (!session) redirect(`/login?callbackUrl=${PAGE.callbackUrl}`)
+  const session = await requireSession(PAGE.callbackUrl)
 
   const passKeys = await auth.api.listPasskeys({ headers: await headers() })
   const accounts = await auth.api.listUserAccounts({ headers: await headers() })

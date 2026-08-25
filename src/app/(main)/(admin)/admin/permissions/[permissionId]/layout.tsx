@@ -1,7 +1,6 @@
-import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
-import { auth } from "@/lib/auth/auth"
+import { requireAdmin } from "@/lib/auth/guards"
 import { getPermission } from "@/data/auth/get-permission"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
@@ -36,9 +35,7 @@ export default async function PermissionAdminLayout({
   children: React.ReactNode
   params: Params
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  await requireAdmin()
 
   const permissionId = (await params).permissionId
 
@@ -46,7 +43,7 @@ export default async function PermissionAdminLayout({
 
   const permission = await getPermission(permissionId)
 
-  if (session && !permission) return notFound()
+  if (!permission) return notFound()
 
   return (
     <div className="space-y-6">

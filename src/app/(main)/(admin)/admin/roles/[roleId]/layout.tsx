@@ -1,7 +1,6 @@
-import { headers } from "next/headers"
 import { notFound } from "next/navigation"
 import { NavItem } from "@/types/types"
-import { auth } from "@/lib/auth/auth"
+import { requireAdmin } from "@/lib/auth/guards"
 import { getRole } from "@/data/auth/get-role"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
@@ -37,9 +36,7 @@ export default async function RoleAdminLayout({
   children: React.ReactNode
   params: Params
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  await requireAdmin()
 
   const roleId = (await params).roleId
 
@@ -47,7 +44,7 @@ export default async function RoleAdminLayout({
 
   const role = await getRole(roleId)
 
-  if (session && !role) return notFound()
+  if (!role) return notFound()
 
   return (
     <div className="space-y-6">
