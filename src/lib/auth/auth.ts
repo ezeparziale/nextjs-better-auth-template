@@ -12,6 +12,12 @@ import {
   sendWelcomeEmail,
 } from "../email/send-email"
 import { adminPlusPlugin } from "./admin-plus-plugin"
+import {
+  PERMISSION_KEY_ERROR_MESSAGE,
+  PERMISSION_KEY_PATTERN,
+  ROLE_KEY_ERROR_MESSAGE,
+  ROLE_KEY_PATTERN,
+} from "./rbac-patterns"
 import { rbacPlugin } from "./rbac-plugin"
 
 // import "server-only"
@@ -145,9 +151,10 @@ export const auth = betterAuth({
     }),
     rbacPlugin({
       minPermissionKeyLength: 5,
-      permissionKeyPattern: /^[a-z0-9_-]+\.[a-z0-9_-]+$/i,
-      permissionKeyErrorMessage:
-        'Permission key must follow the format "feature.action" (e.g., "user.read").',
+      permissionKeyPattern: PERMISSION_KEY_PATTERN,
+      permissionKeyErrorMessage: PERMISSION_KEY_ERROR_MESSAGE,
+      roleKeyPattern: ROLE_KEY_PATTERN,
+      roleKeyErrorMessage: ROLE_KEY_ERROR_MESSAGE,
       seedPermissions: [
         {
           key: "user1.read",

@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
+import { ROLE_KEY_EXAMPLE } from "@/lib/auth/rbac-patterns"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -130,7 +131,7 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
                   <Input
                     {...field}
                     id={field.name}
-                    placeholder="e.g. create_posts"
+                    placeholder={`e.g. ${ROLE_KEY_EXAMPLE}`}
                     disabled={isSubmitting}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
