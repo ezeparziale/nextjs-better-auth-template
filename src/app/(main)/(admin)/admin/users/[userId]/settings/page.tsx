@@ -40,6 +40,7 @@ export default async function SettingsUserAdminPage(props: { params: Params }) {
     id: user.id,
     name: user.name,
     email: user.email,
+    image: user.image,
     bio: user.bio,
     phone: user.phone,
     websiteUrl: user.websiteUrl,
