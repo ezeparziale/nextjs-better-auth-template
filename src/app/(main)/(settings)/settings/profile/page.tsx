@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { requireSession } from "@/lib/auth/guards"
+import { definePage } from "@/lib/define-page"
 import { getUserSettings } from "@/data/auth/get-user-settings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PageHeader } from "@/components/page-header"
+import { PageShell } from "@/components/page-shell"
 import AvatarForm from "./_components/avatar-form"
 import BioForm from "./_components/bio-form"
 import EmailCard from "./_components/email-card"
@@ -12,16 +13,13 @@ import NameForm from "./_components/name-form"
 import PhoneForm from "./_components/phone-form"
 import SocialLinksForm from "./_components/social-links-form"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Profile",
   description: "Update your profile information",
   callbackUrl: "/settings/profile",
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 export default async function ProfilePage() {
   const session = await requireSession(PAGE.callbackUrl)
@@ -31,8 +29,7 @@ export default async function ProfilePage() {
   if (!user) return notFound()
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+    <PageShell page={PAGE} isSection>
       <Tabs defaultValue="profile">
         <TabsList>
           <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -67,6 +64,6 @@ export default async function ProfilePage() {
           />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageShell>
   )
 }

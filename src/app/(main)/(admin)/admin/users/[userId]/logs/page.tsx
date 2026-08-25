@@ -1,21 +1,19 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { requireAdmin } from "@/lib/auth/guards"
+import { definePage } from "@/lib/define-page"
 import { getUser } from "@/data/auth/get-user"
 import { AuditInfo } from "@/components/audit-info"
-import { PageHeader } from "@/components/page-header"
+import { PageShell } from "@/components/page-shell"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Logs",
   description: "View logs.",
   callbackUrl: "/admin/users",
   section: "logs",
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 type Params = Promise<{ userId: string }>
 
@@ -29,14 +27,13 @@ export default async function LogsUserAdminPage(props: { params: Params }) {
   if (!user) notFound()
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={PAGE.title} description={PAGE.description} isSection />
+    <PageShell page={PAGE} isSection>
       <AuditInfo
         createdAt={user.createdAt}
         updatedAt={user.updatedAt}
         createdBy={user.createdBy}
         updatedBy={user.updatedBy}
       />
-    </div>
+    </PageShell>
   )
 }

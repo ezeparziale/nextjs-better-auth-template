@@ -1,23 +1,21 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { requireAdmin } from "@/lib/auth/guards"
+import { definePage } from "@/lib/define-page"
 import { getUser } from "@/data/auth/get-user"
 import { DataTableProvider } from "@/components/ui/data-table"
-import { PageHeader } from "@/components/page-header"
+import { PageShell } from "@/components/page-shell"
 import AddRoleDialog from "./_components/add-role-dialog"
 import UserRolesTable from "./_components/user-roles-table"
 
-const PAGE = {
+const PAGE = definePage({
   title: "User roles",
   description: "Assign or remove roles from this user.",
   getCallbackUrl: (userId: string) => `/admin/users/${userId}/roles`,
   section: "roles",
-} as const
+} as const)
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 type SearchParams = Promise<{
   page?: string
@@ -44,16 +42,14 @@ export default async function RolesUserAdminPage(props: {
   const searchParams = await props.searchParams
 
   return (
-    <div className="space-y-6">
-      <DataTableProvider>
-        <PageHeader
-          title={PAGE.title}
-          description={PAGE.description}
-          isSection
-          actions={[<AddRoleDialog userId={userId} key="btn-action-add-role" />]}
-        />
+    <DataTableProvider>
+      <PageShell
+        page={PAGE}
+        isSection
+        actions={[<AddRoleDialog userId={userId} key="btn-action-add-role" />]}
+      >
         <UserRolesTable userId={userId} initialParams={searchParams} />
-      </DataTableProvider>
-    </div>
+      </PageShell>
+    </DataTableProvider>
   )
 }

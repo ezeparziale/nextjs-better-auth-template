@@ -1,20 +1,18 @@
 import type { Metadata } from "next"
 import { requireAdmin } from "@/lib/auth/guards"
+import { definePage } from "@/lib/define-page"
 import { DataTableProvider } from "@/components/ui/data-table"
-import { PageHeader } from "@/components/page-header"
+import { PageShell } from "@/components/page-shell"
 import AddPermissionDialog from "./_components/add-permission-dialog"
 import RolePermissionsTable from "./_components/role-permissions-table"
 
-const PAGE = {
+const PAGE = definePage({
   title: "Manage role permissions",
   description: "Assign or remove permissions from this role.",
   getCallbackUrl: (roleId: string) => `/admin/roles/${roleId}/permissions`,
-}
+})
 
-export const metadata: Metadata = {
-  title: PAGE.title,
-  description: PAGE.description,
-}
+export const metadata: Metadata = PAGE.metadata
 
 type SearchParams = Promise<{
   page?: string
@@ -37,18 +35,16 @@ export default async function PermissionsRoleAdminPage(props: {
   const searchParams = await props.searchParams
 
   return (
-    <div className="space-y-6">
-      <DataTableProvider>
-        <PageHeader
-          title={PAGE.title}
-          description={PAGE.description}
-          isSection
-          actions={[
-            <AddPermissionDialog roleId={roleId} key="btn-action-add-permission" />,
-          ]}
-        />
+    <DataTableProvider>
+      <PageShell
+        page={PAGE}
+        isSection
+        actions={[
+          <AddPermissionDialog roleId={roleId} key="btn-action-add-permission" />,
+        ]}
+      >
         <RolePermissionsTable roleId={roleId} initialParams={searchParams} />
-      </DataTableProvider>
-    </div>
+      </PageShell>
+    </DataTableProvider>
   )
 }
