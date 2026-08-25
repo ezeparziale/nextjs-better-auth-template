@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
+import { useCopyToClipboard } from "@/components/ui/copy-button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
@@ -88,12 +89,13 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
     }
   }
 
+  const { copy } = useCopyToClipboard({
+    toastMessage: "Metadata copied to clipboard",
+  })
+
   const handleCopy = useCallback(() => {
-    const text = form.getValues("metadataJson")
-    navigator.clipboard.writeText(text).then(() => {
-      toast.info("Metadata copied to clipboard")
-    })
-  }, [form])
+    copy(form.getValues("metadataJson"))
+  }, [copy, form])
 
   const onSubmit = async (data: FormData) => {
     try {

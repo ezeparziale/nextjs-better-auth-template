@@ -51,6 +51,7 @@ export default async function PermissionAdminLayout({
         <PageHeader
           title={`Edit ${permission?.name}`}
           description={`ID: ${permission?.id}`}
+          copyValue={permission?.id}
           actions={
             <DeletePermissionButton
               permissionId={permission?.id ?? ""}

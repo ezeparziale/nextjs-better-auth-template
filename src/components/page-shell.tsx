@@ -9,6 +9,8 @@ interface PageShellProps {
   divider?: boolean
   backLink?: string
   mobileActionsBelow?: boolean
+  copyValue?: string
+  copyLabel?: string
   children: React.ReactNode
 }
 
@@ -20,6 +22,8 @@ export function PageShell({
   divider = false,
   backLink,
   mobileActionsBelow = true,
+  copyValue,
+  copyLabel,
   children,
 }: PageShellProps) {
   return (
@@ -32,6 +36,8 @@ export function PageShell({
         divider={divider}
         backLink={backLink}
         mobileActionsBelow={mobileActionsBelow}
+        copyValue={copyValue}
+        copyLabel={copyLabel}
       />
       {children}
     </div>

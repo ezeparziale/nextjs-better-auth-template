@@ -3,9 +3,9 @@
 import Link from "next/link"
 import { useState } from "react"
 import { CopyIcon, EyeIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react"
-import { toast } from "sonner"
 import { User } from "@/lib/auth/rbac-plugin"
 import { Button } from "@/components/ui/button"
+import { useCopyToClipboard } from "@/components/ui/copy-button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import RemoveUserDialog from "./remove-user-dialog"
 
 export default function CellActions({ row, roleId }: { row: User; roleId: string }) {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
+  const { copy } = useCopyToClipboard()
 
   return (
     <>
@@ -30,12 +31,7 @@ export default function CellActions({ row, roleId }: { row: User; roleId: string
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => {
-              navigator.clipboard.writeText(row.id)
-              toast.info("ID copied to clipboard")
-            }}
-          >
+          <DropdownMenuItem onClick={() => copy(row.id)}>
             <CopyIcon /> Copy ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />

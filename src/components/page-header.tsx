@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "./ui/button"
+import { CopyButton } from "./ui/copy-button"
 
 interface PageHeaderProps {
   title: string
@@ -14,6 +15,8 @@ interface PageHeaderProps {
   divider?: boolean
   backLink?: string
   mobileActionsBelow?: boolean
+  copyValue?: string
+  copyLabel?: string
 }
 
 export function PageHeader({
@@ -25,6 +28,8 @@ export function PageHeader({
   divider = false,
   backLink,
   mobileActionsBelow = true,
+  copyValue,
+  copyLabel = "Copy ID",
 }: PageHeaderProps) {
   return (
     <div
@@ -61,8 +66,15 @@ export function PageHeader({
         >
           {title}
         </h2>
-        {description ? (
-          <p className="text-muted-foreground text-sm">{description}</p>
+        {description || copyValue ? (
+          <div className="flex items-center gap-1.5">
+            {description ? (
+              <p className="text-muted-foreground text-sm">{description}</p>
+            ) : null}
+            {copyValue ? (
+              <CopyButton value={copyValue} label={copyLabel} size="icon-xs" />
+            ) : null}
+          </div>
         ) : null}
       </div>
       {actions ? (

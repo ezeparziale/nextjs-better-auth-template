@@ -8,8 +8,8 @@ import {
   PencilIcon,
   Trash2Icon,
 } from "lucide-react"
-import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { useCopyToClipboard } from "@/components/ui/copy-button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,7 @@ export default function CellActions({ row }: { row: UserWithRole }) {
   const router = useRouter()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isBanUserDialogOpen, setIsBanUserDialogOpen] = useState(false)
+  const { copy } = useCopyToClipboard()
 
   return (
     <>
@@ -37,12 +38,7 @@ export default function CellActions({ row }: { row: UserWithRole }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => {
-              navigator.clipboard.writeText(row.id)
-              toast.info("ID copied to clipboard")
-            }}
-          >
+          <DropdownMenuItem onClick={() => copy(row.id)}>
             <CopyIcon /> Copy ID
           </DropdownMenuItem>
           <DropdownMenuSeparator />

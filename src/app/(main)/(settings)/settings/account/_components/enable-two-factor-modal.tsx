@@ -13,6 +13,7 @@ import {
 } from "@/schemas/two-factor"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { CopyButton, useCopyToClipboard } from "@/components/ui/copy-button"
 import {
   Dialog,
   DialogClose,
@@ -215,8 +216,6 @@ function QRCodeSetup({
   totpURI: string
   onContinue: () => void
 }) {
-  const [copied, setCopied] = useState(false)
-
   const secret = totpURI ? totpURI.split("secret=")[1]?.split("&")[0] || "" : ""
   let accountName = ""
 
@@ -225,13 +224,6 @@ function QRCodeSetup({
     if (match) {
       accountName = decodeURIComponent(match[2])
     }
-  }
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(secret)
-    toast.info("Secret key copied to clipboard")
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -266,15 +258,13 @@ function QRCodeSetup({
                 className="font-mono text-sm"
                 aria-label="Secret key for manual entry"
               />
-              <Button
-                type="button"
+              <CopyButton
+                value={secret}
                 variant="outline"
                 size="icon"
-                onClick={() => handleCopy()}
-                aria-label="Copy secret key"
-              >
-                {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-              </Button>
+                label="Copy secret key"
+                toastMessage="Secret key copied to clipboard"
+              />
             </div>
             <div className="border-border space-y-1.5 pt-3">
               <div className="flex items-center justify-between text-sm">
@@ -410,16 +400,10 @@ function BackupCodes({
   backupCodes: string[]
   onComplete: () => void
 }) {
-  const [copied, setCopied] = useState(false)
   const [downloaded, setDownloaded] = useState(false)
-
-  const handleCopy = () => {
-    const codesText = backupCodes.join("\n")
-    navigator.clipboard.writeText(codesText)
-    toast.info("Codes copied to clipboard")
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const { copied, copy } = useCopyToClipboard({
+    toastMessage: "Codes copied to clipboard",
+  })
 
   const handleDownload = () => {
     const codesText = backupCodes.join("\n")
@@ -467,7 +451,7 @@ function BackupCodes({
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button
           variant="outline"
-          onClick={handleCopy}
+          onClick={() => copy(backupCodes.join("\n"))}
           className="flex-1 bg-transparent"
         >
           {copied ? (

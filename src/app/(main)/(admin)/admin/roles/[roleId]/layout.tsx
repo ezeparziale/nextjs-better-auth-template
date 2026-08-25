@@ -52,6 +52,7 @@ export default async function RoleAdminLayout({
         <PageHeader
           title={`Edit ${role?.name}`}
           description={`ID: ${role?.id}`}
+          copyValue={role?.id}
           actions={
             <DeleteRoleButton roleId={role?.id ?? ""} roleKey={role?.key ?? ""} />
           }

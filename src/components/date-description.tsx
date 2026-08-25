@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Check, Copy } from "lucide-react"
-import { toast } from "sonner"
 import { formatDate } from "@/lib/utils"
+import { useCopyToClipboard } from "@/components/ui/copy-button"
 import {
   HoverCard,
   HoverCardContent,
@@ -23,7 +22,7 @@ type DateTableProps = {
   localTimeZone: string
   timestamp: number
   copied: string | null
-  onCopy: (text: string, label: string) => void
+  onCopy: (text: string) => void
 }
 
 const DateTable = ({
@@ -38,12 +37,12 @@ const DateTable = ({
     <tbody>
       <tr
         className="hover:bg-muted cursor-pointer transition-colors"
-        onClick={() => onCopy(utcDateTime, "UTC")}
+        onClick={() => onCopy(utcDateTime)}
       >
         <td className="pr-2 font-mono font-semibold">UTC</td>
         <td className="font-mono">{utcDateTime}</td>
         <td className="pl-2">
-          {copied === "UTC" ? (
+          {copied === utcDateTime ? (
             <Check className="size-3 text-green-500" />
           ) : (
             <Copy className="text-muted-foreground size-3 opacity-70" />
@@ -53,12 +52,12 @@ const DateTable = ({
 
       <tr
         className="hover:bg-muted cursor-pointer transition-colors"
-        onClick={() => onCopy(localDateTime, "Local")}
+        onClick={() => onCopy(localDateTime)}
       >
         <td className="pr-2 font-mono font-semibold">{localTimeZone}</td>
         <td className="font-mono">{localDateTime}</td>
         <td className="pl-2">
-          {copied === "Local" ? (
+          {copied === localDateTime ? (
             <Check className="size-3 text-green-500" />
           ) : (
             <Copy className="text-muted-foreground size-3 opacity-70" />
@@ -68,12 +67,12 @@ const DateTable = ({
 
       <tr
         className="hover:bg-muted cursor-pointer transition-colors"
-        onClick={() => onCopy(timestamp.toString(), "Timestamp")}
+        onClick={() => onCopy(timestamp.toString())}
       >
         <td className="pr-2 font-mono font-semibold">Timestamp</td>
         <td className="font-mono">{timestamp}</td>
         <td className="pl-2">
-          {copied === "Timestamp" ? (
+          {copied === timestamp.toString() ? (
             <Check className="size-3 text-green-500" />
           ) : (
             <Copy className="text-muted-foreground size-3 opacity-70" />
@@ -88,7 +87,9 @@ export const DateDescription = ({
   date,
   fallbackText = "N/A",
 }: DateDescriptionProps) => {
-  const [copied, setCopied] = useState<string | null>(null)
+  const { copied, copy } = useCopyToClipboard({
+    toastMessage: "Copied to clipboard",
+  })
   const isMobile = useIsMobile()
 
   if (!date) {
@@ -98,14 +99,6 @@ export const DateDescription = ({
   const { timeAgo, utcDateTime, localDateTime, localTimeZone } = formatDate(date)
   const timestamp = date.getTime()
 
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(label)
-      setTimeout(() => setCopied(null), 2000)
-    })
-    toast.info("Copied to clipboard")
-  }
-
   const content = (
     <DateTable
       utcDateTime={utcDateTime}
@@ -113,7 +106,7 @@ export const DateDescription = ({
       localTimeZone={localTimeZone}
       timestamp={timestamp}
       copied={copied}
-      onCopy={copyToClipboard}
+      onCopy={copy}
     />
   )
 

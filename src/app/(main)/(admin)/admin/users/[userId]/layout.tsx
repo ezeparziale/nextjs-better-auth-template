@@ -63,6 +63,7 @@ export default async function UserAdminLayout({
         <PageHeader
           title={`Edit ${user?.email}`}
           description={`ID: ${user?.id}`}
+          copyValue={user?.id}
           actions={
             <DeleteUserButton userId={user?.id ?? ""} userEmail={user?.email ?? ""} />
           }
