@@ -201,3 +201,12 @@ model RolePermission {
 
   @@map("roles_permissions")
 }
+
+model rateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt @map("last_request")
+
+  @@map("rate_limit")
+}
