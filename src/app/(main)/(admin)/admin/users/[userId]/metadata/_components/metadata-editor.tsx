@@ -14,6 +14,7 @@ import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/components/ui/copy-button"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -74,7 +75,6 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
     form.reset({ metadataJson: getDefaultJson(userMetadata) })
   }, [userMetadata, form])
 
-  const { control } = form
   const { isSubmitting, isDirty } = form.formState
 
   const handleFormatWithError = useCallback(
@@ -166,14 +166,19 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
       <FieldGroup>
         <Controller
           name="metadataJson"
-          control={control}
+          control={form.control}
           render={({ field, fieldState }) => {
             const lineCount = field.value.split("\n").length
             return (
               <Field data-invalid={fieldState.invalid}>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <FieldLabel htmlFor={field.name}>Metadata</FieldLabel>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="text-foreground flex flex-wrap items-center gap-2">
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {lineCount} {lineCount === 1 ? "line" : "lines"} ·{" "}
+                      {field.value.length}{" "}
+                      {field.value.length === 1 ? "character" : "characters"}
+                    </span>
                     <Button
                       type="button"
                       variant="outline"
@@ -226,7 +231,10 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
                   </div>
                 </div>
                 <div
-                  className="bg-background flex min-h-0 w-full overflow-hidden rounded-lg border"
+                  className={cn(
+                    "bg-background flex min-h-0 w-full overflow-hidden rounded-lg border",
+                    fieldState.invalid && "border-destructive",
+                  )}
                   style={{ height: isExpanded ? 560 : 360, maxHeight: "70vh" }}
                 >
                   <pre
@@ -252,18 +260,6 @@ export function MetadataEditor({ userId, userMetadata }: MetadataEditorProps) {
                     onPaste={handlePaste}
                     onScroll={handleTextareaScroll}
                   />
-                </div>
-                <div
-                  className="text-muted-foreground flex items-center justify-end gap-4 px-1 font-mono text-xs"
-                  aria-live="polite"
-                >
-                  <span>
-                    {lineCount} {lineCount === 1 ? "line" : "lines"}
-                  </span>
-                  <span>
-                    {field.value.length}{" "}
-                    {field.value.length === 1 ? "character" : "characters"}
-                  </span>
                 </div>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
