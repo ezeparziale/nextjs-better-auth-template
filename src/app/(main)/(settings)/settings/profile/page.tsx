@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { requireSession } from "@/lib/auth/guards"
 import { definePage } from "@/lib/define-page"
 import { getUserSettings } from "@/data/auth/get-user-settings"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TabsContent } from "@/components/ui/tabs"
 import { PageShell } from "@/components/page-shell"
 import AvatarForm from "./_components/avatar-form"
 import BioForm from "./_components/bio-form"
@@ -11,6 +11,8 @@ import EmailCard from "./_components/email-card"
 import JobDetailsForm from "./_components/job-details-form"
 import NameForm from "./_components/name-form"
 import PhoneForm from "./_components/phone-form"
+import ProfileTabs from "./_components/profile-tabs"
+import { isProfileTab } from "./_components/profile-tabs-config"
 import SocialLinksForm from "./_components/social-links-form"
 
 const PAGE = definePage({
@@ -21,21 +23,21 @@ const PAGE = definePage({
 
 export const metadata: Metadata = PAGE.metadata
 
-export default async function ProfilePage() {
+type SearchParams = Promise<{ tab?: string }>
+
+export default async function ProfilePage(props: { searchParams: SearchParams }) {
   const session = await requireSession(PAGE.callbackUrl)
 
   const user = await getUserSettings(session.user.id)
 
   if (!user) return notFound()
 
+  const searchParams = await props.searchParams
+  const tab = isProfileTab(searchParams.tab) ? searchParams.tab : "profile"
+
   return (
     <PageShell page={PAGE} isSection>
-      <Tabs defaultValue="profile">
-        <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="social">Social</TabsTrigger>
-          <TabsTrigger value="job">Job</TabsTrigger>
-        </TabsList>
+      <ProfileTabs initialTab={tab}>
         <TabsContent value="profile" className="space-y-6">
           <NameForm name={user.name} />
           <AvatarForm />
@@ -63,7 +65,7 @@ export default async function ProfilePage() {
             location={user.location}
           />
         </TabsContent>
-      </Tabs>
+      </ProfileTabs>
     </PageShell>
   )
 }
