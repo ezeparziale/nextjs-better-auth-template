@@ -74,9 +74,11 @@ export const invitationPlugin = (options?: InvitationPluginOptions) => {
             }
 
             const email = (ctx.body?.email as string | undefined)?.toLowerCase().trim()
+            // v8 ignore start -- email is always present on /sign-up/email
             if (!email) {
               return
             }
+            // v8 ignore end
 
             const invitation = await ctx.context.adapter.findOne<Invitation>({
               model: "invitation",
@@ -111,25 +113,32 @@ export const invitationPlugin = (options?: InvitationPluginOptions) => {
             }
 
             const email = (ctx.body?.email as string | undefined)?.toLowerCase().trim()
+            // v8 ignore start -- email is always present on /sign-up/email
             if (!email) {
               return
             }
+            // v8 ignore end
 
             const invitation = await ctx.context.adapter.findOne<Invitation>({
               model: "invitation",
               where: [{ field: "token", value: token }],
             })
+            // v8 ignore start -- defensive: the before-hook already validated it
             if (!invitation) {
               return
             }
+            // v8 ignore end
 
             const user = await ctx.context.adapter.findOne<{ id: string }>({
               model: "user",
               where: [{ field: "email", value: email }],
             })
+            // v8 ignore start -- defensive: this hook only runs after a
+            // successful sign-up already persisted the user.
             if (!user) {
               return
             }
+            // v8 ignore end
 
             await ctx.context.adapter.update<Invitation>({
               model: "invitation",
