@@ -4,10 +4,6 @@ export const schema = {
   invitation: {
     modelName: "invitation",
     fields: {
-      id: {
-        type: "string",
-        required: true,
-      },
       email: {
         type: "string",
         required: true,
