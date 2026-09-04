@@ -8,6 +8,7 @@ import {
 import { createAuthClient } from "better-auth/react"
 import { adminPlusClient } from "./admin-plus-plugin/client"
 import { auth } from "./auth"
+import { invitationClient } from "./invitation-plugin/client"
 import { rbacClient } from "./rbac-plugin/client"
 
 export const authClient = createAuthClient({
@@ -31,6 +32,7 @@ export const authClient = createAuthClient({
     lastLoginMethodClient(),
     rbacClient(),
     adminPlusClient(),
+    invitationClient(),
     inferAdditionalFields<typeof auth>(),
   ],
 })
