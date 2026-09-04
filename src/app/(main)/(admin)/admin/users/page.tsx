@@ -3,8 +3,10 @@ import { requireAdmin } from "@/lib/auth/guards"
 import { definePage } from "@/lib/define-page"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageShell } from "@/components/page-shell"
+import AdminUsersTabs from "./_components/admin-users-tabs"
 import CreateUserButton from "./_components/create-user-button"
 import { ExportUsersButton } from "./_components/export-users-button"
+import InvitationsPanel from "./_components/invitations-panel"
 import UsersTable from "./_components/users-table"
 
 const PAGE = definePage({
@@ -21,6 +23,10 @@ type SearchParams = Promise<{
   search?: string
   sortBy?: string
   sortDirection?: "asc" | "desc"
+  tab?: string
+  status?: string
+  invSearch?: string
+  invStatus?: string
 }>
 
 export default async function UsersAdminPage(props: { searchParams: SearchParams }) {
@@ -38,7 +44,10 @@ export default async function UsersAdminPage(props: { searchParams: SearchParams
       ]}
     >
       <DataTableProvider>
-        <UsersTable initialParams={searchParams} />
+        <AdminUsersTabs
+          usersContent={<UsersTable initialParams={searchParams} />}
+          invitationsContent={<InvitationsPanel initialParams={searchParams} />}
+        />
       </DataTableProvider>
     </PageShell>
   )

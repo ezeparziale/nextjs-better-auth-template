@@ -12,6 +12,7 @@ import {
   sendWelcomeEmail,
 } from "../email/send-email"
 import { adminPlusPlugin } from "./admin-plus-plugin"
+import { invitationPlugin } from "./invitation-plugin"
 import {
   PERMISSION_KEY_ERROR_MESSAGE,
   PERMISSION_KEY_PATTERN,
@@ -24,6 +25,8 @@ import { rbacPlugin } from "./rbac-plugin"
 
 export const SUPPORTED_OAUTH_PROVIDERS = ["credential", "google", "github"] as const
 export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number]
+
+const INVITATIONS_ENABLED = (process.env.INVITATIONS_ENABLED ?? "true") !== "false"
 
 export const auth = betterAuth({
   appName: "Template",
@@ -199,6 +202,7 @@ export const auth = betterAuth({
       disabledEndpoints: [],
     }),
     adminPlusPlugin(),
+    ...(INVITATIONS_ENABLED ? [invitationPlugin({ expiresInDays: 30 })] : []),
   ],
   databaseHooks: {
     user: {

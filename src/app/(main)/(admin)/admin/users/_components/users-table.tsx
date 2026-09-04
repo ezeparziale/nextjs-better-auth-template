@@ -71,7 +71,16 @@ const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   updatedBy: false,
 }
 
-const RESERVED_PARAMS = ["page", "pageSize", "search", "sortBy", "sortDirection"]
+const RESERVED_PARAMS = [
+  "tab",
+  "page",
+  "pageSize",
+  "search",
+  "sortBy",
+  "sortDirection",
+  "invSearch",
+  "invStatus",
+]
 
 export default function UsersTable({
   initialParams,
@@ -207,7 +216,10 @@ export default function UsersTable({
   ])
 
   useEffect(() => {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(searchParams.toString())
+    const existingTab = params.get("tab")
+    params.delete("tab")
+    if (existingTab) params.set("tab", existingTab)
 
     if (searchInput) {
       params.set("search", searchInput)

@@ -52,6 +52,8 @@ model User {
 
   notificationNewLoginEmail Boolean @default(true) @map("notification_new_login_email")
 
+  invitationsInvited Invitation[] @relation("InvitationInvitedBy")
+
   @@index([email])
   @@map("users")
 }
@@ -209,4 +211,23 @@ model rateLimit {
   lastRequest BigInt @map("last_request")
 
   @@map("rate_limit")
+}
+
+model Invitation {
+  id            String    @id
+  email         String
+  token         String    @unique
+  status        String    @default("pending")
+  invitedBy     String?   @map("invited_by")
+  invitedById   String?   @map("invited_by_id")
+  invitedByUser User?     @relation("InvitationInvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  invitedAt     DateTime  @default(now()) @map("invited_at")
+  expiresAt     DateTime  @map("expires_at")
+  acceptedAt    DateTime? @map("accepted_at")
+  userId        String?   @map("user_id")
+
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("invitations")
 }
