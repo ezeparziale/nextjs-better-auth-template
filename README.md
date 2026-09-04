@@ -41,6 +41,8 @@ pages.
   access control.
 - **User Impersonation:** Admins can log in as any user to troubleshoot issues or
   perform actions on their behalf.
+- **Invitation Management:** Admins can invite users by email, browse invitations with
+  search, status filtering and pagination, and resend, revoke, or delete them.
 
 ### ✉️ Emails
 
@@ -51,6 +53,7 @@ pages.
   and IP context.
 - **New Login:** Sent to users when a new login is detected, with location-aware
   details.
+- **Invitation:** Sent to invited users with an accept link to join the application.
 
 ### ✨ Better Auth Plugins
 
@@ -71,6 +74,13 @@ pages.
     - Fetch all roles for a specific user.
   - **Database Seeding:** Utility to seed the database with initial roles and
     permissions on startup.
+- **Invitation:** A plugin to invite users to the application by email.
+  - **Admin Endpoints:** Create, list, revoke, delete, and resend invitations.
+  - **Auto-accept on Sign-up:** Validates the invitation token on sign-up and links the
+    new user automatically.
+  - **Configurable Expiry:** Invitations expire after a configurable number of days
+    (defaults to 30).
+  - **Rate Limiting:** Per-route limits on the invitation create and resend endpoints.
 
 ## 👷 Built using
 
