@@ -8,6 +8,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./dev.db
     steps:
       - uses: actions/checkout@v7
 
