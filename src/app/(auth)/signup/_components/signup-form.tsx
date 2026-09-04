@@ -4,10 +4,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { CheckCircle2 } from "lucide-react"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { signUp } from "@/lib/auth/auth-client"
 import { signUpFormSchema, type SignUpForm } from "@/schemas/auth"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -32,7 +34,10 @@ import { SocialButtons } from "@/components/auth/social-buttons"
 
 type FormData = SignUpForm
 
-export default function SignUpForm() {
+const INVITATION_EXPIRED_MESSAGE = "This invitation has expired."
+const INVITATION_GENERIC_MESSAGE = "Invitation error. Please try again."
+
+export default function SignUpForm({ token }: { token?: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<string | null>(null)
 
@@ -49,14 +54,32 @@ export default function SignUpForm() {
   async function onSubmit(values: FormData) {
     setIsLoading("email")
     try {
-      const result = await signUp.email({
-        email: values.email,
-        name: values.name,
-        password: values.password,
-      })
+      const result = await signUp.email(
+        {
+          email: values.email,
+          name: values.name,
+          password: values.password,
+        },
+        token
+          ? {
+              headers: {
+                "x-invitation-token": token,
+              },
+            }
+          : undefined,
+      )
 
       if (result.error) {
-        toast.error(result.error.message || "Something went wrong")
+        const message = result.error.message
+        if (
+          token &&
+          (message === INVITATION_EXPIRED_MESSAGE ||
+            message === INVITATION_GENERIC_MESSAGE)
+        ) {
+          toast.error(message)
+        } else {
+          toast.error(result.error.message || "Something went wrong")
+        }
       } else {
         toast.success("Sign up successful")
         setTimeout(() => {
@@ -78,7 +101,17 @@ export default function SignUpForm() {
           Enter your details below to sign up for an account.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="grid gap-4">
+        {token && (
+          <Alert>
+            <CheckCircle2 aria-hidden="true" />
+            <AlertTitle>You&apos;ve been invited</AlertTitle>
+            <AlertDescription>
+              You&apos;ve been invited to join this workspace. Enter your details below
+              to accept the invitation.
+            </AlertDescription>
+          </Alert>
+        )}
         <form id="form-signup" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
@@ -111,6 +144,7 @@ export default function SignUpForm() {
                     aria-invalid={fieldState.invalid}
                     placeholder="you@example.com"
                     type="email"
+                    value={field.value}
                     disabled={!!isLoading}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -159,10 +193,14 @@ export default function SignUpForm() {
             >
               {isLoading === "email" ? <Spinner /> : "Create an account"}
             </Button>
-            <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-              Or continue with
-            </FieldSeparator>
-            <SocialButtons isLoading={isLoading} onLoadingChange={setIsLoading} />
+            {!token && (
+              <>
+                <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+                  Or continue with
+                </FieldSeparator>
+                <SocialButtons isLoading={isLoading} onLoadingChange={setIsLoading} />
+              </>
+            )}
           </FieldGroup>
         </form>
       </CardContent>

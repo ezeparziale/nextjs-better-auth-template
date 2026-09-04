@@ -9,7 +9,11 @@ export const metadata: Metadata = {
   description: "Create an account",
 }
 
-export default async function SignUpPage() {
+type SearchParams = Promise<{ token?: string }>
+
+export default async function SignUpPage(props: { searchParams: SearchParams }) {
+  const searchParams = await props.searchParams
+
   const session = await auth.api.getSession({
     headers: await headers(),
   })
@@ -18,5 +22,5 @@ export default async function SignUpPage() {
     redirect("/dashboard")
   }
 
-  return <SignUpForm />
+  return <SignUpForm token={searchParams.token} />
 }
