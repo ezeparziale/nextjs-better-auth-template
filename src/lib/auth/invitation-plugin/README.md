@@ -340,9 +340,10 @@ type invitationResend = {
 
 ## Acceptance Flow
 
-The invited user follows the link in the invitation email (e.g. `/signup?token=<token>`)
-and signs up with the invited email. The plugin validates the invitation entirely
-through sign-up hooks, so there are **no public endpoints** to enumerate or tamper with.
+The invited user follows the link in the invitation email (e.g.
+`/signup?invitation=<token>`) and signs up with the invited email. The plugin validates
+the invitation entirely through sign-up hooks, so there are **no public endpoints** to
+enumerate or tamper with.
 
 The sign-up page sends the invitation token as a custom header on the sign-up request:
 
@@ -355,7 +356,7 @@ await signUp.email(
   },
   {
     headers: {
-      "x-invitation-token": token, // came from /signup?token=<token>
+      "x-invitation-token": invitation, // came from /signup?invitation=<token>
     },
   },
 )

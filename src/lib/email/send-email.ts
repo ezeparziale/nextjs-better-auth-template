@@ -179,7 +179,7 @@ export async function sendInvitationEmail(params: {
   appName?: string
   expiresInDays?: number
 }) {
-  const acceptUrl = `${process.env.BETTER_AUTH_URL}/signup?token=${params.token}`
+  const acceptUrl = `${process.env.BETTER_AUTH_URL}/signup?invitation=${params.token}`
   const html = await render(
     reactInvitationEmail({
       appName: params.appName ?? "Your app",

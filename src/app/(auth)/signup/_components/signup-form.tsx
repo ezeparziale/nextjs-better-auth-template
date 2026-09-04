@@ -37,7 +37,7 @@ type FormData = SignUpForm
 const INVITATION_EXPIRED_MESSAGE = "This invitation has expired."
 const INVITATION_GENERIC_MESSAGE = "Invitation error. Please try again."
 
-export default function SignUpForm({ token }: { token?: string }) {
+export default function SignUpForm({ invitation }: { invitation?: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState<string | null>(null)
 
@@ -60,10 +60,10 @@ export default function SignUpForm({ token }: { token?: string }) {
           name: values.name,
           password: values.password,
         },
-        token
+        invitation
           ? {
               headers: {
-                "x-invitation-token": token,
+                "x-invitation-token": invitation,
               },
             }
           : undefined,
@@ -72,7 +72,7 @@ export default function SignUpForm({ token }: { token?: string }) {
       if (result.error) {
         const message = result.error.message
         if (
-          token &&
+          invitation &&
           (message === INVITATION_EXPIRED_MESSAGE ||
             message === INVITATION_GENERIC_MESSAGE)
         ) {
@@ -102,7 +102,7 @@ export default function SignUpForm({ token }: { token?: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        {token && (
+        {invitation && (
           <Alert>
             <CheckCircle2 aria-hidden="true" />
             <AlertTitle>You&apos;ve been invited</AlertTitle>
@@ -193,7 +193,7 @@ export default function SignUpForm({ token }: { token?: string }) {
             >
               {isLoading === "email" ? <Spinner /> : "Create an account"}
             </Button>
-            {!token && (
+            {!invitation && (
               <>
                 <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                   Or continue with

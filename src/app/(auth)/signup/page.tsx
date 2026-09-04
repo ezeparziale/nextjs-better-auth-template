@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Create an account",
 }
 
-type SearchParams = Promise<{ token?: string }>
+type SearchParams = Promise<{ invitation?: string }>
 
 export default async function SignUpPage(props: { searchParams: SearchParams }) {
   const searchParams = await props.searchParams
@@ -22,5 +22,5 @@ export default async function SignUpPage(props: { searchParams: SearchParams }) 
     redirect("/dashboard")
   }
 
-  return <SignUpForm token={searchParams.token} />
+  return <SignUpForm invitation={searchParams.invitation} />
 }
