@@ -14,6 +14,7 @@ import SMTPTransport from "nodemailer/lib/smtp-transport"
 import { render } from "react-email"
 import { User as CustomUser } from "../auth/auth"
 import { parseUserAgent } from "../parse-user-agent"
+import { reactInvitationEmail } from "./invitation"
 import { NewLoginEmail } from "./new-login"
 import { reactPasswordChangedEmail } from "./password-changed"
 import { reactResetPasswordEmail } from "./reset-password"
@@ -170,4 +171,21 @@ export async function sendResetPasswordEmail(user: User, token: string) {
   const resetLink = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`
   const html = await render(reactResetPasswordEmail({ name: user.name, resetLink }))
   await sendMail(user.email, "Reset your password", html)
+}
+
+export async function sendInvitationEmail(params: {
+  to: string
+  token: string
+  appName?: string
+  expiresInDays?: number
+}) {
+  const acceptUrl = `${process.env.BETTER_AUTH_URL}/signup?token=${params.token}`
+  const html = await render(
+    reactInvitationEmail({
+      appName: params.appName ?? "Your app",
+      acceptUrl,
+      expiresInDays: params.expiresInDays ?? 30,
+    }),
+  )
+  await sendMail(params.to, "Your invitation", html)
 }
