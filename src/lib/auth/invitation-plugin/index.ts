@@ -354,13 +354,28 @@ export const invitationPlugin = (options?: InvitationPluginOptions) => {
             where: where.length ? where : undefined,
           })
 
+          // Compute effective status (expired overrides pending) BEFORE sorting
+          // so the Status column (which exposes effectiveStatus) sorts
+          // consistently with what the UI renders.
+          const withStatus = allInvitations.map((inv) => ({
+            ...inv,
+            effectiveStatus:
+              inv.status === "pending" && inv.expiresAt < now ? "expired" : inv.status,
+          }))
+
           // Adapter sortBy can't order by @map'd fields (camelCase columns).
           // Sort in JS instead using a whitelist of sortable fields.
           const sortField = (ctx.query.sortBy ?? "invitedAt") as
-            "email" | "status" | "invitedAt"
+            | "email"
+            | "status"
+            | "effectiveStatus"
+            | "invitedAt"
+            | "expiresAt"
+            | "invitedBy"
+            | "acceptedAt"
           const sortDirection = ctx.query.sortDirection === "asc" ? 1 : -1
 
-          allInvitations.sort((a, b) => {
+          withStatus.sort((a, b) => {
             const aVal = a[sortField]
             const bVal = b[sortField]
             if (aVal == null && bVal == null) return 0
@@ -370,13 +385,6 @@ export const invitationPlugin = (options?: InvitationPluginOptions) => {
             if (aVal > bVal) return sortDirection
             return 0
           })
-
-          // Compute effective status (expired overrides pending)
-          const withStatus = allInvitations.map((inv) => ({
-            ...inv,
-            effectiveStatus:
-              inv.status === "pending" && inv.expiresAt < now ? "expired" : inv.status,
-          }))
 
           const filtered = withStatus.filter(
             (inv) =>

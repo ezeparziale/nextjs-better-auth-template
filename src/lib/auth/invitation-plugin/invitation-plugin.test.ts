@@ -296,6 +296,76 @@ describe("invitation-plugin", () => {
     })
   })
 
+  describe("invitation.list sort by effectiveStatus", () => {
+    let sortCtx: InvitationTestContext
+    let sortApi: ReturnType<typeof invitationApi>
+
+    beforeAll(async () => {
+      sortCtx = await setupInvitationTest()
+      sortApi = invitationApi(sortCtx)
+
+      const accepted = await createInvitation(sortCtx, {
+        email: "sort-accepted@test.com",
+      })
+      await sortCtx.auth.api.signUpEmail({
+        body: {
+          email: "sort-accepted@test.com",
+          password: ADMIN_PASSWORD,
+          name: "Accepted",
+        },
+        headers: originHeaders(accepted.token),
+      })
+
+      const revoked = await createInvitation(sortCtx, {
+        email: "sort-revoked@test.com",
+      })
+      await runAsAdmin(sortCtx, async (headers) => {
+        await sortApi.invitationRevoke({
+          body: { invitationId: revoked.id },
+          headers,
+        })
+      })
+
+      const expired = await createInvitation(sortCtx, {
+        email: "sort-expired@test.com",
+      })
+      await expireInvitation(sortCtx, expired.token)
+
+      await createInvitation(sortCtx, { email: "sort-pending@test.com" })
+    })
+
+    it("sorts by effectiveStatus as the Status column displays it", async () => {
+      await runAsAdmin(sortCtx, async (headers) => {
+        const res = await sortApi.invitationList({
+          query: { sortBy: "effectiveStatus", sortDirection: "asc" },
+          headers,
+        })
+        expect(res.total).toBe(4)
+        expect(res.invitations.map((i) => i.effectiveStatus)).toEqual([
+          "accepted",
+          "expired",
+          "pending",
+          "revoked",
+        ])
+      })
+    })
+
+    it("sorts by effectiveStatus descending", async () => {
+      await runAsAdmin(sortCtx, async (headers) => {
+        const res = await sortApi.invitationList({
+          query: { sortBy: "effectiveStatus", sortDirection: "desc" },
+          headers,
+        })
+        expect(res.invitations.map((i) => i.effectiveStatus)).toEqual([
+          "revoked",
+          "pending",
+          "expired",
+          "accepted",
+        ])
+      })
+    })
+  })
+
   describe("schema defaults", () => {
     it("applies the invitedAt and status defaults when not provided", async () => {
       const row = await ctx.db.create({
