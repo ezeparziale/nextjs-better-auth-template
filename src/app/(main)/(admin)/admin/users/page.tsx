@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { INVITATIONS_ENABLED } from "@/lib/auth/auth"
 import { requireAdmin } from "@/lib/auth/guards"
 import { definePage } from "@/lib/define-page"
 import { DataTableProvider } from "@/components/ui/data-table"
@@ -47,6 +48,7 @@ export default async function UsersAdminPage(props: { searchParams: SearchParams
         <AdminUsersTabs
           usersContent={<UsersTable initialParams={searchParams} />}
           invitationsContent={<InvitationsPanel initialParams={searchParams} />}
+          invitationsEnabled={INVITATIONS_ENABLED}
         />
       </DataTableProvider>
     </PageShell>

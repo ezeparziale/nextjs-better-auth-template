@@ -35,18 +35,26 @@ const INVITATIONS_TAB_PARAMS = [
 export default function AdminUsersTabs({
   usersContent,
   invitationsContent,
+  invitationsEnabled,
 }: {
   usersContent: ReactNode
   invitationsContent: ReactNode
+  invitationsEnabled?: boolean
 }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
 
   const urlTab = searchParams.get(TAB_PARAM)
-  const activeTab: AdminUsersTab = isAdminUsersTab(urlTab ?? undefined)
-    ? (urlTab as AdminUsersTab)
-    : "users"
+  const activeTab: AdminUsersTab =
+    isAdminUsersTab(urlTab ?? undefined) &&
+    (urlTab !== "invitations" || invitationsEnabled)
+      ? (urlTab as AdminUsersTab)
+      : "users"
+
+  const visibleTabs = TAB_DEFINITIONS.filter(
+    (tab) => tab.value !== "invitations" || invitationsEnabled,
+  )
 
   const handleTabChange = (value: string) => {
     if (!isAdminUsersTab(value)) return
@@ -63,18 +71,17 @@ export default function AdminUsersTabs({
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange}>
       <TabsList>
-        {TAB_DEFINITIONS.map((tab) => (
+        {visibleTabs.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
             {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>
-      <TabsContent value="users" className="mt-4">
-        {usersContent}
-      </TabsContent>
-      <TabsContent value="invitations" className="mt-4">
-        {invitationsContent}
-      </TabsContent>
+      {visibleTabs.map((tab) => (
+        <TabsContent key={tab.value} value={tab.value} className="mt-4">
+          {tab.value === "users" ? usersContent : invitationsContent}
+        </TabsContent>
+      ))}
     </Tabs>
   )
 }

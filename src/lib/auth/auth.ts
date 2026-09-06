@@ -26,7 +26,8 @@ import { rbacPlugin } from "./rbac-plugin"
 export const SUPPORTED_OAUTH_PROVIDERS = ["credential", "google", "github"] as const
 export type SupportedOAuthProvider = (typeof SUPPORTED_OAUTH_PROVIDERS)[number]
 
-const INVITATIONS_ENABLED = (process.env.INVITATIONS_ENABLED ?? "true") !== "false"
+export const INVITATIONS_ENABLED =
+  (process.env.INVITATIONS_ENABLED ?? "true") !== "false"
 
 export const auth = betterAuth({
   appName: "Template",
