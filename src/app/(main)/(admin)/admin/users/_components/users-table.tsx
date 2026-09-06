@@ -82,6 +82,18 @@ const RESERVED_PARAMS = [
   "invStatus",
 ]
 
+const SORTABLE_COLUMNS = [
+  "name",
+  "email",
+  "emailVerified",
+  "role",
+  "banned",
+  "createdAt",
+  "updatedAt",
+  "createdBy",
+  "updatedBy",
+]
+
 export default function UsersTable({
   initialParams,
 }: {
@@ -108,7 +120,7 @@ export default function UsersTable({
     return filters
   })
   const [sorting, setSorting] = useState<SortingState>(() => {
-    if (initialParams.sortBy) {
+    if (initialParams.sortBy && SORTABLE_COLUMNS.includes(initialParams.sortBy)) {
       return [
         {
           id: initialParams.sortBy,
@@ -128,9 +140,13 @@ export default function UsersTable({
   )
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [isBulkAssignOpen, setIsBulkAssignOpen] = useState(false)
-  const [pagination, setPagination] = useState({
-    pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
-    pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
+  const [pagination, setPagination] = useState(() => {
+    const page = initialParams.page ? parseInt(initialParams.page, 10) : 0
+    const pageSize = initialParams.pageSize ? parseInt(initialParams.pageSize, 10) : 10
+    return {
+      pageIndex: Number.isFinite(page) && page > 0 ? page - 1 : 0,
+      pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 10,
+    }
   })
   const [total, setTotal] = useState(0)
 
