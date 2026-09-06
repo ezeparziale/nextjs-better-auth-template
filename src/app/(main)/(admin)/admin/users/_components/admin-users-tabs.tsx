@@ -23,7 +23,14 @@ const USERS_TAB_PARAMS = [
   "role",
 ]
 
-const INVITATIONS_TAB_PARAMS = ["invSearch", "invStatus"]
+const INVITATIONS_TAB_PARAMS = [
+  "invSearch",
+  "invStatus",
+  "page",
+  "pageSize",
+  "sortBy",
+  "sortDirection",
+]
 
 export default function AdminUsersTabs({
   usersContent,
