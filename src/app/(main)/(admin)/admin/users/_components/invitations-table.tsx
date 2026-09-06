@@ -46,6 +46,10 @@ type QueryParams = {
 type InitialParams = {
   invSearch?: string
   invStatus?: string
+  page?: string
+  pageSize?: string
+  sortBy?: string
+  sortDirection?: "asc" | "desc"
   [key: string]: string | undefined
 }
 
@@ -58,6 +62,14 @@ const STATUS_OPTIONS: {
   { value: "revoked", label: "Revoked" },
   { value: "accepted", label: "Accepted" },
   { value: "expired", label: "Expired" },
+]
+
+const SORTABLE_COLUMNS = [
+  "email",
+  "effectiveStatus",
+  "invitedAt",
+  "expiresAt",
+  "invitedBy",
 ]
 
 type StatusFilter = "all" | "pending" | "revoked" | "accepted" | "expired"
@@ -79,12 +91,24 @@ export default function InvitationsTable({
       ? (initialParams.invStatus as StatusFilter)
       : "all",
   )
-  const [sorting, setSorting] = useState<SortingState>(() => [
-    { id: "invitedAt", desc: true },
-  ])
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
+  const [sorting, setSorting] = useState<SortingState>(() => {
+    if (initialParams.sortBy && SORTABLE_COLUMNS.includes(initialParams.sortBy)) {
+      return [
+        {
+          id: initialParams.sortBy,
+          desc: initialParams.sortDirection === "desc",
+        },
+      ]
+    }
+    return [{ id: "invitedAt", desc: true }]
+  })
+  const [pagination, setPagination] = useState(() => {
+    const page = initialParams.page ? parseInt(initialParams.page, 10) : 0
+    const pageSize = initialParams.pageSize ? parseInt(initialParams.pageSize, 10) : 10
+    return {
+      pageIndex: Number.isFinite(page) && page > 0 ? page - 1 : 0,
+      pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 10,
+    }
   })
   const [total, setTotal] = useState(0)
   const [isInviteOpen, setIsInviteOpen] = useState(false)
@@ -97,7 +121,10 @@ export default function InvitationsTable({
     setPagination((prev) => ({ ...prev, pageIndex: 0 }))
   }
 
-  const handleClearSearch = () => setSearchInput("")
+  const handleClearSearch = () => {
+    setSearchInput("")
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+  }
   const handleSearchChange = (value: string) => {
     setSearchInput(value)
     setPagination((prev) => ({ ...prev, pageIndex: 0 }))
@@ -156,9 +183,20 @@ export default function InvitationsTable({
     else params.delete("invSearch")
     if (statusFilter && statusFilter !== "all") params.set("invStatus", statusFilter)
     else params.delete("invStatus")
+    if (pagination.pageIndex > 0) params.set("page", String(pagination.pageIndex + 1))
+    else params.delete("page")
+    if (pagination.pageSize !== 10) params.set("pageSize", String(pagination.pageSize))
+    else params.delete("pageSize")
+    if (sorting.length > 0) {
+      params.set("sortBy", sorting[0].id)
+      params.set("sortDirection", sorting[0].desc ? "desc" : "asc")
+    } else {
+      params.delete("sortBy")
+      params.delete("sortDirection")
+    }
     router.replace(`${pathname}?${params.toString()}`, { scroll: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput, statusFilter])
+  }, [searchInput, statusFilter, pagination.pageIndex, pagination.pageSize, sorting])
 
   const table = useTable({
     ...dataTableOptions,
@@ -276,6 +314,7 @@ export default function InvitationsTable({
                       handleClearSearch={() => {
                         setSearchInput("")
                         setStatusFilter("all")
+                        setPagination((prev) => ({ ...prev, pageIndex: 0 }))
                       }}
                       Icon={MailIcon}
                     />
