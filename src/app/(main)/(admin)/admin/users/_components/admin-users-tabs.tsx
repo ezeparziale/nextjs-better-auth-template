@@ -45,16 +45,14 @@ export default function AdminUsersTabs({
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const urlTab = searchParams.get(TAB_PARAM)
-  const activeTab: AdminUsersTab =
-    isAdminUsersTab(urlTab ?? undefined) &&
-    (urlTab !== "invitations" || invitationsEnabled)
-      ? (urlTab as AdminUsersTab)
-      : "users"
+  if (!invitationsEnabled) {
+    return <>{usersContent}</>
+  }
 
-  const visibleTabs = TAB_DEFINITIONS.filter(
-    (tab) => tab.value !== "invitations" || invitationsEnabled,
-  )
+  const urlTab = searchParams.get(TAB_PARAM)
+  const activeTab: AdminUsersTab = isAdminUsersTab(urlTab ?? undefined)
+    ? (urlTab as AdminUsersTab)
+    : "users"
 
   const handleTabChange = (value: string) => {
     if (!isAdminUsersTab(value)) return
@@ -71,13 +69,13 @@ export default function AdminUsersTabs({
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange}>
       <TabsList>
-        {visibleTabs.map((tab) => (
+        {TAB_DEFINITIONS.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
             {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>
-      {visibleTabs.map((tab) => (
+      {TAB_DEFINITIONS.map((tab) => (
         <TabsContent key={tab.value} value={tab.value} className="mt-4">
           {tab.value === "users" ? usersContent : invitationsContent}
         </TabsContent>
