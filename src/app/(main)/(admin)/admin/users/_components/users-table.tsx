@@ -275,7 +275,7 @@ export default function UsersTable({
     sorting,
     pathname,
     router,
-    searchParams,
+    searchParams.toString(),
   ])
 
   const tableColumns = [createSelectColumn<UserWithRole>(), ...columns]

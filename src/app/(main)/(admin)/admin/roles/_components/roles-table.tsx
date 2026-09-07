@@ -77,6 +77,8 @@ const SORTABLE_COLUMNS = [
   "updatedBy",
 ]
 
+const OWNED_PARAMS = [...RESERVED_PARAMS, "isActive"]
+
 export default function RolesTable({
   initialParams,
 }: {
@@ -213,7 +215,8 @@ export default function RolesTable({
   ])
 
   useEffect(() => {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(searchParams.toString())
+    OWNED_PARAMS.forEach((key) => params.delete(key))
 
     if (searchInput) {
       params.set("search", searchInput)
@@ -253,7 +256,7 @@ export default function RolesTable({
     sorting,
     pathname,
     router,
-    searchParams,
+    searchParams.toString(),
   ])
 
   const table = useTable({
