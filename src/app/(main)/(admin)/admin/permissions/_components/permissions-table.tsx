@@ -67,6 +67,16 @@ const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
 
 const RESERVED_PARAMS = ["page", "pageSize", "search", "sortBy", "sortDirection"]
 
+const SORTABLE_COLUMNS = [
+  "name",
+  "key",
+  "isActive",
+  "createdAt",
+  "updatedAt",
+  "createdBy",
+  "updatedBy",
+]
+
 export default function PermissionsTable({
   initialParams,
 }: {
@@ -93,7 +103,7 @@ export default function PermissionsTable({
     return filters
   })
   const [sorting, setSorting] = useState<SortingState>(() => {
-    if (initialParams.sortBy) {
+    if (initialParams.sortBy && SORTABLE_COLUMNS.includes(initialParams.sortBy)) {
       return [
         {
           id: initialParams.sortBy,
@@ -111,9 +121,13 @@ export default function PermissionsTable({
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(
     DEFAULT_COLUMN_VISIBILITY,
   )
-  const [pagination, setPagination] = useState({
-    pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
-    pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
+  const [pagination, setPagination] = useState(() => {
+    const page = initialParams.page ? parseInt(initialParams.page, 10) : 0
+    const pageSize = initialParams.pageSize ? parseInt(initialParams.pageSize, 10) : 10
+    return {
+      pageIndex: Number.isFinite(page) && page > 0 ? page - 1 : 0,
+      pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 10,
+    }
   })
   const [total, setTotal] = useState(0)
 
