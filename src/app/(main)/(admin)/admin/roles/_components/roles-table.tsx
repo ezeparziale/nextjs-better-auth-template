@@ -272,6 +272,7 @@ export default function RolesTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     manualFiltering: true,
+    getRowId: (row) => row.id,
   })
 
   const isFiltered = table.state.columnFilters.length > 0
