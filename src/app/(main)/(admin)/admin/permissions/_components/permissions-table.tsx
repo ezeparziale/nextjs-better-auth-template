@@ -358,7 +358,10 @@ export default function PermissionsTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className="h-24 text-center"
+                >
                   {searchInput ? (
                     <DataTableSearchNotFound
                       title={`No permissions found with "${searchInput}"`}

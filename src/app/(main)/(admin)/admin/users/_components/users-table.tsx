@@ -427,7 +427,10 @@ export default function UsersTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className="h-24 text-center"
+                >
                   {searchInput ? (
                     <DataTableSearchNotFound
                       title={`No users found with "${searchInput}"`}
