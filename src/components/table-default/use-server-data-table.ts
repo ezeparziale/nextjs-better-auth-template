@@ -177,8 +177,7 @@ export function useServerDataTable<TData extends RowData>({
     }
 
     const params = new URLSearchParams(searchParamsString)
-    const ownedParams = [...DEFAULT_RESERVED_PARAMS, ...reservedParams]
-    ownedParams.forEach((key) => params.delete(key))
+    DEFAULT_RESERVED_PARAMS.forEach((key) => params.delete(key))
 
     if (searchInput) {
       params.set("search", searchInput)
