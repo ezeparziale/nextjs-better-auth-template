@@ -102,6 +102,7 @@ export default function UsersTable({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const searchParamsString = searchParams.toString()
 
   const [data, setData] = useState<UserWithRole[]>([])
   const [loading, setLoading] = useState(true)
@@ -232,7 +233,7 @@ export default function UsersTable({
   ])
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParamsString)
     const existingTab = params.get("tab")
     params.delete("tab")
     if (existingTab) params.set("tab", existingTab)
@@ -263,7 +264,7 @@ export default function UsersTable({
 
     const newUrl = `${pathname}${params.toString() ? `?${params.toString()}` : ""}`
 
-    const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
+    const currentUrl = `${pathname}${searchParamsString ? `?${searchParamsString}` : ""}`
     if (newUrl !== currentUrl) {
       router.push(newUrl, { scroll: false })
     }
@@ -275,7 +276,7 @@ export default function UsersTable({
     sorting,
     pathname,
     router,
-    searchParams.toString(),
+    searchParamsString,
   ])
 
   const tableColumns = [createSelectColumn<UserWithRole>(), ...columns]
