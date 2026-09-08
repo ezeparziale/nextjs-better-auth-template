@@ -1,65 +1,30 @@
 "use client"
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import {
-  ColumnFiltersState,
-  ColumnVisibilityState,
-  flexRender,
-  RowSelectionState,
-  SortingState,
-  useTable,
-} from "@tanstack/react-table"
-import { UserWithRole } from "better-auth/plugins/admin"
-import { ShieldPlusIcon, UserIcon, XIcon } from "lucide-react"
+import { useCallback, useState } from "react"
+import type { UserWithRole } from "better-auth/plugins/admin"
+import { ShieldPlusIcon, UserIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Button } from "@/components/ui/button"
 import {
-  createSelectColumn,
-  DataTableFacetedFilter,
-  DataTableLoading,
-  DataTableLoadingRow,
-  DataTableNoData,
-  dataTableOptions,
-  DataTablePagination,
-  DataTableSearch,
-  DataTableSearchNotFound,
-  DataTableSelectedActions,
-  DataTableViewOptions,
-  useDataTable,
-} from "@/components/ui/data-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  TableDefault,
+  useServerDataTable,
+  type TableDefaultInitialParams,
+  type TableFetchFn,
+  type TableFilter,
+} from "@/components/table-default"
 import BulkAssignRoleDialog from "./bulk-assign-role-dialog"
 import { columns } from "./columns"
 
-type QueryParams = {
-  searchValue?: string | undefined
-  searchField?: "email" | "name" | undefined
-  searchOperator?: "contains" | "starts_with" | "ends_with" | undefined
-  limit?: string | number | undefined
-  offset?: string | number | undefined
-  sortBy?: string | undefined
-  sortDirection?: "asc" | "desc" | undefined
-  filters?: string | undefined
+type ListUsersQuery = NonNullable<
+  Parameters<typeof authClient.adminPlus.listUsers>[0]
+>["query"]
+
+type UserWithRoleRow = UserWithRole & {
+  createdBy?: string | null
+  updatedBy?: string | null
 }
 
-type InitialParams = {
-  page?: string
-  pageSize?: string
-  search?: string
-  sortBy?: string
-  sortDirection?: "asc" | "desc"
-  [key: string]: string | undefined
-}
-
-const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
+const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   email: true,
   emailVerified: true,
@@ -71,16 +36,7 @@ const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   updatedBy: false,
 }
 
-const RESERVED_PARAMS = [
-  "tab",
-  "page",
-  "pageSize",
-  "search",
-  "sortBy",
-  "sortDirection",
-  "invSearch",
-  "invStatus",
-]
+const RESERVED_PARAMS = ["tab", "invSearch", "invStatus"]
 
 const SORTABLE_COLUMNS = [
   "name",
@@ -94,370 +50,130 @@ const SORTABLE_COLUMNS = [
   "updatedBy",
 ]
 
+const FILTERS: TableFilter[] = [
+  {
+    columnId: "banned",
+    title: "Status",
+    options: [
+      { label: "Banned", value: "true" },
+      { label: "Active", value: "false" },
+    ],
+  },
+  {
+    columnId: "emailVerified",
+    title: "Email",
+    options: [
+      { label: "Verified", value: "true" },
+      { label: "Unverified", value: "false" },
+    ],
+  },
+  {
+    columnId: "role",
+    title: "Role",
+    options: [
+      { label: "Admin", value: "admin" },
+      { label: "User", value: "user" },
+    ],
+  },
+]
+
 export default function UsersTable({
   initialParams,
 }: {
-  initialParams: InitialParams
+  initialParams: TableDefaultInitialParams
 }) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const searchParamsString = searchParams.toString()
-
-  const [data, setData] = useState<UserWithRole[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const [searchInput, setSearchInput] = useState(initialParams.search || "")
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
-    const filters: ColumnFiltersState = []
-    Object.entries(initialParams).forEach(([key, value]) => {
-      if (!RESERVED_PARAMS.includes(key) && value) {
-        filters.push({
-          id: key,
-          value: value.split(","),
-        })
-      }
-    })
-    return filters
-  })
-  const [sorting, setSorting] = useState<SortingState>(() => {
-    if (initialParams.sortBy && SORTABLE_COLUMNS.includes(initialParams.sortBy)) {
-      return [
-        {
-          id: initialParams.sortBy,
-          desc: initialParams.sortDirection === "desc",
-        },
-      ]
-    }
-    return [
-      {
-        id: "updatedAt",
-        desc: true,
-      },
-    ]
-  })
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(
-    DEFAULT_COLUMN_VISIBILITY,
-  )
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [isBulkAssignOpen, setIsBulkAssignOpen] = useState(false)
-  const [pagination, setPagination] = useState(() => {
-    const page = initialParams.page ? parseInt(initialParams.page, 10) : 0
-    const pageSize = initialParams.pageSize ? parseInt(initialParams.pageSize, 10) : 10
-    return {
-      pageIndex: Number.isFinite(page) && page > 0 ? page - 1 : 0,
-      pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 10,
-    }
-  })
-  const [total, setTotal] = useState(0)
 
-  const handleClearSearch = () => {
-    setSearchInput("")
-  }
-
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value)
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }
-
-  const { refreshKey, shouldResetPagination } = useDataTable()
-  const [prevShouldReset, setPrevShouldReset] = useState(shouldResetPagination)
-
-  if (shouldResetPagination !== prevShouldReset) {
-    setPrevShouldReset(shouldResetPagination)
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        const queryParams: QueryParams = {
-          limit: pagination.pageSize,
-          offset: pagination.pageIndex * pagination.pageSize,
-        }
-
-        if (searchInput.trim()) {
-          queryParams.searchValue = searchInput.trim()
-          queryParams.searchField = "email"
-          queryParams.searchOperator = "contains"
-        }
-
-        if (columnFilters.length > 0) {
-          const filters = columnFilters
-            .map((filter) => {
-              const value = filter.value as string[]
-              if (value.length === 0) return null
-              return {
-                field: filter.id,
-                operator: value.length > 1 ? "in" : "eq",
-                value: value.length > 1 ? value : value[0],
-              }
-            })
-            .filter(Boolean)
-          if (filters.length > 0) {
-            queryParams.filters = JSON.stringify(filters)
-          }
-        }
-
-        if (sorting.length > 0) {
-          queryParams.sortBy = sorting[0].id
-          queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
-        }
-
-        const { data, error } = await authClient.adminPlus.listUsers({
-          query: queryParams,
-        })
-
-        if (error) {
-          console.error("Error fetching users:", error)
-          return
-        }
-
-        setData(data.users || [])
-        setTotal(data.total || 0)
-      } catch (err) {
-        console.error("Error:", err)
-      } finally {
-        setLoading(false)
+  const fetchData = useCallback<TableFetchFn<UserWithRoleRow>>(
+    async ({ pageIndex, pageSize, sorting, search, filters }) => {
+      const queryParams: ListUsersQuery = {
+        limit: pageSize,
+        offset: pageIndex * pageSize,
       }
-    }
-    fetchData()
-  }, [
-    pagination.pageIndex,
-    pagination.pageSize,
-    searchInput,
-    sorting,
-    refreshKey,
-    columnFilters,
-  ])
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParamsString)
-    const existingTab = params.get("tab")
-    params.delete("tab")
-    if (existingTab) params.set("tab", existingTab)
+      if (search) {
+        queryParams.searchValue = search
+        queryParams.searchField = "email"
+        queryParams.searchOperator = "contains"
+      }
 
-    if (searchInput) {
-      params.set("search", searchInput)
-    }
+      const filterList = Object.entries(filters)
+        .map(([field, values]) => ({
+          field,
+          operator: values.length > 1 ? "in" : "eq",
+          value: values.length > 1 ? values : values[0],
+        }))
+        .filter((f) => f.value !== undefined && f.value !== "")
 
-    if (columnFilters.length > 0) {
-      columnFilters.forEach((filter) => {
-        if (Array.isArray(filter.value) && filter.value.length > 0) {
-          params.set(filter.id, filter.value.join(","))
-        }
+      if (filterList.length > 0) {
+        queryParams.filters = JSON.stringify(filterList)
+      }
+
+      if (sorting.length > 0) {
+        queryParams.sortBy = sorting[0].id
+        queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
+      }
+
+      const { data, error } = await authClient.adminPlus.listUsers({
+        query: queryParams,
       })
-    }
 
-    if (pagination.pageIndex > 0) {
-      params.set("page", String(pagination.pageIndex + 1))
-    }
-    if (pagination.pageSize !== 10) {
-      params.set("pageSize", String(pagination.pageSize))
-    }
+      if (error) {
+        throw error
+      }
 
-    if (sorting.length > 0) {
-      params.set("sortBy", sorting[0].id)
-      params.set("sortDirection", sorting[0].desc ? "desc" : "asc")
-    }
-
-    const newUrl = `${pathname}${params.toString() ? `?${params.toString()}` : ""}`
-
-    const currentUrl = `${pathname}${searchParamsString ? `?${searchParamsString}` : ""}`
-    if (newUrl !== currentUrl) {
-      router.push(newUrl, { scroll: false })
-    }
-  }, [
-    searchInput,
-    columnFilters,
-    pagination.pageIndex,
-    pagination.pageSize,
-    sorting,
-    pathname,
-    router,
-    searchParamsString,
-  ])
-
-  const tableColumns = [createSelectColumn<UserWithRole>(), ...columns]
-
-  const table = useTable({
-    ...dataTableOptions,
-    data,
-    columns: tableColumns,
-    pageCount: Math.ceil(total / pagination.pageSize),
-    state: {
-      pagination,
-      sorting,
-      columnVisibility,
-      columnFilters,
-      rowSelection,
+      return {
+        rows: data.users || [],
+        total: data.total || 0,
+      }
     },
-    onPaginationChange: (updater) => {
-      setPagination(updater)
-      setRowSelection({})
-    },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    manualFiltering: true,
-    enableMultiRowSelection: true,
-    getRowId: (row) => row.id,
-  })
+    [],
+  )
 
-  const isFiltered = table.state.columnFilters.length > 0
+  const { table, loading, searchInput, handleClearSearch, handleSearchChange } =
+    useServerDataTable<UserWithRoleRow>({
+      columns,
+      fetchData,
+      getRowId: (row) => row.id,
+      initialParams,
+      defaultColumnVisibility: DEFAULT_COLUMN_VISIBILITY,
+      sortableColumns: SORTABLE_COLUMNS,
+      reservedParams: RESERVED_PARAMS,
+      enableSelection: true,
+    })
+
   const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
 
-  if (loading && data.length === 0) {
-    return <DataTableLoading table={table} rowCount={pagination.pageSize} />
-  }
-
   return (
-    <div className="w-full space-y-4">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="md:hidden">
-          <DataTableSearch
-            value={searchInput}
-            onChange={handleSearchChange}
-            onClear={handleClearSearch}
-            placeholder="Search email…"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-2 md:flex-1">
-          <div className="hidden md:block">
-            <DataTableSearch
-              value={searchInput}
-              onChange={handleSearchChange}
-              onClear={handleClearSearch}
-              placeholder="Search email…"
-            />
-          </div>
-          {table.getColumn("banned") && (
-            <DataTableFacetedFilter
-              column={table.getColumn("banned")}
-              title="Status"
-              options={[
-                { label: "Banned", value: "true" },
-                { label: "Active", value: "false" },
-              ]}
-            />
-          )}
-          {table.getColumn("emailVerified") && (
-            <DataTableFacetedFilter
-              column={table.getColumn("emailVerified")}
-              title="Email"
-              options={[
-                {
-                  label: "Verified",
-                  value: "true",
-                },
-                {
-                  label: "Unverified",
-                  value: "false",
-                },
-              ]}
-            />
-          )}
-          {table.getColumn("role") && (
-            <DataTableFacetedFilter
-              column={table.getColumn("role")}
-              title="Role"
-              options={[
-                { label: "Admin", value: "admin" },
-                { label: "User", value: "user" },
-              ]}
-            />
-          )}
-          {isFiltered && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => table.resetColumnFilters()}
-            >
-              Reset
-              <XIcon />
-            </Button>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <DataTableSelectedActions table={table}>
-            <Button
-              size="sm"
-              type="button"
-              disabled={selectedUserIds.length === 0}
-              onClick={() => setIsBulkAssignOpen(true)}
-            >
-              <ShieldPlusIcon />
-              Assign role
-            </Button>
-          </DataTableSelectedActions>
-          <DataTableViewOptions table={table} />
-        </div>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <DataTableLoadingRow
-                table={table}
-                rowCount={Math.min(pagination.pageSize, 5)}
-              />
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="h-24 text-center"
-                >
-                  {searchInput ? (
-                    <DataTableSearchNotFound
-                      title={`No users found with "${searchInput}"`}
-                      handleClearSearch={handleClearSearch}
-                      Icon={UserIcon}
-                    />
-                  ) : (
-                    <DataTableNoData
-                      title="No users found"
-                      description="There are no users to display"
-                      Icon={UserIcon}
-                    />
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <DataTablePagination table={table} />
+    <>
+      <TableDefault<UserWithRoleRow>
+        table={table}
+        loading={loading}
+        searchInput={searchInput}
+        onSearchChange={handleSearchChange}
+        onClearSearch={handleClearSearch}
+        searchPlaceholder="Search email…"
+        filters={FILTERS}
+        enableSelection
+        selectedActions={
+          <Button
+            size="sm"
+            type="button"
+            disabled={selectedUserIds.length === 0}
+            onClick={() => setIsBulkAssignOpen(true)}
+          >
+            <ShieldPlusIcon />
+            Assign role
+          </Button>
+        }
+        emptyState={{ entityLabel: "users", icon: UserIcon }}
+      />
       <BulkAssignRoleDialog
         userIds={selectedUserIds}
         isOpen={isBulkAssignOpen}
         setIsOpen={setIsBulkAssignOpen}
-        onCompleted={() => setRowSelection({})}
+        onCompleted={() => table.resetRowSelection()}
       />
-    </div>
+    </>
   )
 }
