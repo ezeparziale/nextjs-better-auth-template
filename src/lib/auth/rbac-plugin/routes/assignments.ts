@@ -1283,3 +1283,140 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
     },
   )
 }
+
+/**
+ * ### Endpoint
+ *
+ * POST `/rbac/bulk-remove-roles-from-permission`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.rbacBulkRemoveRolesFromPermission`
+ *
+ * **client:**
+ * `authClient.rbac.bulkRemoveRolesFromPermission`
+ */
+export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
+  options: O,
+) => {
+  return createAuthEndpoint(
+    "/rbac/bulk-remove-roles-from-permission",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        permissionId: z.string().meta({
+          description: "The id of the permission.",
+        }),
+        roleIds: z.array(z.string()).meta({
+          description: "The ids of the roles to remove.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.bulkRemoveRolesFromPermission",
+          summary: "Remove multiple roles from a permission",
+          description: "Remove multiple roles from a permission in a single call.",
+          responses: {
+            200: {
+              description: "Roles removed successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                      },
+                      message: {
+                        type: "string",
+                      },
+                      removedCount: {
+                        type: "number",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "Permission not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["PERMISSION_NOT_FOUND"],
+                      },
+                      error: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("bulkRemoveRolesFromPermission")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      if (ctx.body.roleIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No roles provided",
+          removedCount: 0,
+        })
+      }
+
+      // Check if permission exists
+      const permission = await ctx.context.adapter.findOne<Permission>({
+        model: "permission",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.permissionId,
+          },
+        ],
+      })
+
+      if (!permission) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
+
+      // Delete assignments
+      await ctx.context.adapter.deleteMany({
+        model: "rolePermission",
+        where: [
+          {
+            field: "permissionId",
+            value: ctx.body.permissionId,
+          },
+          {
+            field: "roleId",
+            operator: "in",
+            value: ctx.body.roleIds,
+          },
+        ],
+      })
+
+      return ctx.json({
+        success: true,
+        message: `Removed ${ctx.body.roleIds.length} role(s) from permission`,
+        removedCount: ctx.body.roleIds.length,
+      })
+    },
+  )
+}
