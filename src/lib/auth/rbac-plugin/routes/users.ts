@@ -624,9 +624,9 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
           .transform((val) => val === "true")
           .or(z.boolean())
           .optional()
-          .default(true)
+          .default(false)
           .meta({
-            description: "Filter to return only active users. Defaults to true.",
+            description: "Filter to return only active users. Defaults to false.",
           }),
         search: z.string().optional().meta({
           description: "Search term to filter users by email.",
