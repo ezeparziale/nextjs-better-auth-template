@@ -41,6 +41,7 @@ export type User = {
   email: string
   name?: string
   role?: string
+  banned?: boolean | null
   createdAt: Date
   updatedAt: Date
 }
