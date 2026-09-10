@@ -62,6 +62,8 @@ interface AssignItemsDialogProps {
   ) => Promise<{ error?: { message?: string } }>
   /** Callback cuando se actualizan los items */
   onItemsUpdated: (options?: { resetPagination?: boolean }) => void
+  /** Cantidad de items a mostrar en la carga inicial del picker */
+  initialLimit?: number
   /** Mensajes de éxito/error personalizados */
   messages?: {
     success?: string
@@ -85,6 +87,7 @@ export default function AssignItemsDialog({
   fetchAvailableItems,
   updateItems,
   onItemsUpdated,
+  initialLimit = LIMIT,
   messages = {},
 }: AssignItemsDialogProps) {
   const [open, setOpen] = useState(false)
@@ -205,7 +208,7 @@ export default function AssignItemsDialog({
                     onValuesChange={field.onChange}
                     disabled={isLoadingAssigned}
                     fetchOptions={fetchItems}
-                    initialLimit={LIMIT}
+                    initialLimit={initialLimit}
                     debounceMs={300}
                     preloadedOptions={Array.from(selectedItemsCache.values())}
                   >

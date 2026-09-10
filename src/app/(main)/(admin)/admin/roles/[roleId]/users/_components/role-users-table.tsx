@@ -22,11 +22,12 @@ type ListRoleUsersQuery = Omit<
 const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   email: true,
+  banned: true,
   createdAt: false,
   updatedAt: false,
 }
 
-const SORTABLE_COLUMNS = ["name", "email", "createdAt", "updatedAt"]
+const SORTABLE_COLUMNS = ["name", "email", "banned", "createdAt", "updatedAt"]
 
 export default function RoleUsersTable({
   initialParams,

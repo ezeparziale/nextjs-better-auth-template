@@ -9,8 +9,6 @@ interface AddUserDialogProps {
   roleId: string
 }
 
-const LIMIT = 5
-
 export default function AddUserDialog({ roleId }: AddUserDialogProps) {
   const { refreshTable } = useDataTable()
 
@@ -54,13 +52,13 @@ export default function AddUserDialog({ roleId }: AddUserDialogProps) {
   const fetchAvailableUsers = async (
     search: string,
   ): Promise<MultiSelectAsyncOption[]> => {
-    const params: { search?: string; limit?: number } = {}
+    const params: { search?: string; onlyActive?: boolean } = {
+      onlyActive: false,
+    }
 
     if (search) {
       params.search = search
     }
-
-    params.limit = LIMIT
 
     const response = await authClient.rbac.getUsersOptions({ query: params })
 
@@ -95,6 +93,7 @@ export default function AddUserDialog({ roleId }: AddUserDialogProps) {
       searchPlaceholder="Search users…"
       emptyMessage="No users found."
       buttonText="Manage users"
+      initialLimit={5}
       fetchAssignedItems={fetchAssignedUsers}
       fetchAvailableItems={fetchAvailableUsers}
       updateItems={updateUsers}
