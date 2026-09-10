@@ -311,7 +311,7 @@ export function MultiSelectAsyncValue({
         .filter((value) => items.has(value))
         .map((value) => (
           <Badge
-            variant="outline"
+            variant="blue-subtle"
             data-selected-item
             className="group flex items-center gap-1"
             key={value}
