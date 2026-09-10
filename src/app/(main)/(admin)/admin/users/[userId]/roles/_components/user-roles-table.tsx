@@ -1,15 +1,17 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
-import { KeyIcon } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+import { KeyIcon, MinusIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Role } from "@/lib/auth/rbac-plugin"
+import { Button } from "@/components/ui/button"
 import {
   TableDefault,
   useServerDataTable,
   type TableDefaultInitialParams,
   type TableFetchFn,
 } from "@/components/table-default"
+import BulkRevokeRolesDialog from "./bulk-revoke-roles-dialog"
 import { getColumns } from "./columns"
 
 type ListUserRolesQuery = Omit<
@@ -44,6 +46,8 @@ export default function UserRolesTable({
   initialParams: TableDefaultInitialParams
   userId: string
 }) {
+  const [isBulkRevokeOpen, setIsBulkRevokeOpen] = useState(false)
+
   const columns = useMemo(() => getColumns(userId), [userId])
 
   const fetchData = useCallback<TableFetchFn<Role>>(
@@ -91,18 +95,43 @@ export default function UserRolesTable({
       initialParams,
       defaultColumnVisibility: DEFAULT_COLUMN_VISIBILITY,
       sortableColumns: SORTABLE_COLUMNS,
+      enableSelection: true,
       defaultSorting: [],
     })
 
+  const selectedRoleIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
+
   return (
-    <TableDefault<Role>
-      table={table}
-      loading={loading}
-      searchInput={searchInput}
-      onSearchChange={handleSearchChange}
-      onClearSearch={handleClearSearch}
-      searchPlaceholder="Search name…"
-      emptyState={{ entityLabel: "roles", icon: KeyIcon }}
-    />
+    <>
+      <TableDefault<Role>
+        table={table}
+        loading={loading}
+        searchInput={searchInput}
+        onSearchChange={handleSearchChange}
+        onClearSearch={handleClearSearch}
+        searchPlaceholder="Search name…"
+        enableSelection
+        selectedActions={
+          <Button
+            size="sm"
+            type="button"
+            variant="destructive"
+            disabled={selectedRoleIds.length === 0}
+            onClick={() => setIsBulkRevokeOpen(true)}
+          >
+            <MinusIcon />
+            Revoke
+          </Button>
+        }
+        emptyState={{ entityLabel: "roles", icon: KeyIcon }}
+      />
+      <BulkRevokeRolesDialog
+        userId={userId}
+        roleIds={selectedRoleIds}
+        isOpen={isBulkRevokeOpen}
+        setIsOpen={setIsBulkRevokeOpen}
+        onCompleted={() => table.resetRowSelection()}
+      />
+    </>
   )
 }
