@@ -33,38 +33,38 @@ const assignItemsSchema = z.object({
 type FormData = z.infer<typeof assignItemsSchema>
 
 interface AssignItemsDialogProps {
-  /** ID del recurso (user, role, etc.) */
+  /** The ID of the resource (user, role, etc.) */
   resourceId: string
-  /** Título del diálogo */
+  /** Dialog title */
   title: string
-  /** Descripción del diálogo */
+  /** Dialog description */
   description: string
-  /** Label del campo */
+  /** Field label */
   fieldLabel: string
-  /** Placeholder del select */
+  /** Select placeholder */
   placeholder: string
-  /** Placeholder de búsqueda */
+  /** Search placeholder */
   searchPlaceholder: string
-  /** Mensaje cuando no hay resultados */
+  /** Message shown when there are no results */
   emptyMessage: string
-  /** Texto del botón */
+  /** Button text */
   buttonText: string
-  /** Función para obtener items asignados actualmente */
+  /** Function to fetch currently assigned items */
   fetchAssignedItems: (
     resourceId: string,
   ) => Promise<Array<{ id: string; name: string }>>
-  /** Función para buscar items disponibles */
+  /** Function to search available items */
   fetchAvailableItems: (search: string) => Promise<MultiSelectAsyncOption[]>
-  /** Función para actualizar los items asignados */
+  /** Function to update the assigned items */
   updateItems: (
     resourceId: string,
     itemIds: string[],
   ) => Promise<{ error?: { message?: string } }>
-  /** Callback cuando se actualizan los items */
+  /** Callback when the items are updated */
   onItemsUpdated: (options?: { resetPagination?: boolean }) => void
-  /** Cantidad de items a mostrar en la carga inicial del picker */
+  /** Number of items to show on the picker's initial load */
   initialLimit?: number
-  /** Mensajes de éxito/error personalizados */
+  /** Custom success/error messages */
   messages?: {
     success?: string
     error?: string
