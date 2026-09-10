@@ -36,6 +36,9 @@ export interface UseServerDataTableOptions<TData extends RowData> {
 
   reservedParams?: string[]
   defaultPageSize?: number
+
+  searchParam?: string
+  filterParamMap?: Record<string, string>
 }
 
 const DEFAULT_SORTING: SortingState = [{ id: "updatedAt", desc: true }]
@@ -53,6 +56,8 @@ export function useServerDataTable<TData extends RowData>({
   sortableColumns,
   reservedParams = DEFAULT_RESERVED,
   defaultPageSize = 10,
+  searchParam = "search",
+  filterParamMap = {},
 }: UseServerDataTableOptions<TData>) {
   const router = useRouter()
   const pathname = usePathname()
@@ -67,13 +72,19 @@ export function useServerDataTable<TData extends RowData>({
     [reservedParams],
   )
 
-  const [searchInput, setSearchInput] = useState(initialParams.search || "")
+  const [searchInput, setSearchInput] = useState(initialParams[searchParam] || "")
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = []
     Object.entries(initialParams).forEach(([key, value]) => {
-      if (!ignoredParams.includes(key) && value) {
+      const columnId = filterParamMap[key] ?? key
+      if (
+        !ignoredParams.includes(key) &&
+        !ignoredParams.includes(columnId) &&
+        key !== searchParam &&
+        value
+      ) {
         filters.push({
-          id: key,
+          id: columnId,
           value: value.split(","),
         })
       }
@@ -170,6 +181,14 @@ export function useServerDataTable<TData extends RowData>({
     fetchData,
   ])
 
+  const filterParamByColumnId = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(filterParamMap).map(([param, columnId]) => [columnId, param]),
+      ),
+    [filterParamMap],
+  )
+
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false
@@ -180,12 +199,16 @@ export function useServerDataTable<TData extends RowData>({
     DEFAULT_RESERVED_PARAMS.forEach((key) => params.delete(key))
 
     if (searchInput) {
-      params.set("search", searchInput)
+      params.set(searchParam, searchInput)
+    } else {
+      params.delete(searchParam)
     }
 
     columnFilters.forEach((filter) => {
+      const paramName = filterParamByColumnId[filter.id] ?? filter.id
+      params.delete(paramName)
       if (Array.isArray(filter.value) && filter.value.length > 0) {
-        params.set(filter.id, filter.value.join(","))
+        params.set(paramName, filter.value.join(","))
       }
     })
 
@@ -225,6 +248,8 @@ export function useServerDataTable<TData extends RowData>({
     defaultPageSize,
     defaultSorting,
     reservedParams,
+    searchParam,
+    filterParamByColumnId,
   ])
 
   const tableColumns = useMemo(() => {

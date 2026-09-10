@@ -43,6 +43,8 @@ interface TableDefaultProps<TData extends RowData> {
   enableSelection?: boolean
   selectedActions?: ReactNode
 
+  toolbarActions?: ReactNode
+
   onRowClick?: (row: TData) => void
 
   emptyState: TableEmptyState
@@ -60,6 +62,7 @@ export function TableDefault<TData extends RowData>({
   filters = [],
   enableSelection = false,
   selectedActions,
+  toolbarActions,
   onRowClick,
   emptyState,
 }: TableDefaultProps<TData>) {
@@ -139,6 +142,7 @@ export function TableDefault<TData extends RowData>({
               {selectedActions}
             </DataTableSelectedActions>
           )}
+          {toolbarActions}
           {enableColumnVisibility && <DataTableViewOptions table={table} />}
         </div>
       </div>
