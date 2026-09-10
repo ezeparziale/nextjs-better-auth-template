@@ -24,8 +24,8 @@ const USERS_TAB_PARAMS = [
 ]
 
 const INVITATIONS_TAB_PARAMS = [
-  "invSearch",
-  "invStatus",
+  "search",
+  "effectiveStatus",
   "page",
   "pageSize",
   "sortBy",

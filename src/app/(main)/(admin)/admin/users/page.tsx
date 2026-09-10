@@ -26,8 +26,6 @@ type SearchParams = Promise<{
   sortDirection?: "asc" | "desc"
   tab?: string
   status?: string
-  invSearch?: string
-  invStatus?: string
 }>
 
 export default async function UsersAdminPage(props: { searchParams: SearchParams }) {

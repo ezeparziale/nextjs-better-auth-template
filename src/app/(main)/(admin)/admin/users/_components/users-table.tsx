@@ -36,7 +36,7 @@ const DEFAULT_COLUMN_VISIBILITY = {
   updatedBy: false,
 }
 
-const RESERVED_PARAMS = ["tab", "invSearch", "invStatus"]
+const RESERVED_PARAMS = ["tab"]
 
 const SORTABLE_COLUMNS = [
   "name",

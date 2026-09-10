@@ -20,7 +20,7 @@ type ListInvitationsQuery = NonNullable<
 
 type InvitationStatus = NonNullable<ListInvitationsQuery["status"]>
 
-const RESERVED_PARAMS = ["tab", "status"]
+const RESERVED_PARAMS = ["tab"]
 
 const SORTABLE_COLUMNS = [
   "email",
@@ -34,6 +34,7 @@ const FILTERS: TableFilter[] = [
   {
     columnId: "effectiveStatus",
     title: "Status",
+    single: true,
     options: [
       { label: "Pending", value: "pending" },
       { label: "Revoked", value: "revoked" },
@@ -89,8 +90,6 @@ export default function InvitationsTable({
       fetchData,
       getRowId: (row) => row.id,
       initialParams,
-      searchParam: "invSearch",
-      filterParamMap: { invStatus: "effectiveStatus" },
       reservedParams: RESERVED_PARAMS,
       sortableColumns: SORTABLE_COLUMNS,
       defaultSorting: [{ id: "invitedAt", desc: true }],
