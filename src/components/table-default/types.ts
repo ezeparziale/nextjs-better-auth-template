@@ -34,6 +34,7 @@ export type TableFilter = {
   columnId: string
   title: string
   options: TableFilterOption[]
+  single?: boolean
 }
 
 export type TableEmptyState = {
