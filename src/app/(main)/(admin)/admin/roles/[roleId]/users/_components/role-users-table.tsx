@@ -1,9 +1,10 @@
 "use client"
 
-import { useCallback, useMemo } from "react"
-import { KeyIcon } from "lucide-react"
+import { useCallback, useMemo, useState } from "react"
+import { KeyIcon, MinusIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { User } from "@/lib/auth/rbac-plugin"
+import { Button } from "@/components/ui/button"
 import {
   TableDefault,
   useServerDataTable,
@@ -11,6 +12,7 @@ import {
   type TableFetchFn,
 } from "@/components/table-default"
 import { getColumns } from "./columns"
+import RemoveUsersDialog from "./remove-users-dialog"
 
 type ListRoleUsersQuery = Omit<
   NonNullable<Parameters<typeof authClient.rbac.getRoleUsers>[0]>["query"],
@@ -33,6 +35,8 @@ export default function RoleUsersTable({
   initialParams: TableDefaultInitialParams
   roleId: string
 }) {
+  const [isRemoveUsersOpen, setIsRemoveUsersOpen] = useState(false)
+
   const columns = useMemo(() => getColumns(roleId), [roleId])
 
   const fetchData = useCallback<TableFetchFn<User>>(
@@ -80,18 +84,43 @@ export default function RoleUsersTable({
       initialParams,
       defaultColumnVisibility: DEFAULT_COLUMN_VISIBILITY,
       sortableColumns: SORTABLE_COLUMNS,
+      enableSelection: true,
       defaultSorting: [],
     })
 
+  const selectedUserIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
+
   return (
-    <TableDefault<User>
-      table={table}
-      loading={loading}
-      searchInput={searchInput}
-      onSearchChange={handleSearchChange}
-      onClearSearch={handleClearSearch}
-      searchPlaceholder="Search email…"
-      emptyState={{ entityLabel: "users", icon: KeyIcon }}
-    />
+    <>
+      <TableDefault<User>
+        table={table}
+        loading={loading}
+        searchInput={searchInput}
+        onSearchChange={handleSearchChange}
+        onClearSearch={handleClearSearch}
+        searchPlaceholder="Search email…"
+        enableSelection
+        selectedActions={
+          <Button
+            size="sm"
+            type="button"
+            variant="destructive"
+            disabled={selectedUserIds.length === 0}
+            onClick={() => setIsRemoveUsersOpen(true)}
+          >
+            <MinusIcon />
+            Remove
+          </Button>
+        }
+        emptyState={{ entityLabel: "users", icon: KeyIcon }}
+      />
+      <RemoveUsersDialog
+        roleId={roleId}
+        userIds={selectedUserIds}
+        isOpen={isRemoveUsersOpen}
+        setIsOpen={setIsRemoveUsersOpen}
+        onCompleted={() => table.resetRowSelection()}
+      />
+    </>
   )
 }
