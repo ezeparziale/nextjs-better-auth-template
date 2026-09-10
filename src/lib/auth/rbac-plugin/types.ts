@@ -52,6 +52,7 @@ export type RBACEndpoint =
   | "removeRoleFromUser"
   | "bulkAssignRoleToUsers"
   | "bulkRemoveRoleFromUsers"
+  | "bulkRemoveRolesFromUser"
   | "bulkAssignPermissionsToRole"
   | "bulkRemovePermissionsFromRole"
   | "listPermissions"

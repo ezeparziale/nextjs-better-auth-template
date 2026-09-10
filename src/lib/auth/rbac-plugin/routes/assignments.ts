@@ -1146,3 +1146,140 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
     },
   )
 }
+
+/**
+ * ### Endpoint
+ *
+ * POST `/rbac/bulk-remove-roles-from-user`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.rbacBulkRemoveRolesFromUser`
+ *
+ * **client:**
+ * `authClient.rbac.bulkRemoveRolesFromUser`
+ */
+export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
+  options: O,
+) => {
+  return createAuthEndpoint(
+    "/rbac/bulk-remove-roles-from-user",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        userId: z.string().meta({
+          description: "The id of the user.",
+        }),
+        roleIds: z.array(z.string()).meta({
+          description: "The ids of the roles to remove.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.bulkRemoveRolesFromUser",
+          summary: "Remove multiple roles from a user",
+          description: "Remove multiple roles from a user in a single call.",
+          responses: {
+            200: {
+              description: "Roles removed successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                      },
+                      message: {
+                        type: "string",
+                      },
+                      removedCount: {
+                        type: "number",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "User not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["USER_NOT_FOUND"],
+                      },
+                      error: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("bulkRemoveRolesFromUser")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      if (ctx.body.roleIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No roles provided",
+          removedCount: 0,
+        })
+      }
+
+      // Check if user exists
+      const user = await ctx.context.adapter.findOne<User>({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.userId,
+          },
+        ],
+      })
+
+      if (!user) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
+      }
+
+      // Delete assignments
+      await ctx.context.adapter.deleteMany({
+        model: "userRole",
+        where: [
+          {
+            field: "userId",
+            value: ctx.body.userId,
+          },
+          {
+            field: "roleId",
+            operator: "in",
+            value: ctx.body.roleIds,
+          },
+        ],
+      })
+
+      return ctx.json({
+        success: true,
+        message: `Removed ${ctx.body.roleIds.length} role(s) from user`,
+        removedCount: ctx.body.roleIds.length,
+      })
+    },
+  )
+}
