@@ -122,6 +122,7 @@ export function TableDefault<TData extends RowData>({
                 column={column}
                 title={filter.title}
                 options={filter.options}
+                single={filter.single}
               />
             )
           })}

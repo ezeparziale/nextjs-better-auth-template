@@ -72,6 +72,23 @@ export function useServerDataTable<TData extends RowData>({
     [reservedParams],
   )
 
+  const ownedFilterParams = useRef<Set<string> | null>(null)
+  if (ownedFilterParams.current == null) {
+    const owned = new Set<string>()
+    Object.entries(initialParams).forEach(([key, value]) => {
+      const columnId = filterParamMap[key] ?? key
+      if (
+        !ignoredParams.includes(key) &&
+        !ignoredParams.includes(columnId) &&
+        key !== searchParam &&
+        value
+      ) {
+        owned.add(key)
+      }
+    })
+    ownedFilterParams.current = owned
+  }
+
   const [searchInput, setSearchInput] = useState(initialParams[searchParam] || "")
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
     const filters: ColumnFiltersState = []
@@ -198,19 +215,25 @@ export function useServerDataTable<TData extends RowData>({
     const params = new URLSearchParams(searchParamsString)
     DEFAULT_RESERVED_PARAMS.forEach((key) => params.delete(key))
 
+    ;(ownedFilterParams.current ?? new Set<string>()).forEach((key) =>
+      params.delete(key),
+    )
+
     if (searchInput) {
       params.set(searchParam, searchInput)
     } else {
       params.delete(searchParam)
     }
 
+    const activeFilterParams: string[] = []
     columnFilters.forEach((filter) => {
       const paramName = filterParamByColumnId[filter.id] ?? filter.id
-      params.delete(paramName)
       if (Array.isArray(filter.value) && filter.value.length > 0) {
+        activeFilterParams.push(paramName)
         params.set(paramName, filter.value.join(","))
       }
     })
+    ownedFilterParams.current = new Set(activeFilterParams)
 
     if (pagination.pageIndex > 0) {
       params.set("page", String(pagination.pageIndex + 1))
