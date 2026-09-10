@@ -1,60 +1,23 @@
 "use client"
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import {
-  ColumnVisibilityState,
-  flexRender,
-  SortingState,
-  useTable,
-} from "@tanstack/react-table"
+import { useCallback, useMemo } from "react"
 import { KeyIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
 import { Permission } from "@/lib/auth/rbac-plugin"
 import {
-  DataTableLoading,
-  DataTableLoadingRow,
-  DataTableNoData,
-  dataTableOptions,
-  DataTablePagination,
-  DataTableSearch,
-  DataTableSearchNotFound,
-  DataTableViewOptions,
-  useDataTable,
-} from "@/components/ui/data-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  TableDefault,
+  useServerDataTable,
+  type TableDefaultInitialParams,
+  type TableFetchFn,
+} from "@/components/table-default"
 import { getColumns } from "./columns"
 
-type QueryParams = {
-  searchValue?: string | undefined
-  searchField?: "key" | "name" | undefined
-  searchOperator?: "contains" | "starts_with" | "ends_with" | undefined
-  limit?: string | number | undefined
-  offset?: string | number | undefined
-  sortBy?: string | undefined
-  sortDirection?: "asc" | "desc" | undefined
-  filterField?: string | undefined
-  filterValue?: string | number | boolean | undefined
-  filterOperator?: "contains" | "eq" | "ne" | "lt" | "lte" | "gt" | "gte" | undefined
-  roleId?: string | undefined
-}
+type ListPermissionRolesQuery = Omit<
+  NonNullable<Parameters<typeof authClient.rbac.getPermissionRoles>[0]>["query"],
+  "permissionId"
+>
 
-type InitialParams = {
-  page?: string
-  pageSize?: string
-  search?: string
-  sortBy?: string
-  sortDirection?: "asc" | "desc"
-}
-
-const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
+const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   key: true,
   isActive: true,
@@ -64,229 +27,82 @@ const DEFAULT_COLUMN_VISIBILITY: ColumnVisibilityState = {
   updatedBy: false,
 }
 
+const SORTABLE_COLUMNS = [
+  "name",
+  "key",
+  "isActive",
+  "createdAt",
+  "updatedAt",
+  "createdBy",
+  "updatedBy",
+]
+
 export default function PermissionRolesTable({
   initialParams,
   permissionId,
 }: {
-  initialParams: InitialParams
+  initialParams: TableDefaultInitialParams
   permissionId: string
 }) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const columns = useMemo(() => getColumns(permissionId), [permissionId])
 
-  const [data, setData] = useState<Permission[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const [searchInput, setSearchInput] = useState(initialParams.search || "")
-  const [sorting, setSorting] = useState<SortingState>(() => {
-    if (initialParams.sortBy) {
-      return [
-        {
-          id: initialParams.sortBy,
-          desc: initialParams.sortDirection === "desc",
-        },
-      ]
-    }
-    return []
-  })
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibilityState>(
-    DEFAULT_COLUMN_VISIBILITY,
-  )
-  const [pagination, setPagination] = useState({
-    pageIndex: initialParams.page ? parseInt(initialParams.page) - 1 : 0,
-    pageSize: initialParams.pageSize ? parseInt(initialParams.pageSize) : 10,
-  })
-  const [total, setTotal] = useState(0)
-
-  const handleClearSearch = () => {
-    setSearchInput("")
-  }
-
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value)
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }
-
-  const { refreshKey, shouldResetPagination } = useDataTable()
-  const [prevShouldReset, setPrevShouldReset] = useState(shouldResetPagination)
-
-  if (shouldResetPagination !== prevShouldReset) {
-    setPrevShouldReset(shouldResetPagination)
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-  }
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      try {
-        const queryParams: QueryParams = {
-          limit: pagination.pageSize,
-          offset: pagination.pageIndex * pagination.pageSize,
-        }
-
-        if (searchInput.trim()) {
-          queryParams.searchValue = searchInput.trim()
-          queryParams.searchField = "name"
-          queryParams.searchOperator = "contains"
-        }
-
-        if (sorting.length > 0) {
-          queryParams.sortBy = sorting[0].id
-          queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
-        }
-
-        const { data, error } = await authClient.rbac.getPermissionRoles({
-          query: {
-            ...queryParams,
-            permissionId,
-          },
-        })
-
-        if (error) {
-          console.error("Error fetching roles:", error)
-          return
-        }
-
-        setData(data.roles || [])
-        setTotal(data.total || 0)
-      } catch (err) {
-        console.error("Error:", err)
-      } finally {
-        setLoading(false)
+  const fetchData = useCallback<TableFetchFn<Permission>>(
+    async ({ pageIndex, pageSize, sorting, search }) => {
+      const queryParams: ListPermissionRolesQuery = {
+        limit: pageSize,
+        offset: pageIndex * pageSize,
       }
-    }
-    fetchData()
-  }, [
-    pagination.pageIndex,
-    pagination.pageSize,
-    searchInput,
-    sorting,
-    refreshKey,
-    permissionId,
-  ])
 
-  useEffect(() => {
-    const params = new URLSearchParams()
+      if (search) {
+        queryParams.searchValue = search
+        queryParams.searchField = "name"
+        queryParams.searchOperator = "contains"
+      }
 
-    if (searchInput) {
-      params.set("search", searchInput)
-    }
+      if (sorting.length > 0) {
+        queryParams.sortBy = sorting[0].id
+        queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
+      }
 
-    if (pagination.pageIndex > 0) {
-      params.set("page", String(pagination.pageIndex + 1))
-    }
-    if (pagination.pageSize !== 10) {
-      params.set("pageSize", String(pagination.pageSize))
-    }
+      const { data, error } = await authClient.rbac.getPermissionRoles({
+        query: {
+          ...queryParams,
+          permissionId,
+        },
+      })
 
-    if (sorting.length > 0) {
-      params.set("sortBy", sorting[0].id)
-      params.set("sortDirection", sorting[0].desc ? "desc" : "asc")
-    }
+      if (error) {
+        throw error
+      }
 
-    const newUrl = `${pathname}${params.toString() ? `?${params.toString()}` : ""}`
-
-    const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`
-    if (newUrl !== currentUrl) {
-      router.push(newUrl, { scroll: false })
-    }
-  }, [
-    searchInput,
-    pagination.pageIndex,
-    pagination.pageSize,
-    sorting,
-    pathname,
-    router,
-    searchParams,
-  ])
-
-  const columns = getColumns(permissionId)
-
-  const table = useTable({
-    ...dataTableOptions,
-    data,
-    columns,
-    pageCount: Math.ceil(total / pagination.pageSize),
-    state: {
-      pagination,
-      sorting,
-      columnVisibility,
+      return {
+        rows: data.roles || [],
+        total: data.total || 0,
+      }
     },
-    onPaginationChange: setPagination,
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
-  })
+    [permissionId],
+  )
 
-  if (loading && data.length === 0) {
-    return <DataTableLoading table={table} rowCount={pagination.pageSize} />
-  }
+  const { table, loading, searchInput, handleClearSearch, handleSearchChange } =
+    useServerDataTable<Permission>({
+      columns,
+      fetchData,
+      getRowId: (row) => row.id,
+      initialParams,
+      defaultColumnVisibility: DEFAULT_COLUMN_VISIBILITY,
+      sortableColumns: SORTABLE_COLUMNS,
+      defaultSorting: [],
+    })
 
   return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <DataTableSearch
-          value={searchInput}
-          onChange={handleSearchChange}
-          onClear={handleClearSearch}
-          placeholder="Search name…"
-        />
-        <DataTableViewOptions table={table} />
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <DataTableLoadingRow
-                table={table}
-                rowCount={Math.min(pagination.pageSize, 5)}
-              />
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  {searchInput ? (
-                    <DataTableSearchNotFound
-                      title={`No roles found with "${searchInput}"`}
-                      handleClearSearch={handleClearSearch}
-                      Icon={KeyIcon}
-                    />
-                  ) : (
-                    <DataTableNoData
-                      title="No roles found"
-                      description="There are no roles to display"
-                      Icon={KeyIcon}
-                    />
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <DataTablePagination table={table} />
-    </div>
+    <TableDefault<Permission>
+      table={table}
+      loading={loading}
+      searchInput={searchInput}
+      onSearchChange={handleSearchChange}
+      onClearSearch={handleClearSearch}
+      searchPlaceholder="Search name…"
+      emptyState={{ entityLabel: "roles", icon: KeyIcon }}
+    />
   )
 }
