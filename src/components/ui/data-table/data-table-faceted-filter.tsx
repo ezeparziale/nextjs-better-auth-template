@@ -20,6 +20,7 @@ import { DataTableFeatures } from "./features"
 interface DataTableFacetedFilterProps<TData extends RowData, TValue extends CellData> {
   column?: Column<DataTableFeatures, TData, TValue>
   title?: string
+  single?: boolean
   options: {
     label: string
     value: string
@@ -30,6 +31,7 @@ interface DataTableFacetedFilterProps<TData extends RowData, TValue extends Cell
 export function DataTableFacetedFilter<TData extends RowData, TValue extends CellData>({
   column,
   title,
+  single = false,
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues()
@@ -85,6 +87,10 @@ export function DataTableFacetedFilter<TData extends RowData, TValue extends Cel
                   <CommandItem
                     key={option.value}
                     onSelect={() => {
+                      if (single) {
+                        column?.setFilterValue(isSelected ? undefined : [option.value])
+                        return
+                      }
                       if (isSelected) {
                         selectedValues.delete(option.value)
                       } else {
