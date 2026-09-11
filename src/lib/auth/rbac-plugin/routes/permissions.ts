@@ -178,15 +178,15 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
         return ctx.json({
           permissions,
           total,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       } catch {
         return ctx.json({
           permissions: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
     },
@@ -1212,14 +1212,20 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
       // Extract role IDs
       const roleIds = rolePermissions.map((rp) => rp.roleId)
 
+      const { limit, offset } = getPaginationParams(
+        ctx.query?.limit,
+        ctx.query?.offset,
+        paginationConfig,
+      )
+
       // If there are no roles, return empty result
       if (roleIds.length === 0) {
         return ctx.json({
           permission,
           roles: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
 
@@ -1240,12 +1246,6 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
           value: ctx.query.searchValue,
         })
       }
-
-      const { limit, offset } = getPaginationParams(
-        ctx.query?.limit,
-        ctx.query?.offset,
-        paginationConfig,
-      )
 
       try {
         // Get paginated, sorted and filtered roles
@@ -1272,16 +1272,16 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
           permission,
           roles,
           total,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       } catch {
         return ctx.json({
           permission,
           roles: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
     },

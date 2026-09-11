@@ -177,15 +177,15 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
         return ctx.json({
           roles,
           total,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       } catch {
         return ctx.json({
           roles: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
     },
@@ -1562,14 +1562,20 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
       // Extract permission IDs
       const permissionIds = rolePermissions.map((rp) => rp.permissionId)
 
+      const { limit, offset } = getPaginationParams(
+        ctx.query?.limit,
+        ctx.query?.offset,
+        paginationConfig,
+      )
+
       // If there are no permissions, return empty result
       if (permissionIds.length === 0) {
         return ctx.json({
           role,
           permissions: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
 
@@ -1590,12 +1596,6 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
           value: ctx.query.searchValue,
         })
       }
-
-      const { limit, offset } = getPaginationParams(
-        ctx.query?.limit,
-        ctx.query?.offset,
-        paginationConfig,
-      )
 
       try {
         // Get paginated, sorted and filtered permissions
@@ -1622,16 +1622,16 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
           role,
           permissions,
           total,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       } catch {
         return ctx.json({
           role,
           permissions: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
     },
@@ -1812,14 +1812,20 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
       // Extract user IDs
       const userIds = userRoles.map((ur) => ur.userId)
 
+      const { limit, offset } = getPaginationParams(
+        ctx.query?.limit,
+        ctx.query?.offset,
+        paginationConfig,
+      )
+
       // If there are no users, return empty result
       if (userIds.length === 0) {
         return ctx.json({
           role,
           users: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
 
@@ -1840,12 +1846,6 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
           value: ctx.query.searchValue,
         })
       }
-
-      const { limit, offset } = getPaginationParams(
-        ctx.query?.limit,
-        ctx.query?.offset,
-        paginationConfig,
-      )
 
       try {
         // Get paginated, sorted and filtered users
@@ -1872,16 +1872,16 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
           role,
           users,
           total,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       } catch {
         return ctx.json({
           role,
           users: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
     },

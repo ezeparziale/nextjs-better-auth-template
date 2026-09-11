@@ -171,14 +171,20 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
       // Extract role IDs
       const roleIds = userRoles.map((ur) => ur.roleId)
 
+      const { limit, offset } = getPaginationParams(
+        ctx.query?.limit,
+        ctx.query?.offset,
+        paginationConfig,
+      )
+
       // If there are no roles, return empty result
       if (roleIds.length === 0) {
         return ctx.json({
           user,
           roles: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
 
@@ -199,12 +205,6 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
           value: ctx.query.searchValue,
         })
       }
-
-      const { limit, offset } = getPaginationParams(
-        ctx.query?.limit,
-        ctx.query?.offset,
-        paginationConfig,
-      )
 
       try {
         // Get paginated, sorted and filtered roles
@@ -231,16 +231,16 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
           user,
           roles,
           total,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       } catch {
         return ctx.json({
           user,
           roles: [],
           total: 0,
-          limit: Number(ctx.query?.limit),
-          offset: Number(ctx.query?.offset),
+          limit,
+          offset,
         })
       }
     },
