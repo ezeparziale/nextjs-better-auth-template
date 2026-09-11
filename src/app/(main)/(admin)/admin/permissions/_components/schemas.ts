@@ -8,6 +8,7 @@ export const basePermissionSchema = z.object({
   name: z.string().min(1, "Name is required."),
   key: z
     .string()
+    .trim()
     .min(1, "Key is required.")
     .regex(PERMISSION_KEY_PATTERN, PERMISSION_KEY_ERROR_MESSAGE),
   description: z.string().min(1, "Description is required."),

@@ -405,7 +405,7 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
 
       ensureUserIsAdmin(session)
 
-      validateKey("permission", ctx.body.key, validationOptions)
+      const key = validateKey("permission", ctx.body.key, validationOptions)
 
       // Check if permission with the same key already exists
       const existingPermission = await ctx.context.adapter.findOne<Permission>({
@@ -413,7 +413,7 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
         where: [
           {
             field: "key",
-            value: ctx.body.key,
+            value: key,
           },
         ],
       })
@@ -447,7 +447,7 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
         model: "permission",
         data: {
           name: ctx.body.name,
-          key: ctx.body.key,
+          key,
           description: ctx.body.description,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -599,9 +599,9 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.key) {
-        validateKey("permission", ctx.body.key, validationOptions)
-      }
+      const key = ctx.body.key
+        ? validateKey("permission", ctx.body.key, validationOptions)
+        : undefined
 
       // Check if permission exists
       const existingPermission = await ctx.context.adapter.findOne<Permission>({
@@ -619,13 +619,13 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
       }
 
       // If updating key, check if new key already exists
-      if (ctx.body.key && ctx.body.key !== existingPermission.key) {
+      if (key && key !== existingPermission.key) {
         const duplicatePermission = await ctx.context.adapter.findOne<Permission>({
           model: "permission",
           where: [
             {
               field: "key",
-              value: ctx.body.key,
+              value: key,
             },
           ],
         })
@@ -667,7 +667,7 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         ],
         update: {
           ...(ctx.body.name && { name: ctx.body.name }),
-          ...(ctx.body.key && { key: ctx.body.key }),
+          ...(key && { key }),
           ...(ctx.body.description !== undefined && {
             description: ctx.body.description,
           }),

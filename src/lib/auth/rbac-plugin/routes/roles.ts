@@ -384,7 +384,7 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
 
       ensureUserIsAdmin(session)
 
-      validateKey("role", ctx.body.key, validationOptions)
+      const key = validateKey("role", ctx.body.key, validationOptions)
 
       // Check if role with the same key already exists
       const existingRole = await ctx.context.adapter.findOne<Role>({
@@ -392,7 +392,7 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         where: [
           {
             field: "key",
-            value: ctx.body.key,
+            value: key,
           },
         ],
       })
@@ -426,7 +426,7 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         model: "role",
         data: {
           name: ctx.body.name,
-          key: ctx.body.key,
+          key,
           description: ctx.body.description,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -597,7 +597,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
       }
 
       // Validate the new role key
-      validateKey("role", ctx.body.key, validationOptions)
+      const key = validateKey("role", ctx.body.key, validationOptions)
 
       // Check if a role with the same key already exists
       const existingRole = await ctx.context.adapter.findOne<Role>({
@@ -605,7 +605,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
         where: [
           {
             field: "key",
-            value: ctx.body.key,
+            value: key,
           },
         ],
       })
@@ -689,7 +689,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
         model: "role",
         data: {
           name: ctx.body.name,
-          key: ctx.body.key,
+          key,
           description: ctx.body.description ?? sourceRole.description,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -866,9 +866,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.key) {
-        validateKey("role", ctx.body.key, validationOptions)
-      }
+      const key = ctx.body.key
+        ? validateKey("role", ctx.body.key, validationOptions)
+        : undefined
 
       // Check if role exists
       const existingRole = await ctx.context.adapter.findOne<Role>({
@@ -886,13 +886,13 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
       }
 
       // If updating key, check if new key already exists
-      if (ctx.body.key && ctx.body.key !== existingRole.key) {
+      if (key && key !== existingRole.key) {
         const duplicateRole = await ctx.context.adapter.findOne<Role>({
           model: "role",
           where: [
             {
               field: "key",
-              value: ctx.body.key,
+              value: key,
             },
           ],
         })
@@ -955,7 +955,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         ],
         update: {
           ...(ctx.body.name && { name: ctx.body.name }),
-          ...(ctx.body.key && { key: ctx.body.key }),
+          ...(key && { key }),
           ...(ctx.body.description !== undefined && {
             description: ctx.body.description,
           }),
