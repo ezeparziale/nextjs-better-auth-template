@@ -189,6 +189,7 @@ model UserRole {
 
   created_at DateTime @default(now())
 
+  @@unique([user_id, role_id])
   @@map("users_roles")
 }
 
@@ -201,6 +202,7 @@ model RolePermission {
 
   created_at DateTime @default(now())
 
+  @@unique([role_id, permission_id])
   @@map("roles_permissions")
 }
 

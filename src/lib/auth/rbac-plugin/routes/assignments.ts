@@ -155,14 +155,34 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
       }
 
       // Create assignment
-      await ctx.context.adapter.create<RolePermission>({
-        model: "rolePermission",
-        data: {
-          roleId: ctx.body.roleId,
-          permissionId: ctx.body.permissionId,
-          createdAt: new Date(),
-        },
-      })
+      try {
+        await ctx.context.adapter.create<RolePermission>({
+          model: "rolePermission",
+          data: {
+            roleId: ctx.body.roleId,
+            permissionId: ctx.body.permissionId,
+            createdAt: new Date(),
+          },
+        })
+      } catch (error) {
+        // Concurrent request may have created the assignment between check and create
+        const existingAssignment = await ctx.context.adapter.findOne<RolePermission>({
+          model: "rolePermission",
+          where: [
+            {
+              field: "roleId",
+              value: ctx.body.roleId,
+            },
+            {
+              field: "permissionId",
+              value: ctx.body.permissionId,
+            },
+          ],
+        })
+        if (!existingAssignment) {
+          throw error
+        }
+      }
 
       return ctx.json({
         success: true,
@@ -406,14 +426,34 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
       }
 
       // Create assignment
-      await ctx.context.adapter.create<UserRole>({
-        model: "userRole",
-        data: {
-          userId: ctx.body.userId,
-          roleId: ctx.body.roleId,
-          createdAt: new Date(),
-        },
-      })
+      try {
+        await ctx.context.adapter.create<UserRole>({
+          model: "userRole",
+          data: {
+            userId: ctx.body.userId,
+            roleId: ctx.body.roleId,
+            createdAt: new Date(),
+          },
+        })
+      } catch (error) {
+        // Concurrent request may have created the assignment between check and create
+        const existingAssignment = await ctx.context.adapter.findOne<UserRole>({
+          model: "userRole",
+          where: [
+            {
+              field: "userId",
+              value: ctx.body.userId,
+            },
+            {
+              field: "roleId",
+              value: ctx.body.roleId,
+            },
+          ],
+        })
+        if (!existingAssignment) {
+          throw error
+        }
+      }
 
       return ctx.json({
         success: true,
@@ -669,16 +709,39 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
         }
 
         // Create assignment
-        await ctx.context.adapter.create<UserRole>({
-          model: "userRole",
-          data: {
-            userId: userId,
-            roleId: ctx.body.roleId,
-            createdAt: new Date(),
-          },
-        })
+        try {
+          await ctx.context.adapter.create<UserRole>({
+            model: "userRole",
+            data: {
+              userId: userId,
+              roleId: ctx.body.roleId,
+              createdAt: new Date(),
+            },
+          })
 
-        assignedCount++
+          assignedCount++
+        } catch (error) {
+          // Concurrent request may have created the assignment between check and create
+          const existingAssignment = await ctx.context.adapter.findOne<UserRole>({
+            model: "userRole",
+            where: [
+              {
+                field: "userId",
+                value: userId,
+              },
+              {
+                field: "roleId",
+                value: ctx.body.roleId,
+              },
+            ],
+          })
+
+          if (!existingAssignment) {
+            throw error
+          }
+
+          skippedCount++
+        }
       }
 
       return ctx.json({
@@ -988,16 +1051,39 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         }
 
         // Create assignment
-        await ctx.context.adapter.create<RolePermission>({
-          model: "rolePermission",
-          data: {
-            roleId: ctx.body.roleId,
-            permissionId: permissionId,
-            createdAt: new Date(),
-          },
-        })
+        try {
+          await ctx.context.adapter.create<RolePermission>({
+            model: "rolePermission",
+            data: {
+              roleId: ctx.body.roleId,
+              permissionId: permissionId,
+              createdAt: new Date(),
+            },
+          })
 
-        assignedCount++
+          assignedCount++
+        } catch (error) {
+          // Concurrent request may have created the assignment between check and create
+          const existingAssignment = await ctx.context.adapter.findOne<RolePermission>({
+            model: "rolePermission",
+            where: [
+              {
+                field: "roleId",
+                value: ctx.body.roleId,
+              },
+              {
+                field: "permissionId",
+                value: permissionId,
+              },
+            ],
+          })
+
+          if (!existingAssignment) {
+            throw error
+          }
+
+          skippedCount++
+        }
       }
 
       return ctx.json({

@@ -129,6 +129,12 @@ export const schema = {
         fieldName: "created_at",
       },
     },
+    indexes: [
+      {
+        fields: ["userId", "roleId"],
+        unique: true,
+      },
+    ],
   },
   rolePermission: {
     modelName: "rolePermission",
@@ -158,6 +164,12 @@ export const schema = {
         fieldName: "created_at",
       },
     },
+    indexes: [
+      {
+        fields: ["roleId", "permissionId"],
+        unique: true,
+      },
+    ],
   },
 } satisfies BetterAuthPlugin["schema"]
 
