@@ -1186,6 +1186,18 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
+      // Delete associated role-permission mappings to avoid orphans
+      await ctx.context.adapter.deleteMany({
+        model: "rolePermission",
+        where: [{ field: "roleId", value: ctx.body.id }],
+      })
+
+      // Delete associated user-role mappings to avoid orphans
+      await ctx.context.adapter.deleteMany({
+        model: "userRole",
+        where: [{ field: "roleId", value: ctx.body.id }],
+      })
+
       // Delete role
       await ctx.context.adapter.delete<Role>({
         model: "role",

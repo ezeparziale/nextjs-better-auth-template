@@ -836,6 +836,12 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
+      // Delete associated role-permission mappings to avoid orphans
+      await ctx.context.adapter.deleteMany({
+        model: "rolePermission",
+        where: [{ field: "permissionId", value: ctx.body.id }],
+      })
+
       // Delete permission
       await ctx.context.adapter.delete<Permission>({
         model: "permission",
