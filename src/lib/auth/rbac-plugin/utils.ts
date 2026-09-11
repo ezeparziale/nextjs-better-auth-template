@@ -19,3 +19,10 @@ export function getPaginationParams(
 
   return { limit, offset }
 }
+
+/**
+ * Removes duplicate ids while preserving order
+ */
+export function dedupeIds(ids: string[]): string[] {
+  return [...new Set(ids)]
+}

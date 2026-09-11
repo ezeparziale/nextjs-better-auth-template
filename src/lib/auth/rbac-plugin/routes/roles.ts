@@ -17,7 +17,7 @@ import type {
   User,
   UserRole,
 } from "../types"
-import { getPaginationParams } from "../utils"
+import { dedupeIds, getPaginationParams } from "../utils"
 import { validateKey } from "../validation"
 
 /**
@@ -401,9 +401,14 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS)
       }
 
+      // Dedupe permission ids to avoid duplicate assignments
+      const permissionIds = ctx.body.permissionIds
+        ? dedupeIds(ctx.body.permissionIds)
+        : undefined
+
       // If permissionIds provided, validate they exist
-      if (ctx.body.permissionIds && ctx.body.permissionIds.length > 0) {
-        for (const permissionId of ctx.body.permissionIds) {
+      if (permissionIds && permissionIds.length > 0) {
+        for (const permissionId of permissionIds) {
           const permission = await ctx.context.adapter.findOne<Permission>({
             model: "permission",
             where: [
@@ -437,9 +442,9 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
       })
 
       // Assign permissions if provided (in parallel for better performance)
-      if (ctx.body.permissionIds && ctx.body.permissionIds.length > 0) {
+      if (permissionIds && permissionIds.length > 0) {
         await Promise.all(
-          ctx.body.permissionIds.map((permissionId) =>
+          permissionIds.map((permissionId) =>
             ctx.context.adapter.create<RolePermission>({
               model: "rolePermission",
               data: {
@@ -627,7 +632,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
           ],
         })
 
-        permissionIds = rolePermissions.map((rp) => rp.permissionId)
+        permissionIds = dedupeIds(rolePermissions.map((rp) => rp.permissionId))
 
         // Validate permissions exist
         for (const permissionId of permissionIds) {
@@ -662,7 +667,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
           ],
         })
 
-        userIds = userRoles.map((ur) => ur.userId)
+        userIds = dedupeIds(userRoles.map((ur) => ur.userId))
 
         // Validate users exist
         for (const userId of userIds) {
@@ -902,9 +907,15 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         }
       }
 
+      // Dedupe ids to avoid duplicate assignments
+      const permissionIds = ctx.body.permissionIds
+        ? dedupeIds(ctx.body.permissionIds)
+        : undefined
+      const userIds = ctx.body.userIds ? dedupeIds(ctx.body.userIds) : undefined
+
       // If permissionIds provided, validate they exist
-      if (ctx.body.permissionIds) {
-        for (const permissionId of ctx.body.permissionIds) {
+      if (permissionIds) {
+        for (const permissionId of permissionIds) {
           const permission = await ctx.context.adapter.findOne<Permission>({
             model: "permission",
             where: [
@@ -924,8 +935,8 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
       }
 
       // If userIds provided, validate they exist
-      if (ctx.body.userIds) {
-        for (const userId of ctx.body.userIds) {
+      if (userIds) {
+        for (const userId of userIds) {
           const user = await ctx.context.adapter.findOne<User>({
             model: "user",
             where: [
@@ -966,7 +977,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
       })
 
       // Update permissions if provided (incremental update)
-      if (ctx.body.permissionIds !== undefined) {
+      if (permissionIds !== undefined) {
         // Get current permissions
         const currentPermissions = await ctx.context.adapter.findMany<RolePermission>({
           model: "rolePermission",
@@ -981,7 +992,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         const currentPermissionIds = new Set(
           currentPermissions.map((rp) => rp.permissionId),
         )
-        const newPermissionIds = new Set(ctx.body.permissionIds)
+        const newPermissionIds = new Set(permissionIds)
 
         // Find permissions to delete (exist in current but not in new)
         const toDelete = currentPermissions.filter(
@@ -989,7 +1000,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         )
 
         // Find permissions to add (exist in new but not in current)
-        const toAdd = ctx.body.permissionIds.filter(
+        const toAdd = permissionIds.filter(
           (permissionId) => !currentPermissionIds.has(permissionId),
         )
 
@@ -1028,7 +1039,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
       }
 
       // Update users if provided (incremental update)
-      if (ctx.body.userIds !== undefined) {
+      if (userIds !== undefined) {
         // Get current users assigned to this role
         const currentUserRoles = await ctx.context.adapter.findMany<UserRole>({
           model: "userRole",
@@ -1041,13 +1052,13 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         })
 
         const currentUserIds = new Set(currentUserRoles.map((ur) => ur.userId))
-        const newUserIds = new Set(ctx.body.userIds)
+        const newUserIds = new Set(userIds)
 
         // Find users to remove (exist in current but not in new)
         const toDelete = currentUserRoles.filter((ur) => !newUserIds.has(ur.userId))
 
         // Find users to add (exist in new but not in current)
-        const toAdd = ctx.body.userIds.filter((userId) => !currentUserIds.has(userId))
+        const toAdd = userIds.filter((userId) => !currentUserIds.has(userId))
 
         // Delete removed user-role assignments in parallel
         if (toDelete.length > 0) {

@@ -11,7 +11,7 @@ import type {
   User,
   UserRole,
 } from "../types"
-import { getPaginationParams } from "../utils"
+import { dedupeIds, getPaginationParams } from "../utils"
 
 /**
  * ### Endpoint
@@ -511,9 +511,12 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
+      // Dedupe role ids to avoid duplicate assignments
+      const roleIds = dedupeIds(ctx.body.roleIds)
+
       // Validate all roles exist
-      if (ctx.body.roleIds.length > 0) {
-        for (const roleId of ctx.body.roleIds) {
+      if (roleIds.length > 0) {
+        for (const roleId of roleIds) {
           const role = await ctx.context.adapter.findOne<Role>({
             model: "role",
             where: [
@@ -544,13 +547,13 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
       })
 
       const currentRoleIds = new Set(currentUserRoles.map((ur) => ur.roleId))
-      const newRoleIds = new Set(ctx.body.roleIds)
+      const newRoleIds = new Set(roleIds)
 
       // Find roles to delete (exist in current but not in new)
       const toDelete = currentUserRoles.filter((ur) => !newRoleIds.has(ur.roleId))
 
       // Find roles to add (exist in new but not in current)
-      const toAdd = ctx.body.roleIds.filter((roleId) => !currentRoleIds.has(roleId))
+      const toAdd = roleIds.filter((roleId) => !currentRoleIds.has(roleId))
 
       // Find roles to keep (exist in both)
       const kept = ctx.body.roleIds.filter((roleId) => currentRoleIds.has(roleId))
@@ -884,9 +887,12 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
 
       // Update roles if provided
       if (ctx.body.roleIds !== undefined) {
+        // Dedupe role ids to avoid duplicate assignments
+        const roleIds = dedupeIds(ctx.body.roleIds)
+
         // Validate all roles exist
-        if (ctx.body.roleIds.length > 0) {
-          for (const roleId of ctx.body.roleIds) {
+        if (roleIds.length > 0) {
+          for (const roleId of roleIds) {
             const role = await ctx.context.adapter.findOne<Role>({
               model: "role",
               where: [
@@ -917,13 +923,13 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
         })
 
         const currentRoleIds = new Set(currentUserRoles.map((ur) => ur.roleId))
-        const newRoleIds = new Set(ctx.body.roleIds)
+        const newRoleIds = new Set(roleIds)
 
         // Find roles to delete (exist in current but not in new)
         const toDelete = currentUserRoles.filter((ur) => !newRoleIds.has(ur.roleId))
 
         // Find roles to add (exist in new but not in current)
-        const toAdd = ctx.body.roleIds.filter((roleId) => !currentRoleIds.has(roleId))
+        const toAdd = roleIds.filter((roleId) => !currentRoleIds.has(roleId))
 
         // Delete removed roles in parallel
         if (toDelete.length > 0) {
