@@ -1,7 +1,13 @@
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
 import { ensureUserIsAdmin, rbacMiddleware } from "../call"
-import type { Permission, RBACPluginOptions, RolePermission, UserRole } from "../types"
+import type {
+  Permission,
+  RBACPluginOptions,
+  Role,
+  RolePermission,
+  UserRole,
+} from "../types"
 
 /**
  * ### Endpoint
@@ -72,6 +78,10 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
             field: "key",
             value: ctx.body.permissionKey,
           },
+          {
+            field: "isActive",
+            value: true,
+          },
         ],
       })
 
@@ -92,8 +102,33 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
         ],
       })
 
+      // Only consider roles that are still active
+      const activeRoleIds = new Set<string>()
+      if (userRoles.length > 0) {
+        const activeRoles = await ctx.context.adapter.findMany<Role>({
+          model: "role",
+          where: [
+            {
+              field: "id",
+              operator: "in",
+              value: userRoles.map((ur) => ur.roleId),
+            },
+            {
+              field: "isActive",
+              value: true,
+            },
+          ],
+        })
+        for (const role of activeRoles) {
+          activeRoleIds.add(role.id)
+        }
+      }
+
       // Check if any role has the permission
       for (const userRole of userRoles) {
+        if (!activeRoleIds.has(userRole.roleId)) {
+          continue
+        }
         const rolePermission = await ctx.context.adapter.findOne<RolePermission>({
           model: "rolePermission",
           where: [
@@ -187,6 +222,10 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
             field: "key",
             value: ctx.body.permissionKey,
           },
+          {
+            field: "isActive",
+            value: true,
+          },
         ],
       })
 
@@ -207,8 +246,33 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
         ],
       })
 
+      // Only consider roles that are still active
+      const activeRoleIds = new Set<string>()
+      if (userRoles.length > 0) {
+        const activeRoles = await ctx.context.adapter.findMany<Role>({
+          model: "role",
+          where: [
+            {
+              field: "id",
+              operator: "in",
+              value: userRoles.map((ur) => ur.roleId),
+            },
+            {
+              field: "isActive",
+              value: true,
+            },
+          ],
+        })
+        for (const role of activeRoles) {
+          activeRoleIds.add(role.id)
+        }
+      }
+
       // Check if any role has the permission
       for (const userRole of userRoles) {
+        if (!activeRoleIds.has(userRole.roleId)) {
+          continue
+        }
         const rolePermission = await ctx.context.adapter.findOne<RolePermission>({
           model: "rolePermission",
           where: [
