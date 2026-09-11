@@ -60,4 +60,5 @@ export const createPaginationConfig = (opts: RBACPluginOptions) => ({
   defaultLimit: opts.defaultLimit ?? 10,
   maxLimit: opts.maxLimit ?? 100,
   defaultOffset: opts.defaultOffset ?? 0,
+  maxOffset: opts.maxOffset ?? 10000,
 })

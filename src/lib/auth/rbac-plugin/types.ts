@@ -140,6 +140,12 @@ export interface RBACPluginOptions {
    */
   defaultOffset?: number
   /**
+   * Maximum offset allowed for list endpoints
+   * Negative values are clamped to `defaultOffset` and values above this cap are clamped to it.
+   * @default 10000
+   */
+  maxOffset?: number
+  /**
    * Permissions that will be seeded (created) when initializing the plugin
    * @example
    * ```ts
