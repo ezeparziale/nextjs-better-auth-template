@@ -635,7 +635,8 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
           .optional()
           .default(false)
           .meta({
-            description: "Filter to return only active users. Defaults to false.",
+            description:
+              "Filter to return only active users (not banned). Defaults to false.",
           }),
         search: z.string().optional().meta({
           description: "Search term to filter users by email.",
@@ -654,7 +655,7 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
           operationId: "rbac.getUsersOptions",
           summary: "Get users as select options",
           description:
-            "Get users formatted as value/label pairs for select components. Supports search and limit parameters.",
+            "Get users formatted as value/label pairs for select components. Supports search and limit parameters. Only active (not banned) users are returned when onlyActive is true.",
           responses: {
             200: {
               description: "Successfully retrieved users options",
