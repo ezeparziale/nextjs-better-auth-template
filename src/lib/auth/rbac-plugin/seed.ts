@@ -1,4 +1,4 @@
-import type { AuthContext } from "better-auth"
+import type { AuthContext, DBTransactionAdapter } from "better-auth"
 import type { Permission, RBACPluginOptions, Role, RolePermission } from "./types"
 import { KeyValidationConfig, validateKey } from "./validation"
 
@@ -6,7 +6,7 @@ import { KeyValidationConfig, validateKey } from "./validation"
  * Seeds permissions into the database if they don't already exist
  */
 async function seedPermissions(
-  ctx: AuthContext,
+  db: DBTransactionAdapter,
   permissions: RBACPluginOptions["seedPermissions"],
   validationOptions: KeyValidationConfig,
 ) {
@@ -21,13 +21,13 @@ async function seedPermissions(
     }
 
     // Check if permission already exists
-    const existing = await ctx.adapter.findOne<Permission>({
+    const existing = await db.findOne<Permission>({
       model: "permission",
       where: [{ field: "key", operator: "eq", value: permission.key }],
     })
 
     if (!existing) {
-      await ctx.adapter.create<Permission>({
+      await db.create<Permission>({
         model: "permission",
         data: {
           key: permission.key,
@@ -50,7 +50,7 @@ async function seedPermissions(
  * Also associates permissions with roles
  */
 async function seedRoles(
-  ctx: AuthContext,
+  db: DBTransactionAdapter,
   roles: RBACPluginOptions["seedRoles"],
   validationOptions: KeyValidationConfig,
 ) {
@@ -64,13 +64,13 @@ async function seedRoles(
       continue
     }
     // Check if role already exists
-    const existing = await ctx.adapter.findOne<Role>({
+    const existing = await db.findOne<Role>({
       model: "role",
       where: [{ field: "key", operator: "eq", value: role.key }],
     })
 
     if (!existing) {
-      const createdRole = await ctx.adapter.create<Role>({
+      const createdRole = await db.create<Role>({
         model: "role",
         data: {
           key: role.key,
@@ -87,7 +87,7 @@ async function seedRoles(
 
       // Associate permissions with the role
       if (role.permissions && role.permissions.length > 0) {
-        await associatePermissionsToRole(ctx, createdRole.id, role.permissions)
+        await associatePermissionsToRole(db, createdRole.id, role.permissions)
       }
     }
   }
@@ -97,19 +97,19 @@ async function seedRoles(
  * Associates permissions to a role by permission keys
  */
 async function associatePermissionsToRole(
-  ctx: AuthContext,
+  db: DBTransactionAdapter,
   roleId: string,
   permissionKeys: string[],
 ) {
   for (const permissionKey of permissionKeys) {
     // Find the permission by key
-    const permission = await ctx.adapter.findOne<Permission>({
+    const permission = await db.findOne<Permission>({
       model: "permission",
       where: [{ field: "key", operator: "eq", value: permissionKey }],
     })
 
     if (permission) {
-      await ctx.adapter.create<RolePermission>({
+      await db.create<RolePermission>({
         model: "rolePermission",
         data: {
           roleId: roleId,
@@ -133,11 +133,21 @@ export async function seedRBACData(
   validationOptions: KeyValidationConfig,
 ) {
   try {
-    // Seed permissions first (roles depend on them)
-    await seedPermissions(ctx, options.seedPermissions, validationOptions)
+    // Runs the whole seed within a transaction so a mid-way failure rolls everything back.
+    // Falls back to sequential execution when the adapter has no transactions.
+    const runSeed = async (db: DBTransactionAdapter) => {
+      // Seed permissions first (roles depend on them)
+      await seedPermissions(db, options.seedPermissions, validationOptions)
 
-    // Then seed roles with their permission associations
-    await seedRoles(ctx, options.seedRoles, validationOptions)
+      // Then seed roles with their permission associations
+      await seedRoles(db, options.seedRoles, validationOptions)
+    }
+
+    if (typeof ctx.adapter.transaction === "function") {
+      await ctx.adapter.transaction(runSeed)
+    } else {
+      await runSeed(ctx.adapter)
+    }
   } catch (error) {
     console.error("Error seeding RBAC data:", error)
     throw error
