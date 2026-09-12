@@ -890,7 +890,7 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
       }
 
       // Delete assignments
-      await ctx.context.adapter.deleteMany({
+      const removedCount = await ctx.context.adapter.deleteMany({
         model: "userRole",
         where: [
           {
@@ -907,8 +907,8 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
 
       return ctx.json({
         success: true,
-        message: `Role removed from ${ctx.body.userIds.length} user(s)`,
-        removedCount: ctx.body.userIds.length,
+        message: `Role removed from ${removedCount} user(s)`,
+        removedCount,
       })
     },
   )
@@ -1253,7 +1253,7 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
       }
 
       // Delete assignments
-      await ctx.context.adapter.deleteMany({
+      const removedCount = await ctx.context.adapter.deleteMany({
         model: "rolePermission",
         where: [
           {
@@ -1270,8 +1270,8 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
 
       return ctx.json({
         success: true,
-        message: `Removed ${ctx.body.permissionIds.length} permission(s) from role`,
-        removedCount: ctx.body.permissionIds.length,
+        message: `Removed ${removedCount} permission(s) from role`,
+        removedCount,
       })
     },
   )
@@ -1390,7 +1390,7 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
       }
 
       // Delete assignments
-      await ctx.context.adapter.deleteMany({
+      const removedCount = await ctx.context.adapter.deleteMany({
         model: "userRole",
         where: [
           {
@@ -1407,8 +1407,8 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
 
       return ctx.json({
         success: true,
-        message: `Removed ${ctx.body.roleIds.length} role(s) from user`,
-        removedCount: ctx.body.roleIds.length,
+        message: `Removed ${removedCount} role(s) from user`,
+        removedCount,
       })
     },
   )
@@ -1527,7 +1527,7 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
       }
 
       // Delete assignments
-      await ctx.context.adapter.deleteMany({
+      const removedCount = await ctx.context.adapter.deleteMany({
         model: "rolePermission",
         where: [
           {
@@ -1544,8 +1544,8 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
 
       return ctx.json({
         success: true,
-        message: `Removed ${ctx.body.roleIds.length} role(s) from permission`,
-        removedCount: ctx.body.roleIds.length,
+        message: `Removed ${removedCount} role(s) from permission`,
+        removedCount,
       })
     },
   )
