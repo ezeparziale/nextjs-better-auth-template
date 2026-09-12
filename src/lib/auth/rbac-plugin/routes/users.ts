@@ -354,25 +354,26 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
         ],
       })
 
-      // Get all permissions from all roles
-      const allPermissions: Permission[] = []
-      const permissionIds = new Set<string>()
+      // Get all role-permission assignments in a single batched query
+      const roleIds = userRoles.map((userRole) => userRole.roleId)
 
-      for (const userRole of userRoles) {
-        const rolePermissions = await ctx.context.adapter.findMany<RolePermission>({
+      let rolePermissions: RolePermission[] = []
+      if (roleIds.length > 0) {
+        rolePermissions = await ctx.context.adapter.findMany<RolePermission>({
           model: "rolePermission",
           where: [
             {
               field: "roleId",
-              value: userRole.roleId,
+              operator: "in",
+              value: roleIds,
             },
           ],
         })
-
-        for (const rp of rolePermissions) {
-          permissionIds.add(rp.permissionId)
-        }
       }
+
+      // Get all permissions from all roles
+      const allPermissions: Permission[] = []
+      const permissionIds = new Set(rolePermissions.map((rp) => rp.permissionId))
 
       // Fetch all referenced permissions in a single batched query
       let permissionsById = new Map<string, Permission>()
