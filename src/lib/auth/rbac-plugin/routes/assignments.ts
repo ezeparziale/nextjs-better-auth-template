@@ -79,11 +79,11 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -350,11 +350,11 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.USER_NOT_FOUND,
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -622,11 +622,11 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.USER_NOT_FOUND,
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -830,11 +830,11 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "USER_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-                          RBAC_ERROR_CODES.USER_NOT_FOUND,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -985,11 +985,11 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -1193,11 +1193,11 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -1344,9 +1344,9 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
                       },
                     },
                   },
@@ -1481,9 +1481,9 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
                       },
                     },
                   },

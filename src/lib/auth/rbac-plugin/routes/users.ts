@@ -127,9 +127,9 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
                       },
                     },
                   },
@@ -306,9 +306,9 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
                       },
                     },
                   },
@@ -482,11 +482,11 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.USER_NOT_FOUND,
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -850,11 +850,11 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.USER_NOT_FOUND,
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
                     },

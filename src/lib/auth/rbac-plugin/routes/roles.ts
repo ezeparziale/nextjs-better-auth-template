@@ -248,9 +248,9 @@ export const rbacGetRole = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },
@@ -362,9 +362,9 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_ALREADY_EXISTS"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS],
+                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message],
                       },
                     },
                   },
@@ -538,9 +538,9 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },
@@ -558,9 +558,9 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_ALREADY_EXISTS"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS],
+                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message],
                       },
                     },
                   },
@@ -803,9 +803,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },
@@ -827,10 +827,10 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           "USER_NOT_FOUND",
                         ],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS,
+                          RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message,
                           "Permission with id ${permissionId} not found",
                           "User with id ${userId} not found",
                         ],
@@ -1131,9 +1131,9 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },
@@ -1503,9 +1503,9 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },
@@ -1753,9 +1753,9 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },

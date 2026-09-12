@@ -113,7 +113,7 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["UNAUTHORIZED"],
                           },
-                          error: {
+                          message: {
                             type: "string",
                           },
                         },
@@ -132,7 +132,7 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["FORBIDDEN"],
                           },
-                          error: {
+                          message: {
                             type: "string",
                           },
                         },
@@ -151,9 +151,9 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["USER_NOT_FOUND"],
                           },
-                          error: {
+                          message: {
                             type: "string",
-                            enum: [ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND],
+                            enum: [ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND.message],
                           },
                         },
                       },
@@ -265,7 +265,7 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["UNAUTHORIZED"],
                           },
-                          error: {
+                          message: {
                             type: "string",
                           },
                         },
@@ -284,7 +284,7 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["FORBIDDEN"],
                           },
-                          error: {
+                          message: {
                             type: "string",
                           },
                         },
@@ -303,9 +303,9 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["USER_NOT_FOUND"],
                           },
-                          error: {
+                          message: {
                             type: "string",
-                            enum: [ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND],
+                            enum: [ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND.message],
                           },
                         },
                       },
@@ -414,7 +414,7 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["UNAUTHORIZED"],
                           },
-                          error: {
+                          message: {
                             type: "string",
                           },
                         },
@@ -433,7 +433,7 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["FORBIDDEN"],
                           },
-                          error: {
+                          message: {
                             type: "string",
                           },
                         },
@@ -452,9 +452,9 @@ export const adminPlusPlugin = () => {
                             type: "string",
                             enum: ["USER_NOT_FOUND"],
                           },
-                          error: {
+                          message: {
                             type: "string",
-                            enum: [ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND],
+                            enum: [ADMIN_PLUS_ERROR_CODES.USER_NOT_FOUND.message],
                           },
                         },
                       },

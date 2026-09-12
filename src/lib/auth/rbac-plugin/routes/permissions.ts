@@ -249,9 +249,9 @@ export const rbacGetPermission = <O extends RBACPluginOptions>(options: O) => {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
                       },
                     },
                   },
@@ -363,9 +363,9 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                         type: "string",
                         enum: ["PERMISSION_ALREADY_EXISTS"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS],
+                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message],
                       },
                     },
                   },
@@ -383,9 +383,9 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
                       },
                     },
                   },
@@ -551,11 +551,11 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
                     },
@@ -574,9 +574,9 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                         type: "string",
                         enum: ["PERMISSION_ALREADY_EXISTS"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS],
+                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message],
                       },
                     },
                   },
@@ -794,9 +794,9 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
                       },
                     },
                   },
@@ -1160,9 +1160,9 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
                       },
-                      error: {
+                      message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND],
+                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
                       },
                     },
                   },
