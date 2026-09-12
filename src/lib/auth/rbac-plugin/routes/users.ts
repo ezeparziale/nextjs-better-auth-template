@@ -745,8 +745,8 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
 
       if (ctx.query?.onlyActive) {
         where.push({
-          field: "emailVerified",
-          value: true,
+          field: "banned",
+          value: false,
         })
       }
 
