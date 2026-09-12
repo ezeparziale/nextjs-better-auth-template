@@ -248,6 +248,29 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                 },
               },
             },
+            404: {
+              description: "Role or permission not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -260,6 +283,36 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
       const session = ctx.context.session
 
       ensureUserIsAdmin(session)
+
+      // Check if role exists
+      const role = await ctx.context.adapter.findOne<Role>({
+        model: "role",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.roleId,
+          },
+        ],
+      })
+
+      if (!role) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // Check if permission exists
+      const permission = await ctx.context.adapter.findOne<Permission>({
+        model: "permission",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.permissionId,
+          },
+        ],
+      })
+
+      if (!permission) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
 
       // Delete assignment
       await ctx.context.adapter.deleteMany({
@@ -517,6 +570,29 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
                 },
               },
             },
+            404: {
+              description: "User or role not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -529,6 +605,36 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
       const session = ctx.context.session
 
       ensureUserIsAdmin(session)
+
+      // Check if user exists
+      const user = await ctx.context.adapter.findOne<User>({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.userId,
+          },
+        ],
+      })
+
+      if (!user) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
+      }
+
+      // Check if role exists
+      const role = await ctx.context.adapter.findOne<Role>({
+        model: "role",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.roleId,
+          },
+        ],
+      })
+
+      if (!role) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
 
       // Delete assignment
       await ctx.context.adapter.deleteMany({
