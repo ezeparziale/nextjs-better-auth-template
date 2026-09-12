@@ -1,11 +1,13 @@
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
 import { ensureUserIsAdmin, rbacMiddleware } from "../call"
+import { RBAC_ERROR_CODES } from "../error-codes"
 import type {
   Permission,
   RBACPluginOptions,
   Role,
   RolePermission,
+  User,
   UserRole,
 } from "../types"
 
@@ -57,6 +59,26 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
                 },
               },
             },
+            404: {
+              description: "User not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["USER_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -69,6 +91,21 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
       const session = ctx.context.session
 
       ensureUserIsAdmin(session)
+
+      // Check if user exists
+      const user = await ctx.context.adapter.findOne<User>({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.userId,
+          },
+        ],
+      })
+
+      if (!user) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
+      }
 
       // Get the permission by key
       const permission = await ctx.context.adapter.findOne<Permission>({
