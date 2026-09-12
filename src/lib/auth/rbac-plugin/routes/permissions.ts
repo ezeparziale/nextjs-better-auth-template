@@ -10,7 +10,7 @@ import {
 } from "../call"
 import { RBAC_ERROR_CODES } from "../error-codes"
 import type { Permission, RBACPluginOptions, Role, RolePermission } from "../types"
-import { dedupeIds, getPaginationParams } from "../utils"
+import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 import { validateKey } from "../validation"
 
 /**
@@ -425,24 +425,18 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
       // Dedupe role ids to avoid duplicate assignments
       const roleIds = ctx.body.roleIds ? dedupeIds(ctx.body.roleIds) : undefined
 
-      // If roleIds provided, validate they exist
+      // If roleIds provided, validate they exist (single batched query)
       if (roleIds && roleIds.length > 0) {
-        for (const roleId of roleIds) {
-          const role = await ctx.context.adapter.findOne<Role>({
-            model: "role",
-            where: [
-              {
-                field: "id",
-                value: roleId,
-              },
-            ],
-          })
+        const missingRoleIds = await findMissingIds(
+          ctx.context.adapter,
+          "role",
+          roleIds,
+        )
 
-          if (!role) {
-            throw new APIError("NOT_FOUND", {
-              message: `Role with id ${roleId} not found`,
-            })
-          }
+        if (missingRoleIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `Role with id ${missingRoleIds[0]} not found`,
+          })
         }
       }
 
@@ -642,24 +636,18 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
       // Dedupe role ids to avoid duplicate assignments
       const roleIds = ctx.body.roleIds ? dedupeIds(ctx.body.roleIds) : undefined
 
-      // If roleIds provided, validate they exist
+      // If roleIds provided, validate they exist (single batched query)
       if (roleIds) {
-        for (const roleId of roleIds) {
-          const role = await ctx.context.adapter.findOne<Role>({
-            model: "role",
-            where: [
-              {
-                field: "id",
-                value: roleId,
-              },
-            ],
-          })
+        const missingRoleIds = await findMissingIds(
+          ctx.context.adapter,
+          "role",
+          roleIds,
+        )
 
-          if (!role) {
-            throw new APIError("NOT_FOUND", {
-              message: `Role with id ${roleId} not found`,
-            })
-          }
+        if (missingRoleIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `Role with id ${missingRoleIds[0]} not found`,
+          })
         }
       }
 

@@ -11,7 +11,7 @@ import type {
   User,
   UserRole,
 } from "../types"
-import { dedupeIds, getPaginationParams } from "../utils"
+import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 
 /**
  * ### Endpoint
@@ -370,22 +370,33 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
         })
 
         for (const rp of rolePermissions) {
-          if (!permissionIds.has(rp.permissionId)) {
-            const permission = await ctx.context.adapter.findOne<Permission>({
-              model: "permission",
-              where: [
-                {
-                  field: "id",
-                  value: rp.permissionId,
-                },
-              ],
-            })
+          permissionIds.add(rp.permissionId)
+        }
+      }
 
-            if (permission) {
-              allPermissions.push(permission)
-              permissionIds.add(rp.permissionId)
-            }
-          }
+      // Fetch all referenced permissions in a single batched query
+      let permissionsById = new Map<string, Permission>()
+      if (permissionIds.size > 0) {
+        const permissions = await ctx.context.adapter.findMany<Permission>({
+          model: "permission",
+          where: [
+            {
+              field: "id",
+              operator: "in",
+              value: [...permissionIds],
+            },
+          ],
+        })
+
+        permissionsById = new Map(
+          permissions.map((permission) => [permission.id, permission]),
+        )
+      }
+
+      for (const permissionId of permissionIds) {
+        const permission = permissionsById.get(permissionId)
+        if (permission) {
+          allPermissions.push(permission)
         }
       }
 
@@ -514,24 +525,18 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
       // Dedupe role ids to avoid duplicate assignments
       const roleIds = dedupeIds(ctx.body.roleIds)
 
-      // Validate all roles exist
+      // Validate all roles exist (single batched query)
       if (roleIds.length > 0) {
-        for (const roleId of roleIds) {
-          const role = await ctx.context.adapter.findOne<Role>({
-            model: "role",
-            where: [
-              {
-                field: "id",
-                value: roleId,
-              },
-            ],
-          })
+        const missingRoleIds = await findMissingIds(
+          ctx.context.adapter,
+          "role",
+          roleIds,
+        )
 
-          if (!role) {
-            throw new APIError("NOT_FOUND", {
-              message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${roleId}`,
-            })
-          }
+        if (missingRoleIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${missingRoleIds[0]}`,
+          })
         }
       }
 
@@ -890,24 +895,18 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
         // Dedupe role ids to avoid duplicate assignments
         const roleIds = dedupeIds(ctx.body.roleIds)
 
-        // Validate all roles exist
+        // Validate all roles exist (single batched query)
         if (roleIds.length > 0) {
-          for (const roleId of roleIds) {
-            const role = await ctx.context.adapter.findOne<Role>({
-              model: "role",
-              where: [
-                {
-                  field: "id",
-                  value: roleId,
-                },
-              ],
-            })
+          const missingRoleIds = await findMissingIds(
+            ctx.context.adapter,
+            "role",
+            roleIds,
+          )
 
-            if (!role) {
-              throw new APIError("NOT_FOUND", {
-                message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${roleId}`,
-              })
-            }
+          if (missingRoleIds.length > 0) {
+            throw new APIError("NOT_FOUND", {
+              message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${missingRoleIds[0]}`,
+            })
           }
         }
 

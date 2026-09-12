@@ -17,7 +17,7 @@ import type {
   User,
   UserRole,
 } from "../types"
-import { dedupeIds, getPaginationParams } from "../utils"
+import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 import { validateKey } from "../validation"
 
 /**
@@ -406,24 +406,18 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         ? dedupeIds(ctx.body.permissionIds)
         : undefined
 
-      // If permissionIds provided, validate they exist
+      // If permissionIds provided, validate they exist (single batched query)
       if (permissionIds && permissionIds.length > 0) {
-        for (const permissionId of permissionIds) {
-          const permission = await ctx.context.adapter.findOne<Permission>({
-            model: "permission",
-            where: [
-              {
-                field: "id",
-                value: permissionId,
-              },
-            ],
-          })
+        const missingPermissionIds = await findMissingIds(
+          ctx.context.adapter,
+          "permission",
+          permissionIds,
+        )
 
-          if (!permission) {
-            throw new APIError("NOT_FOUND", {
-              message: `Permission with id ${permissionId} not found`,
-            })
-          }
+        if (missingPermissionIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `Permission with id ${missingPermissionIds[0]} not found`,
+          })
         }
       }
 
@@ -634,23 +628,17 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
 
         permissionIds = dedupeIds(rolePermissions.map((rp) => rp.permissionId))
 
-        // Validate permissions exist
-        for (const permissionId of permissionIds) {
-          const permission = await ctx.context.adapter.findOne<Permission>({
-            model: "permission",
-            where: [
-              {
-                field: "id",
-                value: permissionId,
-              },
-            ],
-          })
+        // Validate permissions exist (single batched query)
+        const missingPermissionIds = await findMissingIds(
+          ctx.context.adapter,
+          "permission",
+          permissionIds,
+        )
 
-          if (!permission) {
-            throw new APIError("NOT_FOUND", {
-              message: `Permission with id ${permissionId} not found`,
-            })
-          }
+        if (missingPermissionIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `Permission with id ${missingPermissionIds[0]} not found`,
+          })
         }
       }
 
@@ -669,23 +657,17 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
 
         userIds = dedupeIds(userRoles.map((ur) => ur.userId))
 
-        // Validate users exist
-        for (const userId of userIds) {
-          const user = await ctx.context.adapter.findOne<User>({
-            model: "user",
-            where: [
-              {
-                field: "id",
-                value: userId,
-              },
-            ],
-          })
+        // Validate users exist (single batched query)
+        const missingUserIds = await findMissingIds(
+          ctx.context.adapter,
+          "user",
+          userIds,
+        )
 
-          if (!user) {
-            throw new APIError("NOT_FOUND", {
-              message: `User with id ${userId} not found`,
-            })
-          }
+        if (missingUserIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `User with id ${missingUserIds[0]} not found`,
+          })
         }
       }
 
@@ -914,45 +896,33 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         : undefined
       const userIds = ctx.body.userIds ? dedupeIds(ctx.body.userIds) : undefined
 
-      // If permissionIds provided, validate they exist
+      // If permissionIds provided, validate they exist (single batched query)
       if (permissionIds) {
-        for (const permissionId of permissionIds) {
-          const permission = await ctx.context.adapter.findOne<Permission>({
-            model: "permission",
-            where: [
-              {
-                field: "id",
-                value: permissionId,
-              },
-            ],
-          })
+        const missingPermissionIds = await findMissingIds(
+          ctx.context.adapter,
+          "permission",
+          permissionIds,
+        )
 
-          if (!permission) {
-            throw new APIError("NOT_FOUND", {
-              message: `Permission with id ${permissionId} not found`,
-            })
-          }
+        if (missingPermissionIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `Permission with id ${missingPermissionIds[0]} not found`,
+          })
         }
       }
 
-      // If userIds provided, validate they exist
+      // If userIds provided, validate they exist (single batched query)
       if (userIds) {
-        for (const userId of userIds) {
-          const user = await ctx.context.adapter.findOne<User>({
-            model: "user",
-            where: [
-              {
-                field: "id",
-                value: userId,
-              },
-            ],
-          })
+        const missingUserIds = await findMissingIds(
+          ctx.context.adapter,
+          "user",
+          userIds,
+        )
 
-          if (!user) {
-            throw new APIError("NOT_FOUND", {
-              message: `User with id ${userId} not found`,
-            })
-          }
+        if (missingUserIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            message: `User with id ${missingUserIds[0]} not found`,
+          })
         }
       }
 

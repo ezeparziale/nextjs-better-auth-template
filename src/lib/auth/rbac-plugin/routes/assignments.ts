@@ -10,6 +10,7 @@ import type {
   User,
   UserRole,
 } from "../types"
+import { findMissingIds } from "../utils"
 
 /**
  * ### Endpoint
@@ -669,25 +670,21 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
+      // Validate all users exist (single batched query)
+      const missingUserIds = await findMissingIds(
+        ctx.context.adapter,
+        "user",
+        ctx.body.userIds,
+      )
+
+      if (missingUserIds.length > 0) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
+      }
+
       let assignedCount = 0
       let skippedCount = 0
 
       for (const userId of ctx.body.userIds) {
-        // Check if user exists
-        const user = await ctx.context.adapter.findOne<User>({
-          model: "user",
-          where: [
-            {
-              field: "id",
-              value: userId,
-            },
-          ],
-        })
-
-        if (!user) {
-          throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
-        }
-
         // Skip if assignment already exists
         const existingAssignment = await ctx.context.adapter.findOne<UserRole>({
           model: "userRole",
@@ -1011,25 +1008,21 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
+      // Validate all permissions exist (single batched query)
+      const missingPermissionIds = await findMissingIds(
+        ctx.context.adapter,
+        "permission",
+        ctx.body.permissionIds,
+      )
+
+      if (missingPermissionIds.length > 0) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
+
       let assignedCount = 0
       let skippedCount = 0
 
       for (const permissionId of ctx.body.permissionIds) {
-        // Check if permission exists
-        const permission = await ctx.context.adapter.findOne<Permission>({
-          model: "permission",
-          where: [
-            {
-              field: "id",
-              value: permissionId,
-            },
-          ],
-        })
-
-        if (!permission) {
-          throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
-        }
-
         // Skip if assignment already exists
         const existingAssignment = await ctx.context.adapter.findOne<RolePermission>({
           model: "rolePermission",
