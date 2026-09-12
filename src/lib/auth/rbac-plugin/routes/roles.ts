@@ -313,14 +313,14 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
       method: "POST",
       use: [rbacMiddleware],
       body: z.object({
-        name: z.string().meta({
+        name: z.string().trim().min(1).meta({
           description: "The name of the role.",
         }),
-        key: z.string().meta({
+        key: z.string().trim().min(1).meta({
           description: "The unique key for the role.",
         }),
-        description: z.string().optional().meta({
-          description: "Optional description of the role.",
+        description: z.string().trim().min(1).meta({
+          description: "The description of the role.",
         }),
         permissionIds: z.array(z.string()).optional().meta({
           description: "Optional array of permission IDs to assign to the role.",
@@ -768,13 +768,13 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         id: z.string().meta({
           description: "The id of the role to update.",
         }),
-        name: z.string().optional().meta({
+        name: z.string().trim().min(1).optional().meta({
           description: "The new name of the role.",
         }),
-        key: z.string().optional().meta({
+        key: z.string().trim().min(1).optional().meta({
           description: "The new key for the role.",
         }),
-        description: z.string().optional().meta({
+        description: z.string().trim().min(1).optional().meta({
           description: "The new description of the role.",
         }),
         isActive: z.boolean().optional().meta({
@@ -871,9 +871,10 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
 
       ensureUserIsAdmin(session)
 
-      const key = ctx.body.key
-        ? validateKey("role", ctx.body.key, validationOptions)
-        : undefined
+      const key =
+        ctx.body.key !== undefined
+          ? validateKey("role", ctx.body.key, validationOptions)
+          : undefined
 
       // Check if role exists
       const existingRole = await ctx.context.adapter.findOne<Role>({
@@ -965,8 +966,8 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
           },
         ],
         update: {
-          ...(ctx.body.name && { name: ctx.body.name }),
-          ...(key && { key }),
+          ...(ctx.body.name !== undefined && { name: ctx.body.name }),
+          ...(key !== undefined && { key }),
           ...(ctx.body.description !== undefined && {
             description: ctx.body.description,
           }),

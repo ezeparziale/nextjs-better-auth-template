@@ -314,14 +314,14 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
       method: "POST",
       use: [rbacMiddleware],
       body: z.object({
-        name: z.string().meta({
+        name: z.string().trim().min(1).meta({
           description: "The name of the permission.",
         }),
-        key: z.string().meta({
+        key: z.string().trim().min(1).meta({
           description: "The unique key for the permission.",
         }),
-        description: z.string().optional().meta({
-          description: "Optional description of the permission.",
+        description: z.string().trim().min(1).meta({
+          description: "The description of the permission.",
         }),
         isActive: z.boolean().optional().meta({
           description:
@@ -508,13 +508,13 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         id: z.string().meta({
           description: "The id of the permission to update.",
         }),
-        name: z.string().optional().meta({
+        name: z.string().trim().min(1).optional().meta({
           description: "The new name of the permission.",
         }),
-        key: z.string().optional().meta({
+        key: z.string().trim().min(1).optional().meta({
           description: "The new key for the permission.",
         }),
-        description: z.string().optional().meta({
+        description: z.string().trim().min(1).optional().meta({
           description: "The new description of the permission.",
         }),
         isActive: z.boolean().optional().meta({
@@ -602,9 +602,10 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
 
       ensureUserIsAdmin(session)
 
-      const key = ctx.body.key
-        ? validateKey("permission", ctx.body.key, validationOptions)
-        : undefined
+      const key =
+        ctx.body.key !== undefined
+          ? validateKey("permission", ctx.body.key, validationOptions)
+          : undefined
 
       // Check if permission exists
       const existingPermission = await ctx.context.adapter.findOne<Permission>({
@@ -672,8 +673,8 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
           },
         ],
         update: {
-          ...(ctx.body.name && { name: ctx.body.name }),
-          ...(key && { key }),
+          ...(ctx.body.name !== undefined && { name: ctx.body.name }),
+          ...(key !== undefined && { key }),
           ...(ctx.body.description !== undefined && {
             description: ctx.body.description,
           }),
