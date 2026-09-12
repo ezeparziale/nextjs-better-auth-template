@@ -1,3 +1,4 @@
+import type { DBTransactionAdapter } from "better-auth"
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
 import { ensureUserIsAdmin, rbacMiddleware } from "../call"
@@ -681,45 +682,15 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
-      let assignedCount = 0
-      let skippedCount = 0
+      // Assign all users within a transaction so a mid-way failure rolls everything back.
+      // Falls back to sequential execution when the adapter has no transactions.
+      const assignUsers = async (db: DBTransactionAdapter) => {
+        let assignedCount = 0
+        let skippedCount = 0
 
-      for (const userId of ctx.body.userIds) {
-        // Skip if assignment already exists
-        const existingAssignment = await ctx.context.adapter.findOne<UserRole>({
-          model: "userRole",
-          where: [
-            {
-              field: "userId",
-              value: userId,
-            },
-            {
-              field: "roleId",
-              value: ctx.body.roleId,
-            },
-          ],
-        })
-
-        if (existingAssignment) {
-          skippedCount++
-          continue
-        }
-
-        // Create assignment
-        try {
-          await ctx.context.adapter.create<UserRole>({
-            model: "userRole",
-            data: {
-              userId: userId,
-              roleId: ctx.body.roleId,
-              createdAt: new Date(),
-            },
-          })
-
-          assignedCount++
-        } catch (error) {
-          // Concurrent request may have created the assignment between check and create
-          const existingAssignment = await ctx.context.adapter.findOne<UserRole>({
+        for (const userId of ctx.body.userIds) {
+          // Skip if assignment already exists
+          const existingAssignment = await db.findOne<UserRole>({
             model: "userRole",
             where: [
               {
@@ -733,13 +704,54 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
             ],
           })
 
-          if (!existingAssignment) {
-            throw error
+          if (existingAssignment) {
+            skippedCount++
+            continue
           }
 
-          skippedCount++
+          // Create assignment
+          try {
+            await db.create<UserRole>({
+              model: "userRole",
+              data: {
+                userId,
+                roleId: ctx.body.roleId,
+                createdAt: new Date(),
+              },
+            })
+
+            assignedCount++
+          } catch (error) {
+            // Concurrent request may have created the assignment between check and create
+            const existingAssignment = await db.findOne<UserRole>({
+              model: "userRole",
+              where: [
+                {
+                  field: "userId",
+                  value: userId,
+                },
+                {
+                  field: "roleId",
+                  value: ctx.body.roleId,
+                },
+              ],
+            })
+
+            if (!existingAssignment) {
+              throw error
+            }
+
+            skippedCount++
+          }
         }
+
+        return { assignedCount, skippedCount }
       }
+
+      const { assignedCount, skippedCount } =
+        typeof ctx.context.adapter.transaction === "function"
+          ? await ctx.context.adapter.transaction(assignUsers)
+          : await assignUsers(ctx.context.adapter)
 
       return ctx.json({
         success: true,
@@ -808,7 +820,7 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
               },
             },
             404: {
-              description: "Role not found",
+              description: "Role or user not found",
               content: {
                 "application/json": {
                   schema: {
@@ -816,11 +828,14 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_NOT_FOUND"],
+                        enum: ["ROLE_NOT_FOUND", "USER_NOT_FOUND"],
                       },
                       error: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND,
+                        ],
                       },
                     },
                   },
@@ -861,6 +876,17 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
 
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // Validate all users exist (single batched query)
+      const missingUserIds = await findMissingIds(
+        ctx.context.adapter,
+        "user",
+        ctx.body.userIds,
+      )
+
+      if (missingUserIds.length > 0) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
       // Delete assignments
@@ -1019,45 +1045,15 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
-      let assignedCount = 0
-      let skippedCount = 0
+      // Assign all permissions within a transaction so a mid-way failure rolls everything back.
+      // Falls back to sequential execution when the adapter has no transactions.
+      const assignPermissions = async (db: DBTransactionAdapter) => {
+        let assignedCount = 0
+        let skippedCount = 0
 
-      for (const permissionId of ctx.body.permissionIds) {
-        // Skip if assignment already exists
-        const existingAssignment = await ctx.context.adapter.findOne<RolePermission>({
-          model: "rolePermission",
-          where: [
-            {
-              field: "roleId",
-              value: ctx.body.roleId,
-            },
-            {
-              field: "permissionId",
-              value: permissionId,
-            },
-          ],
-        })
-
-        if (existingAssignment) {
-          skippedCount++
-          continue
-        }
-
-        // Create assignment
-        try {
-          await ctx.context.adapter.create<RolePermission>({
-            model: "rolePermission",
-            data: {
-              roleId: ctx.body.roleId,
-              permissionId: permissionId,
-              createdAt: new Date(),
-            },
-          })
-
-          assignedCount++
-        } catch (error) {
-          // Concurrent request may have created the assignment between check and create
-          const existingAssignment = await ctx.context.adapter.findOne<RolePermission>({
+        for (const permissionId of ctx.body.permissionIds) {
+          // Skip if assignment already exists
+          const existingAssignment = await db.findOne<RolePermission>({
             model: "rolePermission",
             where: [
               {
@@ -1071,13 +1067,54 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
             ],
           })
 
-          if (!existingAssignment) {
-            throw error
+          if (existingAssignment) {
+            skippedCount++
+            continue
           }
 
-          skippedCount++
+          // Create assignment
+          try {
+            await db.create<RolePermission>({
+              model: "rolePermission",
+              data: {
+                roleId: ctx.body.roleId,
+                permissionId,
+                createdAt: new Date(),
+              },
+            })
+
+            assignedCount++
+          } catch (error) {
+            // Concurrent request may have created the assignment between check and create
+            const existingAssignment = await db.findOne<RolePermission>({
+              model: "rolePermission",
+              where: [
+                {
+                  field: "roleId",
+                  value: ctx.body.roleId,
+                },
+                {
+                  field: "permissionId",
+                  value: permissionId,
+                },
+              ],
+            })
+
+            if (!existingAssignment) {
+              throw error
+            }
+
+            skippedCount++
+          }
         }
+
+        return { assignedCount, skippedCount }
       }
+
+      const { assignedCount, skippedCount } =
+        typeof ctx.context.adapter.transaction === "function"
+          ? await ctx.context.adapter.transaction(assignPermissions)
+          : await assignPermissions(ctx.context.adapter)
 
       return ctx.json({
         success: true,
@@ -1146,7 +1183,7 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
               },
             },
             404: {
-              description: "Role not found",
+              description: "Role or permission not found",
               content: {
                 "application/json": {
                   schema: {
@@ -1154,11 +1191,14 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_NOT_FOUND"],
+                        enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                       },
                       error: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND],
+                        enum: [
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND,
+                        ],
                       },
                     },
                   },
@@ -1199,6 +1239,17 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
 
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // Validate all permissions exist (single batched query)
+      const missingPermissionIds = await findMissingIds(
+        ctx.context.adapter,
+        "permission",
+        ctx.body.permissionIds,
+      )
+
+      if (missingPermissionIds.length > 0) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
       // Delete assignments

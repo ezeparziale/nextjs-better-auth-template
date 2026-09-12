@@ -33,6 +33,7 @@ export const auth = betterAuth({
   appName: "Template",
   database: prismaAdapter(db, {
     provider: "postgresql",
+    transaction: true,
   }),
   rateLimit: {
     enabled: true,
