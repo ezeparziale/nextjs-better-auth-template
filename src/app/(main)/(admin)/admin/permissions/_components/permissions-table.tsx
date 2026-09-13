@@ -78,7 +78,7 @@ export default function PermissionsTable({
       }
 
       if (sorting.length > 0) {
-        queryParams.sortBy = sorting[0].id
+        queryParams.sortBy = sorting[0].id as ListPermissionsQuery["sortBy"]
         queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
       }
 

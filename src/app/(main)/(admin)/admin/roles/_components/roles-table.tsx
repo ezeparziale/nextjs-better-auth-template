@@ -78,7 +78,7 @@ export default function RolesTable({
       }
 
       if (sorting.length > 0) {
-        queryParams.sortBy = sorting[0].id
+        queryParams.sortBy = sorting[0].id as ListRolesQuery["sortBy"]
         queryParams.sortDirection = sorting[0].desc ? "desc" : "asc"
       }
 

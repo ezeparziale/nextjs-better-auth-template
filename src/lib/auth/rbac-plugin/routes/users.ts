@@ -12,6 +12,7 @@ import type {
   UserRole,
 } from "../types"
 import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
+import { sortByRole } from "./sort-schemas"
 
 /**
  * ### Endpoint
@@ -66,12 +67,7 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
           .or(z.number())
           .optional()
           .default(paginationConfig.defaultOffset),
-        sortBy: z
-          .string()
-          .meta({
-            description: "The field to sort by.",
-          })
-          .optional(),
+        sortBy: sortByRole,
         sortDirection: z
           .enum(["asc", "desc"])
           .meta({

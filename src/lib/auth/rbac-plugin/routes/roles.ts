@@ -19,6 +19,7 @@ import type {
 } from "../types"
 import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 import { validateKey } from "../validation"
+import { sortByPermission, sortByRole, sortByUser } from "./sort-schemas"
 
 /**
  * ### Endpoint
@@ -70,12 +71,7 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
           .or(z.number())
           .optional()
           .default(paginationConfig.defaultOffset),
-        sortBy: z
-          .string()
-          .meta({
-            description: "The field to sort by.",
-          })
-          .optional(),
+        sortBy: sortByRole,
         sortDirection: z
           .enum(["asc", "desc"])
           .meta({
@@ -1446,12 +1442,7 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
             .or(z.number())
             .optional()
             .default(paginationConfig.defaultOffset),
-          sortBy: z
-            .string()
-            .meta({
-              description: "The field to sort by.",
-            })
-            .optional(),
+          sortBy: sortByPermission,
           sortDirection: z
             .enum(["asc", "desc"])
             .meta({
@@ -1696,12 +1687,7 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
             .or(z.number())
             .optional()
             .default(paginationConfig.defaultOffset),
-          sortBy: z
-            .string()
-            .meta({
-              description: "The field to sort by.",
-            })
-            .optional(),
+          sortBy: sortByUser,
           sortDirection: z
             .enum(["asc", "desc"])
             .meta({
