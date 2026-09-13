@@ -2,24 +2,47 @@ import type { AuthContext, DBTransactionAdapter } from "better-auth"
 import type { Permission, RBACPluginOptions, Role, RolePermission } from "./types"
 import { KeyValidationConfig, validateKey } from "./validation"
 
+function validateSeedConfig(
+  options: Required<Pick<RBACPluginOptions, "seedPermissions" | "seedRoles">>,
+  validationOptions: KeyValidationConfig,
+): void {
+  const invalid: string[] = []
+
+  for (const permission of options.seedPermissions ?? []) {
+    try {
+      validateKey("permission", permission.key, validationOptions)
+    } catch {
+      invalid.push(`permission "${permission.key}"`)
+    }
+  }
+
+  for (const role of options.seedRoles ?? []) {
+    try {
+      validateKey("role", role.key, validationOptions)
+    } catch {
+      invalid.push(`role "${role.key}"`)
+    }
+  }
+
+  if (invalid.length > 0) {
+    throw new Error(
+      `Invalid seed configuration: ${invalid.length} invalid key(s). ` +
+        `Fix the seed options before starting the server, the seed will not run:\n` +
+        invalid.map((entry) => `  - ${entry}`).join("\n"),
+    )
+  }
+}
+
 /**
  * Seeds permissions into the database if they don't already exist
  */
 async function seedPermissions(
   db: DBTransactionAdapter,
   permissions: RBACPluginOptions["seedPermissions"],
-  validationOptions: KeyValidationConfig,
 ) {
   if (!permissions || permissions.length === 0) return
 
   for (const permission of permissions) {
-    try {
-      validateKey("permission", permission.key, validationOptions)
-    } catch (error) {
-      console.error(`Invalid permission key "${permission.key}":`, error)
-      continue
-    }
-
     // Check if permission already exists
     const existing = await db.findOne<Permission>({
       model: "permission",
@@ -52,17 +75,10 @@ async function seedPermissions(
 async function seedRoles(
   db: DBTransactionAdapter,
   roles: RBACPluginOptions["seedRoles"],
-  validationOptions: KeyValidationConfig,
 ) {
   if (!roles || roles.length === 0) return
 
   for (const role of roles) {
-    try {
-      validateKey("role", role.key, validationOptions)
-    } catch (error) {
-      console.error(`Invalid role key "${role.key}":`, error)
-      continue
-    }
     // Check if role already exists
     const existing = await db.findOne<Role>({
       model: "role",
@@ -132,15 +148,17 @@ export async function seedRBACData(
   options: Required<Pick<RBACPluginOptions, "seedPermissions" | "seedRoles">>,
   validationOptions: KeyValidationConfig,
 ) {
+  validateSeedConfig(options, validationOptions)
+
   try {
     // Runs the whole seed within a transaction so a mid-way failure rolls everything back.
     // Falls back to sequential execution when the adapter has no transactions.
     const runSeed = async (db: DBTransactionAdapter) => {
       // Seed permissions first (roles depend on them)
-      await seedPermissions(db, options.seedPermissions, validationOptions)
+      await seedPermissions(db, options.seedPermissions)
 
       // Then seed roles with their permission associations
-      await seedRoles(db, options.seedRoles, validationOptions)
+      await seedRoles(db, options.seedRoles)
     }
 
     if (typeof ctx.adapter.transaction === "function") {
