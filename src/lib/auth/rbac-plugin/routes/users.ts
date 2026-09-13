@@ -10,6 +10,7 @@ import type {
   RolePermission,
   User,
   UserRole,
+  UserRoleCreateInput,
 } from "../types"
 import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 import { sortByRole } from "./sort-schemas"
@@ -594,12 +595,11 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
       if (toAdd.length > 0) {
         await Promise.all(
           toAdd.map((roleId) =>
-            ctx.context.adapter.create<UserRole>({
+            ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
               model: "userRole",
               data: {
                 userId: ctx.body.userId,
                 roleId: roleId,
-                createdAt: new Date(),
               },
             }),
           ),
@@ -974,12 +974,11 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
         if (toAdd.length > 0) {
           await Promise.all(
             toAdd.map((roleId) =>
-              ctx.context.adapter.create<UserRole>({
+              ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
                 model: "userRole",
                 data: {
                   userId: ctx.body.userId,
                   roleId: roleId,
-                  createdAt: new Date(),
                 },
               }),
             ),

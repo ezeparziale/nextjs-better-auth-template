@@ -13,9 +13,12 @@ import type {
   Permission,
   RBACPluginOptions,
   Role,
+  RoleCreateInput,
   RolePermission,
+  RolePermissionCreateInput,
   User,
   UserRole,
+  UserRoleCreateInput,
 } from "../types"
 import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 import { validateKey } from "../validation"
@@ -450,14 +453,12 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         }
       }
 
-      const role = await ctx.context.adapter.create<Role>({
+      const role = await ctx.context.adapter.create<RoleCreateInput, Role>({
         model: "role",
         data: {
           name: ctx.body.name,
           key,
           description: ctx.body.description,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           isActive: ctx.body.isActive ?? true,
           createdBy: session.user.email,
           updatedBy: session.user.email,
@@ -468,12 +469,11 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
       if (permissionIds && permissionIds.length > 0) {
         await Promise.all(
           permissionIds.map((permissionId) =>
-            ctx.context.adapter.create<RolePermission>({
+            ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
               model: "rolePermission",
               data: {
                 roleId: role.id,
                 permissionId: permissionId,
-                createdAt: new Date(),
               },
             }),
           ),
@@ -730,14 +730,12 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
       }
 
       // Create the cloned role
-      const role = await ctx.context.adapter.create<Role>({
+      const role = await ctx.context.adapter.create<RoleCreateInput, Role>({
         model: "role",
         data: {
           name: ctx.body.name,
           key,
           description: ctx.body.description ?? sourceRole.description,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           isActive: ctx.body.isActive ?? sourceRole.isActive,
           createdBy: session.user.email,
           updatedBy: session.user.email,
@@ -748,12 +746,11 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
       if (permissionIds.length > 0) {
         await Promise.all(
           permissionIds.map((permissionId) =>
-            ctx.context.adapter.create<RolePermission>({
+            ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
               model: "rolePermission",
               data: {
                 roleId: role.id,
                 permissionId: permissionId,
-                createdAt: new Date(),
               },
             }),
           ),
@@ -764,12 +761,11 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
       if (userIds.length > 0) {
         await Promise.all(
           userIds.map((userId) =>
-            ctx.context.adapter.create<UserRole>({
+            ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
               model: "userRole",
               data: {
                 roleId: role.id,
                 userId: userId,
-                createdAt: new Date(),
               },
             }),
           ),
@@ -1075,12 +1071,11 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         if (toAdd.length > 0) {
           await Promise.all(
             toAdd.map((permissionId) =>
-              ctx.context.adapter.create<RolePermission>({
+              ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
                 model: "rolePermission",
                 data: {
                   roleId: ctx.body.id,
                   permissionId: permissionId,
-                  createdAt: new Date(),
                 },
               }),
             ),
@@ -1131,12 +1126,11 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         if (toAdd.length > 0) {
           await Promise.all(
             toAdd.map((userId) =>
-              ctx.context.adapter.create<UserRole>({
+              ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
                 model: "userRole",
                 data: {
                   userId: userId,
                   roleId: ctx.body.id,
-                  createdAt: new Date(),
                 },
               }),
             ),

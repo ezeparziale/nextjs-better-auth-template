@@ -8,8 +8,10 @@ import type {
   RBACPluginOptions,
   Role,
   RolePermission,
+  RolePermissionCreateInput,
   User,
   UserRole,
+  UserRoleCreateInput,
 } from "../types"
 import { findMissingIds } from "../utils"
 
@@ -158,12 +160,11 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
 
       // Create assignment
       try {
-        await ctx.context.adapter.create<RolePermission>({
+        await ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
           model: "rolePermission",
           data: {
             roleId: ctx.body.roleId,
             permissionId: ctx.body.permissionId,
-            createdAt: new Date(),
           },
         })
       } catch (error) {
@@ -482,12 +483,11 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
 
       // Create assignment
       try {
-        await ctx.context.adapter.create<UserRole>({
+        await ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
           model: "userRole",
           data: {
             userId: ctx.body.userId,
             roleId: ctx.body.roleId,
-            createdAt: new Date(),
           },
         })
       } catch (error) {
@@ -817,12 +817,11 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
 
           // Create assignment
           try {
-            await db.create<UserRole>({
+            await db.create<UserRoleCreateInput, UserRole>({
               model: "userRole",
               data: {
                 userId,
                 roleId: ctx.body.roleId,
-                createdAt: new Date(),
               },
             })
 
@@ -1180,12 +1179,11 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
 
           // Create assignment
           try {
-            await db.create<RolePermission>({
+            await db.create<RolePermissionCreateInput, RolePermission>({
               model: "rolePermission",
               data: {
                 roleId: ctx.body.roleId,
                 permissionId,
-                createdAt: new Date(),
               },
             })
 

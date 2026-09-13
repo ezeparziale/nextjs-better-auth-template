@@ -2,7 +2,7 @@ export type Permission = {
   id: string
   name: string
   key: string
-  description?: string
+  description: string
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -14,7 +14,7 @@ export type Role = {
   id: string
   name: string
   key: string
-  description?: string
+  description: string
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -35,6 +35,11 @@ export type UserRole = {
   roleId: string
   createdAt: Date
 }
+
+export type PermissionCreateInput = Omit<Permission, "id" | "createdAt" | "updatedAt">
+export type RoleCreateInput = Omit<Role, "id" | "createdAt" | "updatedAt">
+export type RolePermissionCreateInput = Omit<RolePermission, "id" | "createdAt">
+export type UserRoleCreateInput = Omit<UserRole, "id" | "createdAt">
 
 export type User = {
   id: string
@@ -158,7 +163,7 @@ export interface RBACPluginOptions {
   seedPermissions?: Array<{
     key: string
     name: string
-    description?: string
+    description: string
     /**
      * Whether the permission is active
      * @default true
@@ -184,7 +189,7 @@ export interface RBACPluginOptions {
   seedRoles?: Array<{
     key: string
     name: string
-    description?: string
+    description: string
     /**
      * Whether the role is active
      * @default true

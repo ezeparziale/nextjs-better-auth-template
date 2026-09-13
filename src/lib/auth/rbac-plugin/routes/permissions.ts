@@ -9,7 +9,14 @@ import {
   rbacMiddleware,
 } from "../call"
 import { RBAC_ERROR_CODES } from "../error-codes"
-import type { Permission, RBACPluginOptions, Role, RolePermission } from "../types"
+import type {
+  Permission,
+  PermissionCreateInput,
+  RBACPluginOptions,
+  Role,
+  RolePermission,
+  RolePermissionCreateInput,
+} from "../types"
 import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
 import { validateKey } from "../validation"
 import { sortByPermission, sortByRole } from "./sort-schemas"
@@ -449,14 +456,15 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
         }
       }
 
-      const permission = await ctx.context.adapter.create<Permission>({
+      const permission = await ctx.context.adapter.create<
+        PermissionCreateInput,
+        Permission
+      >({
         model: "permission",
         data: {
           name: ctx.body.name,
           key,
           description: ctx.body.description,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           isActive: ctx.body.isActive ?? true,
           createdBy: session.user.email,
           updatedBy: session.user.email,
@@ -467,12 +475,11 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
       if (roleIds && roleIds.length > 0) {
         await Promise.all(
           roleIds.map((roleId) =>
-            ctx.context.adapter.create<RolePermission>({
+            ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
               model: "rolePermission",
               data: {
                 roleId: roleId,
                 permissionId: permission.id,
-                createdAt: new Date(),
               },
             }),
           ),
@@ -737,12 +744,11 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         if (toAdd.length > 0) {
           await Promise.all(
             toAdd.map((roleId) =>
-              ctx.context.adapter.create<RolePermission>({
+              ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
                 model: "rolePermission",
                 data: {
                   roleId: roleId,
                   permissionId: ctx.body.id,
-                  createdAt: new Date(),
                 },
               }),
             ),

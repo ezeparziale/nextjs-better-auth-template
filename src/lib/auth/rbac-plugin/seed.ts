@@ -1,5 +1,13 @@
 import type { AuthContext, DBTransactionAdapter } from "better-auth"
-import type { Permission, RBACPluginOptions, Role, RolePermission } from "./types"
+import type {
+  Permission,
+  PermissionCreateInput,
+  RBACPluginOptions,
+  Role,
+  RoleCreateInput,
+  RolePermission,
+  RolePermissionCreateInput,
+} from "./types"
 import { KeyValidationConfig, validateKey } from "./validation"
 
 function validateSeedConfig(
@@ -50,15 +58,13 @@ async function seedPermissions(
     })
 
     if (!existing) {
-      await db.create<Permission>({
+      await db.create<PermissionCreateInput, Permission>({
         model: "permission",
         data: {
           key: permission.key,
           name: permission.name,
-          description: permission.description || undefined,
+          description: permission.description,
           isActive: permission.isActive ?? true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           createdBy: "system",
           updatedBy: "system",
         },
@@ -86,15 +92,13 @@ async function seedRoles(
     })
 
     if (!existing) {
-      const createdRole = await db.create<Role>({
+      const createdRole = await db.create<RoleCreateInput, Role>({
         model: "role",
         data: {
           key: role.key,
           name: role.name,
-          description: role.description || undefined,
+          description: role.description,
           isActive: role.isActive ?? true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
           createdBy: "system",
           updatedBy: "system",
         },
@@ -125,12 +129,11 @@ async function associatePermissionsToRole(
     })
 
     if (permission) {
-      await db.create<RolePermission>({
+      await db.create<RolePermissionCreateInput, RolePermission>({
         model: "rolePermission",
         data: {
           roleId: roleId,
           permissionId: permission.id,
-          createdAt: new Date(),
         },
       })
       console.log(`Permission assigned: ${permissionKey}`)

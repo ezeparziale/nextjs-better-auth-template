@@ -19,7 +19,7 @@ export const schema = {
       },
       description: {
         type: "string",
-        required: false,
+        required: true,
       },
       isActive: {
         type: "boolean",
@@ -69,7 +69,7 @@ export const schema = {
       },
       description: {
         type: "string",
-        required: false,
+        required: true,
       },
       isActive: {
         type: "boolean",

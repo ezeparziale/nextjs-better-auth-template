@@ -149,7 +149,7 @@ model Role {
   id              String           @id
   name            String
   key             String           @unique
-  description     String?
+  description     String
   is_active       Boolean          @default(true)
   created_at      DateTime         @default(now())
   updated_at      DateTime         @default(now())
@@ -167,7 +167,7 @@ model Permission {
   id              String           @id
   name            String
   key             String           @unique
-  description     String?
+  description     String
   is_active       Boolean          @default(true)
   created_at      DateTime         @default(now())
   updated_at      DateTime         @default(now())
