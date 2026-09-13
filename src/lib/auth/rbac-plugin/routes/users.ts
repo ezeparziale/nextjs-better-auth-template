@@ -630,16 +630,10 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
       method: "GET",
       use: [rbacMiddleware],
       query: z.object({
-        onlyActive: z
-          .string()
-          .transform((val) => val === "true")
-          .or(z.boolean())
-          .optional()
-          .default(false)
-          .meta({
-            description:
-              "Filter to return only active users (not banned). Defaults to false.",
-          }),
+        onlyActive: z.stringbool().or(z.boolean()).optional().default(false).meta({
+          description:
+            "Filter to return only active users (not banned). Defaults to false.",
+        }),
         search: z.string().optional().meta({
           description: "Search term to filter users by email.",
         }),

@@ -1221,15 +1221,9 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
       method: "GET",
       use: [rbacMiddleware],
       query: z.object({
-        onlyActive: z
-          .string()
-          .transform((val) => val === "true")
-          .or(z.boolean())
-          .optional()
-          .default(true)
-          .meta({
-            description: "Filter to return only active roles. Defaults to true.",
-          }),
+        onlyActive: z.stringbool().or(z.boolean()).optional().default(true).meta({
+          description: "Filter to return only active roles. Defaults to true.",
+        }),
         search: z.string().optional().meta({
           description: "Search term to filter roles by name or key.",
         }),

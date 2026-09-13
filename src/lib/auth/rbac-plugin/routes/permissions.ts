@@ -878,15 +878,9 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
       method: "GET",
       use: [rbacMiddleware],
       query: z.object({
-        onlyActive: z
-          .string()
-          .transform((val) => val === "true")
-          .or(z.boolean())
-          .optional()
-          .default(true)
-          .meta({
-            description: "Filter to return only active permissions. Defaults to true.",
-          }),
+        onlyActive: z.stringbool().or(z.boolean()).optional().default(true).meta({
+          description: "Filter to return only active permissions. Defaults to true.",
+        }),
         search: z.string().optional().meta({
           description: "Search term to filter permissions by name or key.",
         }),
