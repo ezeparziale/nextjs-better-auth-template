@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
+import { AsyncCombobox, type AsyncComboboxOption } from "@/components/ui/async-combobox"
 import { Button } from "@/components/ui/button"
 import { useDataTable } from "@/components/ui/data-table"
 import {
@@ -18,13 +19,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 
 const bulkAssignRoleSchema = z.object({
@@ -32,6 +26,10 @@ const bulkAssignRoleSchema = z.object({
 })
 
 type FormData = z.infer<typeof bulkAssignRoleSchema>
+
+type GetRolesOptionsQuery = NonNullable<
+  Parameters<typeof authClient.rbac.getRolesOptions>[0]
+>["query"]
 
 interface BulkAssignRoleDialogProps {
   userIds: string[]
@@ -47,8 +45,6 @@ export default function BulkAssignRoleDialog({
   onCompleted,
 }: BulkAssignRoleDialogProps) {
   const { refreshTable } = useDataTable()
-  const [roles, setRoles] = useState<Array<{ value: string; label: string }>>([])
-  const [isLoadingRoles, setIsLoadingRoles] = useState(true)
 
   const form = useForm<FormData>({
     resolver: zodResolver(bulkAssignRoleSchema),
@@ -58,42 +54,40 @@ export default function BulkAssignRoleDialog({
     mode: "onChange",
   })
 
+  const fetchRoles = useCallback(
+    async (search: string): Promise<AsyncComboboxOption[]> => {
+      const queryParams: GetRolesOptionsQuery = {
+        onlyActive: true,
+        limit: 5,
+      }
+
+      if (search) {
+        queryParams.search = search
+      }
+
+      const { data, error } = await authClient.rbac.getRolesOptions({
+        query: queryParams,
+      })
+
+      if (error) {
+        toast.error(error.message || "Failed to load roles")
+        return []
+      }
+
+      return data.options || []
+    },
+    [],
+  )
+
+  // Reset the selection every time the dialog opens (it stays mounted between opens)
   useEffect(() => {
-    if (!isOpen) return
-    form.reset({ roleId: "" })
-    let cancelled = false
-    authClient.rbac
-      .getRolesOptions({
-        query: {
-          onlyActive: true,
-          limit: 100,
-        },
-      })
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (error) {
-          toast.error(error.message || "Failed to load roles")
-          return
-        }
-        setRoles(data.options || [])
-      })
-      .catch(() => {
-        if (!cancelled) toast.error("Failed to load roles")
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoadingRoles(false)
-      })
-    return () => {
-      cancelled = true
+    if (isOpen) {
+      form.reset({ roleId: "" })
     }
   }, [isOpen, form])
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
-    if (!open) {
-      form.reset()
-      setIsLoadingRoles(true)
-    }
   }
 
   const onSubmit = async (values: FormData) => {
@@ -139,31 +133,15 @@ export default function BulkAssignRoleDialog({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid} className="w-full">
                 <FieldLabel htmlFor={field.name}>Role</FieldLabel>
-                <Select
+                <AsyncCombobox
                   value={field.value || undefined}
                   onValueChange={field.onChange}
-                  disabled={isSubmitting || isLoadingRoles}
-                >
-                  <SelectTrigger id={field.name} className="w-full">
-                    <SelectValue
-                      placeholder={
-                        isLoadingRoles ? "Loading roles..." : "Select a role"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.length === 0 && !isLoadingRoles && (
-                      <div className="text-muted-foreground px-2 py-1.5 text-sm">
-                        No roles available
-                      </div>
-                    )}
-                    {roles.map((role) => (
-                      <SelectItem key={role.value} value={role.value}>
-                        {role.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  fetchOptions={fetchRoles}
+                  disabled={isSubmitting}
+                  placeholder="Search a role..."
+                  searchPlaceholder="Search roles by name or key..."
+                  emptyMessage="No roles found."
+                />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
