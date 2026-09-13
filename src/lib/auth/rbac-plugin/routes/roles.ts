@@ -367,6 +367,37 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
                 },
               },
             },
+            404: {
+              description: "Permission not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["PERMISSION_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is PERMISSION_NOT_FOUND.",
+                        properties: {
+                          missingPermissionIds: {
+                            type: "array",
+                            description: "The permission ids that were not found.",
+                            items: { type: "string" },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -412,7 +443,9 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
 
         if (missingPermissionIds.length > 0) {
           throw new APIError("NOT_FOUND", {
-            message: `Permission with id ${missingPermissionIds[0]} not found`,
+            code: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+            details: { missingPermissionIds },
           })
         }
       }
@@ -524,7 +557,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
               },
             },
             404: {
-              description: "Role not found",
+              description: "Role, permission or user not found",
               content: {
                 "application/json": {
                   schema: {
@@ -532,11 +565,36 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_NOT_FOUND"],
+                        enum: [
+                          "ROLE_NOT_FOUND",
+                          "PERMISSION_NOT_FOUND",
+                          "USER_NOT_FOUND",
+                        ],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        enum: [
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                        ],
+                      },
+                      details: {
+                        type: "object",
+                        description:
+                          "Present when code is PERMISSION_NOT_FOUND or USER_NOT_FOUND.",
+                        properties: {
+                          missingPermissionIds: {
+                            type: "array",
+                            description: "The permission ids that were not found.",
+                            items: { type: "string" },
+                          },
+                          missingUserIds: {
+                            type: "array",
+                            description: "The user ids that were not found.",
+                            items: { type: "string" },
+                          },
+                        },
                       },
                     },
                   },
@@ -633,7 +691,9 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
 
         if (missingPermissionIds.length > 0) {
           throw new APIError("NOT_FOUND", {
-            message: `Permission with id ${missingPermissionIds[0]} not found`,
+            code: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+            details: { missingPermissionIds },
           })
         }
       }
@@ -662,7 +722,9 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
 
         if (missingUserIds.length > 0) {
           throw new APIError("NOT_FOUND", {
-            message: `User with id ${missingUserIds[0]} not found`,
+            code: RBAC_ERROR_CODES.USER_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+            details: { missingUserIds },
           })
         }
       }
@@ -789,7 +851,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
               },
             },
             404: {
-              description: "Role not found",
+              description: "Role, permission or user not found",
               content: {
                 "application/json": {
                   schema: {
@@ -797,11 +859,36 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_NOT_FOUND"],
+                        enum: [
+                          "ROLE_NOT_FOUND",
+                          "PERMISSION_NOT_FOUND",
+                          "USER_NOT_FOUND",
+                        ],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        enum: [
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                        ],
+                      },
+                      details: {
+                        type: "object",
+                        description:
+                          "Present when code is PERMISSION_NOT_FOUND or USER_NOT_FOUND.",
+                        properties: {
+                          missingPermissionIds: {
+                            type: "array",
+                            description: "The permission ids that were not found.",
+                            items: { type: "string" },
+                          },
+                          missingUserIds: {
+                            type: "array",
+                            description: "The user ids that were not found.",
+                            items: { type: "string" },
+                          },
+                        },
                       },
                     },
                   },
@@ -817,19 +904,11 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: [
-                          "ROLE_ALREADY_EXISTS",
-                          "PERMISSION_NOT_FOUND",
-                          "USER_NOT_FOUND",
-                        ],
+                        enum: ["ROLE_ALREADY_EXISTS"],
                       },
                       message: {
                         type: "string",
-                        enum: [
-                          RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message,
-                          "Permission with id ${permissionId} not found",
-                          "User with id ${userId} not found",
-                        ],
+                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message],
                       },
                     },
                   },
@@ -902,7 +981,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
 
         if (missingPermissionIds.length > 0) {
           throw new APIError("NOT_FOUND", {
-            message: `Permission with id ${missingPermissionIds[0]} not found`,
+            code: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+            details: { missingPermissionIds },
           })
         }
       }
@@ -917,7 +998,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
 
         if (missingUserIds.length > 0) {
           throw new APIError("NOT_FOUND", {
-            message: `User with id ${missingUserIds[0]} not found`,
+            code: RBAC_ERROR_CODES.USER_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+            details: { missingUserIds },
           })
         }
       }

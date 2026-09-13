@@ -486,6 +486,17 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
+                      details: {
+                        type: "object",
+                        description: "Present when code is ROLE_NOT_FOUND.",
+                        properties: {
+                          missingRoleIds: {
+                            type: "array",
+                            description: "The role ids that were not found.",
+                            items: { type: "string" },
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -532,7 +543,9 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
 
         if (missingRoleIds.length > 0) {
           throw new APIError("NOT_FOUND", {
-            message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${missingRoleIds[0]}`,
+            code: RBAC_ERROR_CODES.ROLE_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+            details: { missingRoleIds },
           })
         }
       }
@@ -854,6 +867,17 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                       },
+                      details: {
+                        type: "object",
+                        description: "Present when code is ROLE_NOT_FOUND.",
+                        properties: {
+                          missingRoleIds: {
+                            type: "array",
+                            description: "The role ids that were not found.",
+                            items: { type: "string" },
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -902,7 +926,9 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
 
           if (missingRoleIds.length > 0) {
             throw new APIError("NOT_FOUND", {
-              message: `${RBAC_ERROR_CODES.ROLE_NOT_FOUND}: ${missingRoleIds[0]}`,
+              code: RBAC_ERROR_CODES.ROLE_NOT_FOUND.code,
+              message: RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+              details: { missingRoleIds },
             })
           }
         }
