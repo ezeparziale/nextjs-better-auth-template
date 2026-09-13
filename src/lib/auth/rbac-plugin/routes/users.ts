@@ -622,6 +622,8 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
  * `authClient.rbac.getUsersOptions`
  */
 export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => {
+  const paginationConfig = createPaginationConfig(options)
+
   return createAuthEndpoint(
     "/rbac/get-users-options",
     {
@@ -751,29 +753,32 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
         })
       }
 
+      const search = ctx.query?.search?.trim()
+      if (search) {
+        where.push({
+          field: "email",
+          operator: "contains",
+          value: search,
+        })
+      }
+
+      // Move the search term and limit down to the database
+      const { limit } = getPaginationParams(
+        ctx.query?.limit,
+        undefined,
+        paginationConfig,
+      )
+
       try {
-        const users = await ctx.context.adapter.findMany<User>({
+        const filteredUsers = await ctx.context.adapter.findMany<User>({
           model: "user",
           where: where.length ? where : undefined,
+          limit,
           sortBy: {
             field: "email",
             direction: "asc",
           },
         })
-
-        // Filter by search term if provided
-        let filteredUsers = users
-        if (ctx.query?.search) {
-          const searchLower = ctx.query.search.toLowerCase()
-          filteredUsers = users.filter((user) =>
-            user.email.toLowerCase().includes(searchLower),
-          )
-        }
-
-        // Apply limit if provided
-        if (ctx.query?.limit && ctx.query.limit > 0) {
-          filteredUsers = filteredUsers.slice(0, ctx.query.limit)
-        }
 
         const options = filteredUsers.map((user) => ({
           value: user.id,

@@ -1213,6 +1213,8 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
  * `authClient.rbac.getRolesOptions`
  */
 export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => {
+  const paginationConfig = createPaginationConfig(options)
+
   return createAuthEndpoint(
     "/rbac/get-roles-options",
     {
@@ -1229,7 +1231,7 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
             description: "Filter to return only active roles. Defaults to true.",
           }),
         search: z.string().optional().meta({
-          description: "Search term to filter roles by name.",
+          description: "Search term to filter roles by name or key.",
         }),
         limit: z
           .string()
@@ -1341,29 +1343,40 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
         })
       }
 
+      const search = ctx.query?.search?.trim()
+      if (search) {
+        where.push(
+          {
+            field: "name",
+            operator: "contains",
+            value: search,
+          },
+          {
+            field: "key",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+        )
+      }
+
+      // Move the search term and limit down to the database
+      const { limit } = getPaginationParams(
+        ctx.query?.limit,
+        undefined,
+        paginationConfig,
+      )
+
       try {
-        const roles = await ctx.context.adapter.findMany<Role>({
+        const filteredRoles = await ctx.context.adapter.findMany<Role>({
           model: "role",
           where: where.length ? where : undefined,
+          limit,
           sortBy: {
             field: "name",
             direction: "asc",
           },
         })
-
-        // Filter by search term if provided
-        let filteredRoles = roles
-        if (ctx.query?.search) {
-          const searchLower = ctx.query.search.toLowerCase()
-          filteredRoles = roles.filter((role) =>
-            role.name.toLowerCase().includes(searchLower),
-          )
-        }
-
-        // Apply limit if provided
-        if (ctx.query?.limit && ctx.query.limit > 0) {
-          filteredRoles = filteredRoles.slice(0, ctx.query.limit)
-        }
 
         const options = filteredRoles.map((role) => ({
           value: role.id,

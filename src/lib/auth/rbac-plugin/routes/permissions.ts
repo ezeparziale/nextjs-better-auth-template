@@ -870,6 +870,8 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
  * `authClient.rbac.getPermissionsOptions`
  */
 export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: O) => {
+  const paginationConfig = createPaginationConfig(options)
+
   return createAuthEndpoint(
     "/rbac/get-permissions-options",
     {
@@ -886,7 +888,7 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
             description: "Filter to return only active permissions. Defaults to true.",
           }),
         search: z.string().optional().meta({
-          description: "Search term to filter permissions by name.",
+          description: "Search term to filter permissions by name or key.",
         }),
         limit: z
           .string()
@@ -998,29 +1000,40 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
         })
       }
 
+      const search = ctx.query?.search?.trim()
+      if (search) {
+        where.push(
+          {
+            field: "name",
+            operator: "contains",
+            value: search,
+          },
+          {
+            field: "key",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+        )
+      }
+
+      // Move the search term and limit down to the database
+      const { limit } = getPaginationParams(
+        ctx.query?.limit,
+        undefined,
+        paginationConfig,
+      )
+
       try {
-        const permissions = await ctx.context.adapter.findMany<Permission>({
+        const filteredPermissions = await ctx.context.adapter.findMany<Permission>({
           model: "permission",
           where: where.length ? where : undefined,
+          limit,
           sortBy: {
             field: "name",
             direction: "asc",
           },
         })
-
-        // Filter by search term if provided
-        let filteredPermissions = permissions
-        if (ctx.query?.search) {
-          const searchLower = ctx.query.search.toLowerCase()
-          filteredPermissions = permissions.filter((permission) =>
-            permission.name.toLowerCase().includes(searchLower),
-          )
-        }
-
-        // Apply limit if provided
-        if (ctx.query?.limit && ctx.query.limit > 0) {
-          filteredPermissions = filteredPermissions.slice(0, ctx.query.limit)
-        }
 
         const options = filteredPermissions.map((permission) => ({
           value: permission.id,
