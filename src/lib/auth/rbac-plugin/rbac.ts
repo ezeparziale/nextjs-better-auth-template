@@ -15,6 +15,8 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
     defaultLimit: 10,
     maxLimit: 100,
     defaultOffset: 0,
+    // Batch assignments
+    maxBatchAssignmentSize: 500,
     // Seed
     seedPermissions: [],
     seedRoles: [],

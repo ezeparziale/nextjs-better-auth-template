@@ -7,6 +7,7 @@ export const RBAC_ERROR_CODES = defineErrorCodes({
   ROLE_ALREADY_EXISTS: "Role with this key already exists.",
   INVALID_PERMISSION: "Invalid permission.",
   INVALID_ROLE: "Invalid role.",
+  BATCH_TOO_LARGE: "Too many ids provided in a single request.",
   CANNOT_DELETE_ASSIGNED_PERMISSION:
     "Cannot delete permission that is assigned to roles.",
   CANNOT_DELETE_ASSIGNED_ROLE: "Cannot delete role that is assigned to users.",

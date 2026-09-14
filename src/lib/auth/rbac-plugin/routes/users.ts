@@ -12,7 +12,7 @@ import type {
   UserRole,
   UserRoleCreateInput,
 } from "../types"
-import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
+import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
 import { sortByRole } from "./sort-schemas"
 
 /**
@@ -469,6 +469,45 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "User or role not found",
               content: {
@@ -531,8 +570,8 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
-      // Dedupe role ids to avoid duplicate assignments
-      const roleIds = dedupeIds(ctx.body.roleIds)
+      // Dedupe role ids and enforce the batch size cap
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
 
       // Validate all roles exist (single batched query)
       if (roleIds.length > 0) {
@@ -849,6 +888,45 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "User or role not found",
               content: {
@@ -913,8 +991,8 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
 
       // Update roles if provided
       if (ctx.body.roleIds !== undefined) {
-        // Dedupe role ids to avoid duplicate assignments
-        const roleIds = dedupeIds(ctx.body.roleIds)
+        // Dedupe role ids and enforce the batch size cap
+        const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
 
         // Validate all roles exist (single batched query)
         if (roleIds.length > 0) {

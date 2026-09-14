@@ -151,6 +151,14 @@ export interface RBACPluginOptions {
    */
   maxOffset?: number
   /**
+   * Maximum number of ids accepted in a single request for endpoints that take
+   * arrays of ids (bulk assignments, `createRole`, `updateRole`, `createPermission`,
+   * `updatePermission`, `setUserRoles`, `updateUser`). Duplicates are removed before
+   * enforcing this cap.
+   * @default 500
+   */
+  maxBatchAssignmentSize?: number
+  /**
    * Permissions that will be seeded (created) when initializing the plugin
    * @example
    * ```ts

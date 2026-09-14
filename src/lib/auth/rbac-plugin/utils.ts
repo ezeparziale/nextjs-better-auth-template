@@ -1,4 +1,7 @@
 import type { Where } from "better-auth"
+import { APIError } from "better-auth/api"
+import { RBAC_ERROR_CODES } from "./error-codes"
+import type { RBACPluginOptions } from "./types"
 
 /**
  * Validates and applies pagination limits.
@@ -38,6 +41,37 @@ export function getPaginationParams(
  */
 export function dedupeIds(ids: string[]): string[] {
   return [...new Set(ids)]
+}
+
+/**
+ * Deduplicates an array of ids and enforces the batch size cap
+ * (`maxBatchAssignmentSize`, default 500). Duplicates are removed before the
+ * cap is checked, so `["a", "a", "a"]` counts as 1.
+ *
+ * Throws `BAD_REQUEST` + `BATCH_TOO_LARGE` when the deduplicated list exceeds
+ * the cap.
+ */
+export function normalizeIdBatch(
+  ids: string[],
+  options: Pick<RBACPluginOptions, "maxBatchAssignmentSize">,
+  label: string,
+): string[] {
+  const unique = dedupeIds(ids)
+  const maxSize = options.maxBatchAssignmentSize ?? 500
+
+  if (unique.length > maxSize) {
+    throw new APIError("BAD_REQUEST", {
+      code: RBAC_ERROR_CODES.BATCH_TOO_LARGE.code,
+      message: RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+      details: {
+        ids: label,
+        provided: unique.length,
+        maxBatchAssignmentSize: maxSize,
+      },
+    })
+  }
+
+  return unique
 }
 
 /**

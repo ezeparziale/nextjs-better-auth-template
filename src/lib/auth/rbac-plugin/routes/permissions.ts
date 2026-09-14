@@ -17,7 +17,7 @@ import type {
   RolePermission,
   RolePermissionCreateInput,
 } from "../types"
-import { dedupeIds, findMissingIds, getPaginationParams } from "../utils"
+import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
 import { validateKey } from "../validation"
 import { sortByPermission, sortByRole } from "./sort-schemas"
 
@@ -348,7 +348,7 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
               },
             },
             400: {
-              description: "Permission already exists",
+              description: "Permission already exists or batch size cap was exceeded",
               content: {
                 "application/json": {
                   schema: {
@@ -356,11 +356,33 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_ALREADY_EXISTS"],
+                        enum: ["PERMISSION_ALREADY_EXISTS", "BATCH_TOO_LARGE"],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message],
+                        enum: [
+                          RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
+                          RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                        ],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
                       },
                     },
                   },
@@ -428,8 +450,10 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
         throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS)
       }
 
-      // Dedupe role ids to avoid duplicate assignments
-      const roleIds = ctx.body.roleIds ? dedupeIds(ctx.body.roleIds) : undefined
+      // Dedupe role ids and enforce the batch size cap
+      const roleIds = ctx.body.roleIds
+        ? normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+        : undefined
 
       // If roleIds provided, validate they exist (single batched query)
       if (roleIds && roleIds.length > 0) {
@@ -583,7 +607,8 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
               },
             },
             400: {
-              description: "Permission key already exists",
+              description:
+                "Permission key already exists or batch size cap was exceeded",
               content: {
                 "application/json": {
                   schema: {
@@ -591,11 +616,33 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_ALREADY_EXISTS"],
+                        enum: ["PERMISSION_ALREADY_EXISTS", "BATCH_TOO_LARGE"],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message],
+                        enum: [
+                          RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
+                          RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                        ],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
                       },
                     },
                   },
@@ -652,8 +699,10 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         }
       }
 
-      // Dedupe role ids to avoid duplicate assignments
-      const roleIds = ctx.body.roleIds ? dedupeIds(ctx.body.roleIds) : undefined
+      // Dedupe role ids and enforce the batch size cap
+      const roleIds = ctx.body.roleIds
+        ? normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+        : undefined
 
       // If roleIds provided, validate they exist (single batched query)
       if (roleIds) {

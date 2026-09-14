@@ -13,7 +13,7 @@ import type {
   UserRole,
   UserRoleCreateInput,
 } from "../types"
-import { findMissingIds } from "../utils"
+import { findMissingIds, normalizeIdBatch } from "../utils"
 
 /**
  * ### Endpoint
@@ -717,6 +717,45 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "User or role not found",
               content: {
@@ -762,6 +801,8 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
         })
       }
 
+      const userIds = normalizeIdBatch(ctx.body.userIds, options, "userIds")
+
       // Check if role exists
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
@@ -778,11 +819,7 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
       }
 
       // Validate all users exist (single batched query)
-      const missingUserIds = await findMissingIds(
-        ctx.context.adapter,
-        "user",
-        ctx.body.userIds,
-      )
+      const missingUserIds = await findMissingIds(ctx.context.adapter, "user", userIds)
 
       if (missingUserIds.length > 0) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
@@ -794,7 +831,7 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
         let assignedCount = 0
         let skippedCount = 0
 
-        for (const userId of ctx.body.userIds) {
+        for (const userId of userIds) {
           // Skip if assignment already exists
           const existingAssignment = await db.findOne<UserRole>({
             model: "userRole",
@@ -924,6 +961,45 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "Role or user not found",
               content: {
@@ -968,6 +1044,8 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
         })
       }
 
+      const userIds = normalizeIdBatch(ctx.body.userIds, options, "userIds")
+
       // Check if role exists
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
@@ -984,11 +1062,7 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
       }
 
       // Validate all users exist (single batched query)
-      const missingUserIds = await findMissingIds(
-        ctx.context.adapter,
-        "user",
-        ctx.body.userIds,
-      )
+      const missingUserIds = await findMissingIds(ctx.context.adapter, "user", userIds)
 
       if (missingUserIds.length > 0) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
@@ -1005,7 +1079,7 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
           {
             field: "userId",
             operator: "in",
-            value: ctx.body.userIds,
+            value: userIds,
           },
         ],
       })
@@ -1079,6 +1153,45 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "Role or permission not found",
               content: {
@@ -1124,6 +1237,12 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         })
       }
 
+      const permissionIds = normalizeIdBatch(
+        ctx.body.permissionIds,
+        options,
+        "permissionIds",
+      )
+
       // Check if role exists
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
@@ -1143,7 +1262,7 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
       const missingPermissionIds = await findMissingIds(
         ctx.context.adapter,
         "permission",
-        ctx.body.permissionIds,
+        permissionIds,
       )
 
       if (missingPermissionIds.length > 0) {
@@ -1156,7 +1275,7 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         let assignedCount = 0
         let skippedCount = 0
 
-        for (const permissionId of ctx.body.permissionIds) {
+        for (const permissionId of permissionIds) {
           // Skip if assignment already exists
           const existingAssignment = await db.findOne<RolePermission>({
             model: "rolePermission",
@@ -1286,6 +1405,45 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "Role or permission not found",
               content: {
@@ -1330,6 +1488,12 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
         })
       }
 
+      const permissionIds = normalizeIdBatch(
+        ctx.body.permissionIds,
+        options,
+        "permissionIds",
+      )
+
       // Check if role exists
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
@@ -1349,7 +1513,7 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
       const missingPermissionIds = await findMissingIds(
         ctx.context.adapter,
         "permission",
-        ctx.body.permissionIds,
+        permissionIds,
       )
 
       if (missingPermissionIds.length > 0) {
@@ -1367,7 +1531,7 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
           {
             field: "permissionId",
             operator: "in",
-            value: ctx.body.permissionIds,
+            value: permissionIds,
           },
         ],
       })
@@ -1437,6 +1601,45 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "User not found",
               content: {
@@ -1478,6 +1681,8 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
         })
       }
 
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+
       // Check if user exists
       const user = await ctx.context.adapter.findOne<User>({
         model: "user",
@@ -1504,7 +1709,7 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
           {
             field: "roleId",
             operator: "in",
-            value: ctx.body.roleIds,
+            value: roleIds,
           },
         ],
       })
@@ -1574,6 +1779,45 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                 },
               },
             },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "Permission not found",
               content: {
@@ -1615,6 +1859,8 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
         })
       }
 
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+
       // Check if permission exists
       const permission = await ctx.context.adapter.findOne<Permission>({
         model: "permission",
@@ -1641,7 +1887,7 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
           {
             field: "roleId",
             operator: "in",
-            value: ctx.body.roleIds,
+            value: roleIds,
           },
         ],
       })
