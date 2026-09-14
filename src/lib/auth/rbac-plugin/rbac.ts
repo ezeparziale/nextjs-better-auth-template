@@ -89,6 +89,23 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       if (opts && (opts.seedPermissions || opts.seedRoles)) {
         await seedRBACData(ctx, opts, createValidationOptions(opts))
       }
+      // Clean up userRole rows when a user is deleted
+      return {
+        options: {
+          databaseHooks: {
+            user: {
+              delete: {
+                before: async (user) => {
+                  await ctx.adapter.deleteMany({
+                    model: "userRole",
+                    where: [{ field: "userId", value: user.id }],
+                  })
+                },
+              },
+            },
+          },
+        },
+      }
     },
   } satisfies BetterAuthPlugin
 }
