@@ -325,8 +325,7 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
           description: "Optional array of permission IDs to assign to the role.",
         }),
         isActive: z.boolean().optional().meta({
-          description:
-            "Optional flag to set permission active status. Defaults to true.",
+          description: "Optional flag to set role active status. Defaults to true.",
         }),
       }),
       metadata: {
@@ -814,7 +813,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
           description: "The new description of the role.",
         }),
         isActive: z.boolean().optional().meta({
-          description: "Optional flag to set permission active status.",
+          description: "Optional flag to set role active status.",
         }),
         permissionIds: z.array(z.string()).optional().meta({
           description:
