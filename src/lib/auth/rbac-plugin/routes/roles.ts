@@ -1167,6 +1167,10 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
         id: z.string().meta({
           description: "The id of the role to delete.",
         }),
+        skipAssignmentCheck: z.boolean().optional().meta({
+          description:
+            "Skips the assignment check and deletes the role even if it is assigned to users. Defaults to false.",
+        }),
       }),
       metadata: {
         openapi: {
@@ -1212,6 +1216,38 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                 },
               },
             },
+            400: {
+              description:
+                "Role is assigned to users and the assignment check was not skipped",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["CANNOT_DELETE_ASSIGNED_ROLE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_ROLE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description:
+                          "Present when code is CANNOT_DELETE_ASSIGNED_ROLE.",
+                        properties: {
+                          assignedUsers: {
+                            type: "number",
+                            description: "The number of users assigned to the role.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -1238,6 +1274,22 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
 
       if (!existingRole) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // If not skipping the check, block deletion when the role is assigned to users
+      if (!ctx.body.skipAssignmentCheck) {
+        const assignedUsers = await ctx.context.adapter.count({
+          model: "userRole",
+          where: [{ field: "roleId", value: ctx.body.id }],
+        })
+
+        if (assignedUsers > 0) {
+          throw new APIError("BAD_REQUEST", {
+            code: RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_ROLE.code,
+            message: RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_ROLE.message,
+            details: { assignedUsers },
+          })
+        }
       }
 
       // Delete associated role-permission mappings to avoid orphans

@@ -778,6 +778,10 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
         id: z.string().meta({
           description: "The id of the permission to delete.",
         }),
+        skipAssignmentCheck: z.boolean().optional().meta({
+          description:
+            "Skips the assignment check and deletes the permission even if it is assigned to roles. Defaults to false.",
+        }),
       }),
       metadata: {
         openapi: {
@@ -823,6 +827,41 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                 },
               },
             },
+            400: {
+              description:
+                "Permission is assigned to roles and the assignment check was not skipped",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["CANNOT_DELETE_ASSIGNED_PERMISSION"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_PERMISSION.message,
+                        ],
+                      },
+                      details: {
+                        type: "object",
+                        description:
+                          "Present when code is CANNOT_DELETE_ASSIGNED_PERMISSION.",
+                        properties: {
+                          assignedRoles: {
+                            type: "number",
+                            description:
+                              "The number of roles the permission is assigned to.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -849,6 +888,22 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
 
       if (!existingPermission) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
+
+      // If not skipping the check, block deletion when the permission is assigned to roles
+      if (!ctx.body.skipAssignmentCheck) {
+        const assignedRoles = await ctx.context.adapter.count({
+          model: "rolePermission",
+          where: [{ field: "permissionId", value: ctx.body.id }],
+        })
+
+        if (assignedRoles > 0) {
+          throw new APIError("BAD_REQUEST", {
+            code: RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_PERMISSION.code,
+            message: RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_PERMISSION.message,
+            details: { assignedRoles },
+          })
+        }
       }
 
       // Delete associated role-permission mappings to avoid orphans
