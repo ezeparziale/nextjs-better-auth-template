@@ -101,25 +101,17 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
                       permissions: {
                         type: "array",
                         items: {
-                          type: "object",
-                          properties: {
-                            permissions: {
-                              type: "array",
-                              items: {
-                                $ref: "#/components/schemas/Permission",
-                              },
-                            },
-                            total: {
-                              type: "number",
-                            },
-                            limit: {
-                              type: "number",
-                            },
-                            offset: {
-                              type: "number",
-                            },
-                          },
+                          $ref: "#/components/schemas/Permission",
                         },
+                      },
+                      total: {
+                        type: "number",
+                      },
+                      limit: {
+                        type: "number",
+                      },
+                      offset: {
+                        type: "number",
                       },
                     },
                   },
