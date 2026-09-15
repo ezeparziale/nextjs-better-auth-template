@@ -1237,6 +1237,9 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
         })
         .refine((data) => data.permissionId || data.permissionKey, {
           message: "Either permissionId or permissionKey is required.",
+        })
+        .refine((data) => !(data.permissionId && data.permissionKey), {
+          message: "Provide either permissionId or permissionKey, not both.",
         }),
       metadata: {
         openapi: {

@@ -1631,6 +1631,9 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
         })
         .refine((data) => data.roleId || data.roleKey, {
           message: "Either roleId or roleKey is required.",
+        })
+        .refine((data) => !(data.roleId && data.roleKey), {
+          message: "Provide either roleId or roleKey, not both.",
         }),
       metadata: {
         openapi: {
@@ -1876,6 +1879,9 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
         })
         .refine((data) => data.roleId || data.roleKey, {
           message: "Either roleId or roleKey is required.",
+        })
+        .refine((data) => !(data.roleId && data.roleKey), {
+          message: "Provide either roleId or roleKey, not both.",
         }),
       metadata: {
         openapi: {
