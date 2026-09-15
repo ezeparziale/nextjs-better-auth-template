@@ -792,18 +792,8 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.userIds.length === 0) {
-        return ctx.json({
-          success: true,
-          message: "No users provided",
-          assignedCount: 0,
-          skippedCount: 0,
-        })
-      }
-
-      const userIds = normalizeIdBatch(ctx.body.userIds, options, "userIds")
-
-      // Check if role exists
+      // Check if role exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
         where: [
@@ -817,6 +807,17 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      if (ctx.body.userIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No users provided",
+          assignedCount: 0,
+          skippedCount: 0,
+        })
+      }
+
+      const userIds = normalizeIdBatch(ctx.body.userIds, options, "userIds")
 
       // Validate all users exist (single batched query)
       const missingUserIds = await findMissingIds(ctx.context.adapter, "user", userIds)
@@ -1036,17 +1037,8 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.userIds.length === 0) {
-        return ctx.json({
-          success: true,
-          message: "No users provided",
-          removedCount: 0,
-        })
-      }
-
-      const userIds = normalizeIdBatch(ctx.body.userIds, options, "userIds")
-
-      // Check if role exists
+      // Check if role exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
         where: [
@@ -1060,6 +1052,16 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      if (ctx.body.userIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No users provided",
+          removedCount: 0,
+        })
+      }
+
+      const userIds = normalizeIdBatch(ctx.body.userIds, options, "userIds")
 
       // Validate all users exist (single batched query)
       const missingUserIds = await findMissingIds(ctx.context.adapter, "user", userIds)
@@ -1228,6 +1230,22 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
 
       ensureUserIsAdmin(session)
 
+      // Check if role exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
+      const role = await ctx.context.adapter.findOne<Role>({
+        model: "role",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.roleId,
+          },
+        ],
+      })
+
+      if (!role) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
       if (ctx.body.permissionIds.length === 0) {
         return ctx.json({
           success: true,
@@ -1242,21 +1260,6 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         options,
         "permissionIds",
       )
-
-      // Check if role exists
-      const role = await ctx.context.adapter.findOne<Role>({
-        model: "role",
-        where: [
-          {
-            field: "id",
-            value: ctx.body.roleId,
-          },
-        ],
-      })
-
-      if (!role) {
-        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
-      }
 
       // Validate all permissions exist (single batched query)
       const missingPermissionIds = await findMissingIds(
@@ -1480,21 +1483,8 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.permissionIds.length === 0) {
-        return ctx.json({
-          success: true,
-          message: "No permissions provided",
-          removedCount: 0,
-        })
-      }
-
-      const permissionIds = normalizeIdBatch(
-        ctx.body.permissionIds,
-        options,
-        "permissionIds",
-      )
-
-      // Check if role exists
+      // Check if role exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
       const role = await ctx.context.adapter.findOne<Role>({
         model: "role",
         where: [
@@ -1508,6 +1498,20 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      if (ctx.body.permissionIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No permissions provided",
+          removedCount: 0,
+        })
+      }
+
+      const permissionIds = normalizeIdBatch(
+        ctx.body.permissionIds,
+        options,
+        "permissionIds",
+      )
 
       // Validate all permissions exist (single batched query)
       const missingPermissionIds = await findMissingIds(
@@ -1673,17 +1677,8 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.roleIds.length === 0) {
-        return ctx.json({
-          success: true,
-          message: "No roles provided",
-          removedCount: 0,
-        })
-      }
-
-      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
-
-      // Check if user exists
+      // Check if user exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
       const user = await ctx.context.adapter.findOne<User>({
         model: "user",
         where: [
@@ -1697,6 +1692,16 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
       if (!user) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
+
+      if (ctx.body.roleIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No roles provided",
+          removedCount: 0,
+        })
+      }
+
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
 
       // Delete assignments
       const removedCount = await ctx.context.adapter.deleteMany({
@@ -1851,17 +1856,8 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
 
       ensureUserIsAdmin(session)
 
-      if (ctx.body.roleIds.length === 0) {
-        return ctx.json({
-          success: true,
-          message: "No roles provided",
-          removedCount: 0,
-        })
-      }
-
-      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
-
-      // Check if permission exists
+      // Check if permission exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
       const permission = await ctx.context.adapter.findOne<Permission>({
         model: "permission",
         where: [
@@ -1875,6 +1871,16 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
       if (!permission) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
+
+      if (ctx.body.roleIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No roles provided",
+          removedCount: 0,
+        })
+      }
+
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
 
       // Delete assignments
       const removedCount = await ctx.context.adapter.deleteMany({
