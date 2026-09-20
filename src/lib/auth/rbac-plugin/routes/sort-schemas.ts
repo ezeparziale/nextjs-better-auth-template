@@ -35,3 +35,10 @@ const sortSchema = <const T extends readonly string[]>(fields: T, subject: strin
 export const sortByRole = sortSchema(ROLE_FIELDS, "role")
 export const sortByPermission = sortSchema(PERMISSION_FIELDS, "permission")
 export const sortByUser = sortSchema(USER_FIELDS, "user")
+
+export const sortDirection = z
+  .enum(["asc", "desc"])
+  .meta({
+    description: "The direction to sort by. Defaults to asc.",
+  })
+  .optional()

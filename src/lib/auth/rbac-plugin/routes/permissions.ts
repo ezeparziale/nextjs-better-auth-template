@@ -19,7 +19,7 @@ import type {
 } from "../types"
 import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
 import { validateKey } from "../validation"
-import { sortByPermission, sortByRole } from "./sort-schemas"
+import { sortByPermission, sortByRole, sortDirection } from "./sort-schemas"
 
 /**
  * ### Endpoint
@@ -72,12 +72,7 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
           .optional()
           .default(paginationConfig.defaultOffset),
         sortBy: sortByPermission,
-        sortDirection: z
-          .enum(["asc", "desc"])
-          .meta({
-            description: "The direction to sort by.",
-          })
-          .optional(),
+        sortDirection,
         filters: z
           .string()
           .meta({
@@ -1017,12 +1012,7 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
             description: "Maximum number of results to return.",
           }),
         sortBy: sortByPermission,
-        sortDirection: z
-          .enum(["asc", "desc"])
-          .meta({
-            description: "The direction to sort by. Defaults to asc.",
-          })
-          .optional(),
+        sortDirection,
       }),
       metadata: {
         openapi: {
@@ -1247,12 +1237,7 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
             .optional()
             .default(paginationConfig.defaultOffset),
           sortBy: sortByRole,
-          sortDirection: z
-            .enum(["asc", "desc"])
-            .meta({
-              description: "The direction to sort by.",
-            })
-            .optional(),
+          sortDirection,
         })
         .refine((data) => data.permissionId || data.permissionKey, {
           message: "Either permissionId or permissionKey is required.",

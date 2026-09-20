@@ -27,7 +27,7 @@ import {
   normalizeIdBatch,
 } from "../utils"
 import { validateKey } from "../validation"
-import { sortByPermission, sortByRole, sortByUser } from "./sort-schemas"
+import { sortByPermission, sortByRole, sortByUser, sortDirection } from "./sort-schemas"
 
 /**
  * ### Endpoint
@@ -80,12 +80,7 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
           .optional()
           .default(paginationConfig.defaultOffset),
         sortBy: sortByRole,
-        sortDirection: z
-          .enum(["asc", "desc"])
-          .meta({
-            description: "The direction to sort by.",
-          })
-          .optional(),
+        sortDirection,
         filters: z
           .string()
           .meta({
@@ -1427,12 +1422,7 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
             description: "Maximum number of results to return.",
           }),
         sortBy: sortByRole,
-        sortDirection: z
-          .enum(["asc", "desc"])
-          .meta({
-            description: "The direction to sort by. Defaults to asc.",
-          })
-          .optional(),
+        sortDirection,
       }),
       metadata: {
         openapi: {
@@ -1657,12 +1647,7 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
             .optional()
             .default(paginationConfig.defaultOffset),
           sortBy: sortByPermission,
-          sortDirection: z
-            .enum(["asc", "desc"])
-            .meta({
-              description: "The direction to sort by.",
-            })
-            .optional(),
+          sortDirection,
         })
         .refine((data) => data.roleId || data.roleKey, {
           message: "Either roleId or roleKey is required.",
@@ -1905,12 +1890,7 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
             .optional()
             .default(paginationConfig.defaultOffset),
           sortBy: sortByUser,
-          sortDirection: z
-            .enum(["asc", "desc"])
-            .meta({
-              description: "The direction to sort by.",
-            })
-            .optional(),
+          sortDirection,
         })
         .refine((data) => data.roleId || data.roleKey, {
           message: "Either roleId or roleKey is required.",

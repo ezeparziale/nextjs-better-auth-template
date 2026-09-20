@@ -13,7 +13,7 @@ import type {
   UserRoleCreateInput,
 } from "../types"
 import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
-import { sortByRole, sortByUser } from "./sort-schemas"
+import { sortByRole, sortByUser, sortDirection } from "./sort-schemas"
 
 /**
  * ### Endpoint
@@ -69,12 +69,7 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
           .optional()
           .default(paginationConfig.defaultOffset),
         sortBy: sortByRole,
-        sortDirection: z
-          .enum(["asc", "desc"])
-          .meta({
-            description: "The direction to sort by.",
-          })
-          .optional(),
+        sortDirection,
       }),
       metadata: {
         openapi: {
@@ -694,12 +689,7 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
             description: "Maximum number of results to return.",
           }),
         sortBy: sortByUser,
-        sortDirection: z
-          .enum(["asc", "desc"])
-          .meta({
-            description: "The direction to sort by. Defaults to asc.",
-          })
-          .optional(),
+        sortDirection,
       }),
       metadata: {
         openapi: {
