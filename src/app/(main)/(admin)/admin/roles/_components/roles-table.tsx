@@ -20,6 +20,7 @@ const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   key: true,
   isActive: true,
+  assignOnJoin: true,
   createdAt: false,
   updatedAt: true,
   createdBy: false,
