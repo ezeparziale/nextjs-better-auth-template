@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 export type AsyncComboboxOption = {
   value: string
   label: string
+  subtitle?: string
 }
 
 export function AsyncCombobox({
@@ -151,7 +152,16 @@ export function AsyncCombobox({
                         value === option.value ? "opacity-100" : "opacity-0",
                       )}
                     />
-                    {option.label}
+                    {option.subtitle == null ? (
+                      option.label
+                    ) : (
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate">{option.label}</span>
+                        <span className="text-muted-foreground truncate text-xs">
+                          {option.subtitle}
+                        </span>
+                      </span>
+                    )}
                   </CommandItem>
                 ))}
                 <div className="text-muted-foreground border-t px-3 py-2 text-center text-xs">

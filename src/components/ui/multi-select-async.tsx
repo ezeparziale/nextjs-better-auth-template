@@ -28,6 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 export type MultiSelectAsyncOption = {
   value: string
   label: ReactNode
+  subtitle?: ReactNode
 }
 
 type FetchFunction = (search: string) => Promise<MultiSelectAsyncOption[]>
@@ -391,7 +392,16 @@ export function MultiSelectAsyncContent({
                       value={option.value}
                       badgeLabel={option.label}
                     >
-                      {option.label}
+                      {option.subtitle == null ? (
+                        option.label
+                      ) : (
+                        <span className="flex min-w-0 flex-col">
+                          <span className="truncate">{option.label}</span>
+                          <span className="text-muted-foreground truncate text-xs">
+                            {option.subtitle}
+                          </span>
+                        </span>
+                      )}
                     </MultiSelectAsyncItem>
                   ))}
                 </CommandGroup>
