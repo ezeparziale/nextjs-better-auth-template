@@ -151,6 +151,7 @@ model Role {
   key             String           @unique
   description     String
   is_active       Boolean          @default(true)
+  assign_on_join  Boolean          @default(false)
   created_at      DateTime         @default(now())
   updated_at      DateTime         @default(now())
   userroles       UserRole[]
