@@ -62,6 +62,7 @@ export default function AddRoleDialog({ userId }: AddRoleDialogProps) {
       return response.data.options.map((option) => ({
         value: option.value,
         label: option.label,
+        subtitle: option.key,
       }))
     }
 
@@ -86,7 +87,7 @@ export default function AddRoleDialog({ userId }: AddRoleDialogProps) {
       description="Add or remove roles for this user."
       fieldLabel="Roles"
       placeholder="Select roles"
-      searchPlaceholder="Search roles…"
+      searchPlaceholder="Search roles by name or key…"
       emptyMessage="No roles found."
       buttonText="Manage roles"
       fetchAssignedItems={fetchAssignedRoles}

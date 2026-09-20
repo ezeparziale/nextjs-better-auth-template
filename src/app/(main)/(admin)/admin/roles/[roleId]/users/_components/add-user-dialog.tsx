@@ -66,6 +66,7 @@ export default function AddUserDialog({ roleId }: AddUserDialogProps) {
       return response.data.options.map((option) => ({
         value: option.value,
         label: option.label,
+        ...(option.name ? { subtitle: option.name } : {}),
       }))
     }
 
@@ -90,7 +91,7 @@ export default function AddUserDialog({ roleId }: AddUserDialogProps) {
       description="Add or remove users for this role."
       fieldLabel="Users"
       placeholder="Select users"
-      searchPlaceholder="Search users…"
+      searchPlaceholder="Search users by name or email…"
       emptyMessage="No users found."
       buttonText="Manage users"
       initialLimit={5}

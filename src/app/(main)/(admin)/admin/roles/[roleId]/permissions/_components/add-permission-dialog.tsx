@@ -62,6 +62,7 @@ export default function AddPermissionDialog({ roleId }: AddPermissionDialogProps
       return response.data.options.map((option) => ({
         value: option.value,
         label: option.label,
+        subtitle: option.key,
       }))
     }
 
@@ -86,7 +87,7 @@ export default function AddPermissionDialog({ roleId }: AddPermissionDialogProps
       description="Add or remove permissions for this role."
       fieldLabel="Permissions"
       placeholder="Select permissions"
-      searchPlaceholder="Search permissions…"
+      searchPlaceholder="Search permissions by name or key…"
       emptyMessage="No permissions found."
       buttonText="Manage permissions"
       fetchAssignedItems={fetchAssignedPermissions}

@@ -74,7 +74,11 @@ export default function BulkAssignRoleDialog({
         return []
       }
 
-      return data.options || []
+      return data.options.map((option) => ({
+        value: option.value,
+        label: option.label,
+        subtitle: option.key,
+      }))
     },
     [],
   )
