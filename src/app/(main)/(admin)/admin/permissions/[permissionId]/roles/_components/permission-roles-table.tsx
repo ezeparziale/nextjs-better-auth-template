@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { KeyIcon, MinusIcon } from "lucide-react"
 import { authClient } from "@/lib/auth/auth-client"
-import { Permission } from "@/lib/auth/rbac-plugin"
+import { Role } from "@/lib/auth/rbac-plugin"
 import { Button } from "@/components/ui/button"
 import {
   TableDefault,
@@ -50,7 +50,7 @@ export default function PermissionRolesTable({
 
   const columns = useMemo(() => getColumns(permissionId), [permissionId])
 
-  const fetchData = useCallback<TableFetchFn<Permission>>(
+  const fetchData = useCallback<TableFetchFn<Role>>(
     async ({ pageIndex, pageSize, sorting, search }) => {
       const queryParams: ListPermissionRolesQuery = {
         limit: pageSize,
@@ -88,7 +88,7 @@ export default function PermissionRolesTable({
   )
 
   const { table, loading, searchInput, handleClearSearch, handleSearchChange } =
-    useServerDataTable<Permission>({
+    useServerDataTable<Role>({
       columns,
       fetchData,
       getRowId: (row) => row.id,
@@ -103,7 +103,7 @@ export default function PermissionRolesTable({
 
   return (
     <>
-      <TableDefault<Permission>
+      <TableDefault<Role>
         table={table}
         loading={loading}
         searchInput={searchInput}

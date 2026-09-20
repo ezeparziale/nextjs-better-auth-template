@@ -1,12 +1,12 @@
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
-import { Permission } from "@/lib/auth/rbac-plugin/types"
+import { Role } from "@/lib/auth/rbac-plugin"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader, dataTableFeatures } from "@/components/ui/data-table"
 import CellActions from "./cell-actions"
 
-const columnHelper = createColumnHelper<typeof dataTableFeatures, Permission>()
+const columnHelper = createColumnHelper<typeof dataTableFeatures, Role>()
 
 export const getColumns = (permissionId: string) =>
   columnHelper.columns([
