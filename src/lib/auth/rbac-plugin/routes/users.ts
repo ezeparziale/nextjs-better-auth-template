@@ -13,7 +13,7 @@ import type {
   UserRoleCreateInput,
 } from "../types"
 import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
-import { sortByRole } from "./sort-schemas"
+import { sortByRole, sortByUser } from "./sort-schemas"
 
 /**
  * ### Endpoint
@@ -683,7 +683,7 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
             "Filter to return only active users (not banned). Defaults to false.",
         }),
         search: z.string().optional().meta({
-          description: "Search term to filter users by email.",
+          description: "Search term to filter users by email or name.",
         }),
         limit: z
           .string()
@@ -693,13 +693,20 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
           .meta({
             description: "Maximum number of results to return.",
           }),
+        sortBy: sortByUser,
+        sortDirection: z
+          .enum(["asc", "desc"])
+          .meta({
+            description: "The direction to sort by. Defaults to asc.",
+          })
+          .optional(),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.getUsersOptions",
           summary: "Get users as select options",
           description:
-            "Get users formatted as value/label pairs for select components. Supports search and limit parameters. Only active (not banned) users are returned when onlyActive is true.",
+            "Get users formatted as value/label pairs for select components. Supports search, limit and sorting parameters. Only active (not banned) users are returned when onlyActive is true.",
           responses: {
             200: {
               description: "Successfully retrieved users options",
@@ -722,6 +729,10 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                               type: "string",
                               description: "User email address",
                             },
+                            name: {
+                              type: "string",
+                              description: "User display name",
+                            },
                           },
                         },
                       },
@@ -736,14 +747,17 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                           {
                             value: "user_123abc",
                             label: "john.doe@example.com",
+                            name: "John Doe",
                           },
                           {
                             value: "user_456def",
                             label: "jane.smith@example.com",
+                            name: "Jane Smith",
                           },
                           {
                             value: "user_789ghi",
                             label: "admin@example.com",
+                            name: null,
                           },
                         ],
                       },
@@ -761,10 +775,12 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                           {
                             value: "user_123abc",
                             label: "john.doe@example.com",
+                            name: "John Doe",
                           },
                           {
                             value: "user_456def",
                             label: "johnny.smith@example.com",
+                            name: "Johnny Smith",
                           },
                         ],
                       },
@@ -797,11 +813,20 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
 
       const search = ctx.query?.search?.trim()
       if (search) {
-        where.push({
-          field: "email",
-          operator: "contains",
-          value: search,
-        })
+        where.push(
+          {
+            field: "email",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+          {
+            field: "name",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+        )
       }
 
       // Move the search term and limit down to the database
@@ -816,15 +841,17 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
           model: "user",
           where: where.length ? where : undefined,
           limit,
+          select: ["id", "email", "name"],
           sortBy: {
-            field: "email",
-            direction: "asc",
+            field: ctx.query?.sortBy || "email",
+            direction: ctx.query?.sortDirection || "asc",
           },
         })
 
         const options = filteredUsers.map((user) => ({
           value: user.id,
           label: user.email,
+          name: user.name || null,
         }))
 
         return ctx.json({

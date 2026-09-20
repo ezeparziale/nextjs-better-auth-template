@@ -1016,13 +1016,20 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
           .meta({
             description: "Maximum number of results to return.",
           }),
+        sortBy: sortByPermission,
+        sortDirection: z
+          .enum(["asc", "desc"])
+          .meta({
+            description: "The direction to sort by. Defaults to asc.",
+          })
+          .optional(),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.getPermissionsOptions",
           summary: "Get permissions as select options",
           description:
-            "Get permissions formatted as value/label pairs for select components. Supports search and limit parameters.",
+            "Get permissions formatted as value/label pairs for select components. Supports search, limit and sorting parameters.",
           responses: {
             200: {
               description: "Successfully retrieved permissions options",
@@ -1045,6 +1052,10 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                               type: "string",
                               description: "Permission name",
                             },
+                            key: {
+                              type: "string",
+                              description: "Permission key",
+                            },
                           },
                         },
                       },
@@ -1058,15 +1069,18 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                         options: [
                           {
                             value: "perm_123abc",
-                            label: "users:read",
+                            label: "Read users",
+                            key: "users:read",
                           },
                           {
                             value: "perm_456def",
-                            label: "users:write",
+                            label: "Write users",
+                            key: "users:write",
                           },
                           {
                             value: "perm_789ghi",
-                            label: "users:delete",
+                            label: "Delete users",
+                            key: "users:delete",
                           },
                         ],
                       },
@@ -1083,11 +1097,13 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                         options: [
                           {
                             value: "perm_123abc",
-                            label: "users:read",
+                            label: "Read users",
+                            key: "users:read",
                           },
                           {
                             value: "perm_456def",
-                            label: "users:write",
+                            label: "Write users",
+                            key: "users:write",
                           },
                         ],
                       },
@@ -1125,6 +1141,7 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
             field: "name",
             operator: "contains",
             value: search,
+            connector: "OR",
           },
           {
             field: "key",
@@ -1147,15 +1164,17 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
           model: "permission",
           where: where.length ? where : undefined,
           limit,
+          select: ["id", "name", "key"],
           sortBy: {
-            field: "name",
-            direction: "asc",
+            field: ctx.query?.sortBy || "name",
+            direction: ctx.query?.sortDirection || "asc",
           },
         })
 
         const options = filteredPermissions.map((permission) => ({
           value: permission.id,
           label: permission.name,
+          key: permission.key,
         }))
 
         return ctx.json({

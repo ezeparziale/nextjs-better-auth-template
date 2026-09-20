@@ -1426,13 +1426,20 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
           .meta({
             description: "Maximum number of results to return.",
           }),
+        sortBy: sortByRole,
+        sortDirection: z
+          .enum(["asc", "desc"])
+          .meta({
+            description: "The direction to sort by. Defaults to asc.",
+          })
+          .optional(),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.getRolesOptions",
           summary: "Get roles as select options",
           description:
-            "Get roles formatted as value/label pairs for select components. Supports search and limit parameters.",
+            "Get roles formatted as value/label pairs for select components. Supports search, limit and sorting parameters.",
           responses: {
             200: {
               description: "Successfully retrieved roles options",
@@ -1455,6 +1462,10 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                               type: "string",
                               description: "Role name",
                             },
+                            key: {
+                              type: "string",
+                              description: "Role key",
+                            },
                           },
                         },
                       },
@@ -1469,14 +1480,17 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                           {
                             value: "role_123abc",
                             label: "Administrator",
+                            key: "admin",
                           },
                           {
                             value: "role_456def",
                             label: "Editor",
+                            key: "editor",
                           },
                           {
                             value: "role_789ghi",
                             label: "Viewer",
+                            key: "viewer",
                           },
                         ],
                       },
@@ -1494,10 +1508,12 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                           {
                             value: "role_123abc",
                             label: "Administrator",
+                            key: "admin",
                           },
                           {
                             value: "role_456def",
                             label: "Admin Assistant",
+                            key: "admin_assistant",
                           },
                         ],
                       },
@@ -1535,6 +1551,7 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
             field: "name",
             operator: "contains",
             value: search,
+            connector: "OR",
           },
           {
             field: "key",
@@ -1557,15 +1574,17 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
           model: "role",
           where: where.length ? where : undefined,
           limit,
+          select: ["id", "name", "key"],
           sortBy: {
-            field: "name",
-            direction: "asc",
+            field: ctx.query?.sortBy || "name",
+            direction: ctx.query?.sortDirection || "asc",
           },
         })
 
         const options = filteredRoles.map((role) => ({
           value: role.id,
           label: role.name,
+          key: role.key,
         }))
 
         return ctx.json({
