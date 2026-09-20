@@ -54,7 +54,7 @@ export default function CellActions({ row }: { row: Role }) {
             }}
           >
             <CopyPlusIcon />
-            Duplicate
+            Clone
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
