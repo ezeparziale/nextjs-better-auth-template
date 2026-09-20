@@ -10,6 +10,7 @@ interface PageHeaderProps {
   title: string
   description?: string
   actions?: React.ReactNode
+  tags?: React.ReactNode
   className?: string
   isSection?: boolean
   divider?: boolean
@@ -23,6 +24,7 @@ export function PageHeader({
   title,
   description,
   actions,
+  tags,
   className,
   isSection = false,
   divider = false,
@@ -58,14 +60,17 @@ export function PageHeader({
         </Button>
       )}
       <div className="space-y-1">
-        <h2
-          className={cn(
-            "font-semibold tracking-tight",
-            isSection ? "text-lg" : "text-2xl",
-          )}
-        >
-          {title}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2
+            className={cn(
+              "font-semibold tracking-tight",
+              isSection ? "text-lg" : "text-2xl",
+            )}
+          >
+            {title}
+          </h2>
+          {tags ? <div className="hidden sm:block">{tags}</div> : null}
+        </div>
         {description || copyValue ? (
           <div className="flex items-center gap-1.5">
             {description ? (
@@ -76,6 +81,7 @@ export function PageHeader({
             ) : null}
           </div>
         ) : null}
+        {tags ? <div className="mt-1 block sm:hidden">{tags}</div> : null}
       </div>
       {actions ? (
         <div className="flex shrink-0 items-center gap-2">{actions}</div>
