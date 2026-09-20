@@ -99,6 +99,7 @@ async function seedRoles(
           name: role.name,
           description: role.description,
           isActive: role.isActive ?? true,
+          assignOnJoin: role.assignOnJoin ?? false,
           createdBy: "system",
           updatedBy: "system",
         },
