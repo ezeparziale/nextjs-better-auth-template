@@ -1906,3 +1906,508 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
     },
   )
 }
+
+/**
+ * ### Endpoint
+ *
+ * POST `/rbac/bulk-assign-roles-to-user`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.rbacBulkAssignRolesToUser`
+ *
+ * **client:**
+ * `authClient.rbac.bulkAssignRolesToUser`
+ */
+export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: O) => {
+  return createAuthEndpoint(
+    "/rbac/bulk-assign-roles-to-user",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        userId: z.string().meta({
+          description: "The id of the user.",
+        }),
+        roleIds: z.array(z.string()).meta({
+          description: "The ids of the roles to assign.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.bulkAssignRolesToUser",
+          summary: "Assign multiple roles to a user",
+          description:
+            "Assign multiple roles to a user in a single call. Roles already assigned to the user are skipped.",
+          responses: {
+            200: {
+              description: "Roles assigned successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                        description: "Whether the operation succeeded.",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable summary of the result.",
+                      },
+                      assignedCount: {
+                        type: "number",
+                        description: "Number of roles assigned to the user.",
+                      },
+                      skippedCount: {
+                        type: "number",
+                        description: "Number of roles already assigned and skipped.",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "User or role not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("bulkAssignRolesToUser")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      // Check if user exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
+      const user = await ctx.context.adapter.findOne<User>({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.userId,
+          },
+        ],
+      })
+
+      if (!user) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
+      }
+
+      if (ctx.body.roleIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No roles provided",
+          assignedCount: 0,
+          skippedCount: 0,
+        })
+      }
+
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+
+      // Validate all roles exist (single batched query)
+      const missingRoleIds = await findMissingIds(ctx.context.adapter, "role", roleIds)
+
+      if (missingRoleIds.length > 0) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // Assign all roles within a transaction so a mid-way failure rolls everything back.
+      // Falls back to sequential execution when the adapter has no transactions.
+      const assignRoles = async (db: DBTransactionAdapter) => {
+        let assignedCount = 0
+        let skippedCount = 0
+
+        for (const roleId of roleIds) {
+          // Skip if assignment already exists
+          const existingAssignment = await db.findOne<UserRole>({
+            model: "userRole",
+            where: [
+              {
+                field: "userId",
+                value: ctx.body.userId,
+              },
+              {
+                field: "roleId",
+                value: roleId,
+              },
+            ],
+          })
+
+          if (existingAssignment) {
+            skippedCount++
+            continue
+          }
+
+          // Create assignment
+          try {
+            await db.create<UserRoleCreateInput, UserRole>({
+              model: "userRole",
+              data: {
+                userId: ctx.body.userId,
+                roleId,
+              },
+            })
+
+            assignedCount++
+          } catch (error) {
+            // Concurrent request may have created the assignment between check and create
+            const existingAssignment = await db.findOne<UserRole>({
+              model: "userRole",
+              where: [
+                {
+                  field: "userId",
+                  value: ctx.body.userId,
+                },
+                {
+                  field: "roleId",
+                  value: roleId,
+                },
+              ],
+            })
+
+            if (!existingAssignment) {
+              throw error
+            }
+
+            skippedCount++
+          }
+        }
+
+        return { assignedCount, skippedCount }
+      }
+
+      const { assignedCount, skippedCount } =
+        typeof ctx.context.adapter.transaction === "function"
+          ? await ctx.context.adapter.transaction(assignRoles)
+          : await assignRoles(ctx.context.adapter)
+
+      return ctx.json({
+        success: true,
+        message: `Assigned ${assignedCount} role(s) to user`,
+        assignedCount,
+        skippedCount,
+      })
+    },
+  )
+}
+
+/**
+ * ### Endpoint
+ *
+ * POST `/rbac/bulk-assign-permission-to-roles`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.rbacBulkAssignPermissionToRoles`
+ *
+ * **client:**
+ * `authClient.rbac.bulkAssignPermissionToRoles`
+ */
+export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
+  options: O,
+) => {
+  return createAuthEndpoint(
+    "/rbac/bulk-assign-permission-to-roles",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        permissionId: z.string().meta({
+          description: "The id of the permission to assign.",
+        }),
+        roleIds: z.array(z.string()).meta({
+          description: "The ids of the roles to assign the permission to.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.bulkAssignPermissionToRoles",
+          summary: "Assign a permission to multiple roles",
+          description:
+            "Assign a permission to multiple roles in a single call. Roles that already have the permission are skipped.",
+          responses: {
+            200: {
+              description: "Permission assigned successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: {
+                        type: "boolean",
+                        description: "Whether the operation succeeded.",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable summary of the result.",
+                      },
+                      assignedCount: {
+                        type: "number",
+                        description: "Number of roles the permission was assigned to.",
+                      },
+                      skippedCount: {
+                        type: "number",
+                        description: "Number of roles that already had the permission.",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Batch size cap was exceeded",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["BATCH_TOO_LARGE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is BATCH_TOO_LARGE.",
+                        properties: {
+                          ids: {
+                            type: "string",
+                            description: "The id array field that exceeded the cap.",
+                          },
+                          provided: {
+                            type: "number",
+                            description:
+                              "Number of unique ids provided in the request.",
+                          },
+                          maxBatchAssignmentSize: {
+                            type: "number",
+                            description: "The configured cap that was exceeded.",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "Permission or role not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("bulkAssignPermissionToRoles")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      // Check if permission exists (before the empty-array short-circuit so invalid
+      // targets never look like a successful no-op)
+      const permission = await ctx.context.adapter.findOne<Permission>({
+        model: "permission",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.permissionId,
+          },
+        ],
+      })
+
+      if (!permission) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
+
+      if (ctx.body.roleIds.length === 0) {
+        return ctx.json({
+          success: true,
+          message: "No roles provided",
+          assignedCount: 0,
+          skippedCount: 0,
+        })
+      }
+
+      const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+
+      // Validate all roles exist (single batched query)
+      const missingRoleIds = await findMissingIds(ctx.context.adapter, "role", roleIds)
+
+      if (missingRoleIds.length > 0) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      // Assign the permission to all roles within a transaction so a mid-way
+      // failure rolls everything back. Falls back to sequential execution when
+      // the adapter has no transactions.
+      const assignRoles = async (db: DBTransactionAdapter) => {
+        let assignedCount = 0
+        let skippedCount = 0
+
+        for (const roleId of roleIds) {
+          // Skip if assignment already exists
+          const existingAssignment = await db.findOne<RolePermission>({
+            model: "rolePermission",
+            where: [
+              {
+                field: "roleId",
+                value: roleId,
+              },
+              {
+                field: "permissionId",
+                value: ctx.body.permissionId,
+              },
+            ],
+          })
+
+          if (existingAssignment) {
+            skippedCount++
+            continue
+          }
+
+          // Create assignment
+          try {
+            await db.create<RolePermissionCreateInput, RolePermission>({
+              model: "rolePermission",
+              data: {
+                roleId,
+                permissionId: ctx.body.permissionId,
+              },
+            })
+
+            assignedCount++
+          } catch (error) {
+            // Concurrent request may have created the assignment between check and create
+            const existingAssignment = await db.findOne<RolePermission>({
+              model: "rolePermission",
+              where: [
+                {
+                  field: "roleId",
+                  value: roleId,
+                },
+                {
+                  field: "permissionId",
+                  value: ctx.body.permissionId,
+                },
+              ],
+            })
+
+            if (!existingAssignment) {
+              throw error
+            }
+
+            skippedCount++
+          }
+        }
+
+        return { assignedCount, skippedCount }
+      }
+
+      const { assignedCount, skippedCount } =
+        typeof ctx.context.adapter.transaction === "function"
+          ? await ctx.context.adapter.transaction(assignRoles)
+          : await assignRoles(ctx.context.adapter)
+
+      return ctx.json({
+        success: true,
+        message: `Permission assigned to ${assignedCount} role(s)`,
+        assignedCount,
+        skippedCount,
+      })
+    },
+  )
+}
