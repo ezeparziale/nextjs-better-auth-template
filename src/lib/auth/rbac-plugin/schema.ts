@@ -4,10 +4,6 @@ export const schema = {
   role: {
     modelName: "role",
     fields: {
-      id: {
-        type: "string",
-        required: true,
-      },
       name: {
         type: "string",
         required: true,
@@ -60,10 +56,6 @@ export const schema = {
   permission: {
     modelName: "permission",
     fields: {
-      id: {
-        type: "string",
-        required: true,
-      },
       name: {
         type: "string",
         required: true,
