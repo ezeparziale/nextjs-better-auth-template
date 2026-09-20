@@ -702,15 +702,23 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable summary of the result.",
+                        example: "Role assigned to 2 user(s)",
                       },
                       assignedCount: {
                         type: "number",
+                        description: "Number of users the role was assigned to.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
+                        description: "Number of users that already had the role.",
+                        example: 1,
                       },
                     },
                   },
@@ -950,12 +958,18 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable summary of the result.",
+                        example: "Role removed from 2 user(s)",
                       },
                       removedCount: {
                         type: "number",
+                        description: "Number of users the role was removed from.",
+                        example: 2,
                       },
                     },
                   },
@@ -1140,15 +1154,24 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable summary of the result.",
+                        example: "Assigned 3 permission(s) to role",
                       },
                       assignedCount: {
                         type: "number",
+                        description: "Number of permissions assigned to the role.",
+                        example: 3,
                       },
                       skippedCount: {
                         type: "number",
+                        description:
+                          "Number of permissions already assigned to the role.",
+                        example: 1,
                       },
                     },
                   },
@@ -1396,12 +1419,18 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable summary of the result.",
+                        example: "Removed 3 permission(s) from role",
                       },
                       removedCount: {
                         type: "number",
+                        description: "Number of permissions removed from the role.",
+                        example: 3,
                       },
                     },
                   },
@@ -1593,12 +1622,18 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable summary of the result.",
+                        example: "Removed 2 role(s) from user",
                       },
                       removedCount: {
                         type: "number",
+                        description: "Number of roles removed from the user.",
+                        example: 2,
                       },
                     },
                   },
@@ -1772,12 +1807,18 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable summary of the result.",
+                        example: "Removed 2 role(s) from permission",
                       },
                       removedCount: {
                         type: "number",
+                        description: "Number of roles removed from the permission.",
+                        example: 2,
                       },
                     },
                   },
@@ -1951,18 +1992,22 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
+                        example: "Assigned 2 role(s) to user",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of roles assigned to the user.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of roles already assigned and skipped.",
+                        example: 1,
                       },
                     },
                   },
@@ -2204,18 +2249,22 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
+                        example: "Permission assigned to 2 role(s)",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of roles the permission was assigned to.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of roles that already had the permission.",
+                        example: 1,
                       },
                     },
                   },
