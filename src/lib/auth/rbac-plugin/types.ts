@@ -16,6 +16,11 @@ export type Role = {
   key: string
   description: string
   isActive: boolean
+  /**
+   * Whether new users are automatically assigned this role on sign-up,
+   * invitation acceptance or any other user creation path.
+   */
+  assignOnJoin: boolean
   createdAt: Date
   updatedAt: Date
   createdBy?: string
@@ -203,6 +208,12 @@ export interface RBACPluginOptions {
      * @default true
      */
     isActive?: boolean
+    /**
+     * Whether new users are automatically assigned this role when they are
+     * created (sign-up, invitation acceptance, admin create, social login).
+     * @default false
+     */
+    assignOnJoin?: boolean
     permissions?: string[]
   }>
   /**

@@ -4,7 +4,7 @@ import { RBAC_ERROR_CODES } from "./error-codes"
 import * as routes from "./routes"
 import { schema } from "./schema"
 import { seedRBACData } from "./seed"
-import { RBACPluginOptions } from "./types"
+import type { RBACPluginOptions, Role } from "./types"
 
 const DEFAULT_PERMISSION_KEY_PATTERN = /^[a-z0-9_]+:[a-z0-9_]+$/i
 const DEFAULT_ROLE_KEY_PATTERN = /^[a-z0-9_]+$/i
@@ -91,11 +91,43 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       if (opts && (opts.seedPermissions || opts.seedRoles)) {
         await seedRBACData(ctx, opts, createValidationOptions(opts))
       }
-      // Clean up userRole rows when a user is deleted
+      // Clean up userRole rows when a user is deleted, and auto-assign
+      // `assignOnJoin` roles when a user is created (any sign-up path:
+      // credential, invitation acceptance, social login, admin create).
       return {
         options: {
           databaseHooks: {
             user: {
+              create: {
+                after: async (user) => {
+                  try {
+                    // Auto-assign roles flagged with assignOnJoin to new users.
+                    // Non-blocking by design: a failure here must never break
+                    // the sign-up flow.
+                    const roles = await ctx.adapter.findMany<Role>({
+                      model: "role",
+                      where: [{ field: "assignOnJoin", value: true }],
+                    })
+
+                    if (roles.length === 0) return
+
+                    for (const role of roles) {
+                      await ctx.adapter.create({
+                        model: "userRole",
+                        data: {
+                          userId: user.id,
+                          roleId: role.id,
+                        },
+                      })
+                    }
+                  } catch (error) {
+                    console.error(
+                      `Failed to auto-assign assignOnJoin roles to user ${user.id}:`,
+                      error,
+                    )
+                  }
+                },
+              },
               delete: {
                 before: async (user) => {
                   await ctx.adapter.deleteMany({

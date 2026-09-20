@@ -27,6 +27,7 @@ const cloneRoleSchema = z.object({
   key: z.string().min(1, "Key is required."),
   description: z.string().optional(),
   isActive: z.boolean(),
+  assignOnJoin: z.boolean(),
   copyPermissions: z.boolean(),
   copyUsers: z.boolean(),
 })
@@ -51,6 +52,7 @@ export default function CloneRoleDialog({
       key: "",
       description: "",
       isActive: true,
+      assignOnJoin: true,
       copyPermissions: true,
       copyUsers: true,
     },
@@ -64,6 +66,7 @@ export default function CloneRoleDialog({
         key: `${role.key}_copy`,
         description: role.description ?? "",
         isActive: role.isActive,
+        assignOnJoin: role.assignOnJoin,
         copyPermissions: true,
         copyUsers: true,
       })
@@ -78,6 +81,7 @@ export default function CloneRoleDialog({
         key: values.key,
         description: values.description || undefined,
         isActive: values.isActive,
+        assignOnJoin: values.assignOnJoin,
         copyPermissions: values.copyPermissions,
         copyUsers: values.copyUsers,
       })
@@ -190,6 +194,29 @@ export default function CloneRoleDialog({
                     placeholder="e.g. A user who is allowed to create and edit posts"
                     disabled={isSubmitting}
                   />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="assignOnJoin"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <div className="flex h-10 items-center gap-2">
+                    <Switch
+                      id={field.name}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isSubmitting}
+                    />
+                    <span className="text-sm">
+                      Assign to new members
+                      <span className="text-muted-foreground ml-1">
+                        (inherited from the source role)
+                      </span>
+                    </span>
+                  </div>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}

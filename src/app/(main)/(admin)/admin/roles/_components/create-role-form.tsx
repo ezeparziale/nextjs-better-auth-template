@@ -35,6 +35,7 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
       key: "",
       description: "",
       isActive: true,
+      assignOnJoin: false,
     },
     mode: "onChange",
   })
@@ -46,6 +47,7 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
         key: values.key,
         description: values.description,
         isActive: values.isActive,
+        assignOnJoin: values.assignOnJoin,
       })
 
       if (error) {
@@ -150,6 +152,28 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
                     placeholder="e.g. A user who is allowed to create and edit posts"
                     disabled={isSubmitting}
                   />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="assignOnJoin"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Assign to new members</FieldLabel>
+                  <div className="flex h-10 items-center gap-x-2">
+                    <Switch
+                      id={field.name}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label="Auto-assign this role to new users on sign-up"
+                      disabled={isSubmitting}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      New users get this role automatically on sign-up
+                    </span>
+                  </div>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
