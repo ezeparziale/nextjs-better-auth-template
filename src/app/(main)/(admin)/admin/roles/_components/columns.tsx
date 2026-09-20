@@ -31,6 +31,20 @@ export const columns = columnHelper.columns([
       )
     },
   }),
+  columnHelper.accessor("assignOnJoin", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Auto-assign" />
+    ),
+    cell: ({ row }) => {
+      const assignOnJoin = row.getValue("assignOnJoin")
+
+      return (
+        <Badge variant={assignOnJoin ? "blue-subtle" : "secondary"}>
+          {assignOnJoin ? "On join" : "Manual"}
+        </Badge>
+      )
+    },
+  }),
   columnHelper.accessor("createdAt", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created at" />
