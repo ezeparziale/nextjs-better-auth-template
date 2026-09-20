@@ -10,6 +10,7 @@ export const baseRoleSchema = z.object({
     .regex(ROLE_KEY_PATTERN, ROLE_KEY_ERROR_MESSAGE),
   description: z.string().min(1, "Description is required."),
   isActive: z.boolean(),
+  assignOnJoin: z.boolean(),
 })
 
 export const createRoleSchema = baseRoleSchema

@@ -332,6 +332,10 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         isActive: z.boolean().optional().meta({
           description: "Optional flag to set role active status. Defaults to true.",
         }),
+        assignOnJoin: z.boolean().optional().meta({
+          description:
+            "Optional flag that makes this role auto-assigned to new users. Defaults to false.",
+        }),
       }),
       metadata: {
         openapi: {
@@ -486,6 +490,7 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
           key,
           description: ctx.body.description,
           isActive: ctx.body.isActive ?? true,
+          assignOnJoin: ctx.body.assignOnJoin ?? false,
           createdBy: session.user.email,
           updatedBy: session.user.email,
         },
@@ -550,6 +555,10 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
         isActive: z.boolean().optional().meta({
           description:
             "Optional flag to set role active status. Defaults to the source role value.",
+        }),
+        assignOnJoin: z.boolean().optional().meta({
+          description:
+            "Optional flag that makes the cloned role auto-assigned to new users. Defaults to the source role value.",
         }),
         copyPermissions: z.boolean().optional().default(true).meta({
           description:
@@ -763,6 +772,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
           key,
           description: ctx.body.description ?? sourceRole.description,
           isActive: ctx.body.isActive ?? sourceRole.isActive,
+          assignOnJoin: ctx.body.assignOnJoin ?? sourceRole.assignOnJoin,
           createdBy: session.user.email,
           updatedBy: session.user.email,
         },
@@ -841,6 +851,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         }),
         isActive: z.boolean().optional().meta({
           description: "Optional flag to set role active status.",
+        }),
+        assignOnJoin: z.boolean().optional().meta({
+          description: "Optional flag that makes this role auto-assigned to new users.",
         }),
         permissionIds: z.array(z.string()).optional().meta({
           description:
@@ -1067,6 +1080,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
             description: ctx.body.description,
           }),
           ...(ctx.body.isActive !== undefined && { isActive: ctx.body.isActive }),
+          ...(ctx.body.assignOnJoin !== undefined && {
+            assignOnJoin: ctx.body.assignOnJoin,
+          }),
           updatedAt: new Date(),
           updatedBy: session.user.email,
         },

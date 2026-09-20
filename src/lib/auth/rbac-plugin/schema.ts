@@ -27,6 +27,12 @@ export const schema = {
         defaultValue: true,
         fieldName: "is_active",
       },
+      assignOnJoin: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        fieldName: "assign_on_join",
+      },
       createdAt: {
         type: "date",
         required: true,
