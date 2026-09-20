@@ -25,6 +25,7 @@ type Role = {
   key: string
   description?: string
   isActive: boolean
+  assignOnJoin: boolean
 }
 
 export default function EditRoleForm({ role }: { role: Role }) {
@@ -37,6 +38,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
       key: role.key,
       description: role.description,
       isActive: role.isActive,
+      assignOnJoin: role.assignOnJoin,
     },
   })
 
@@ -48,6 +50,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
         key: values.key,
         description: values.description,
         isActive: values.isActive,
+        assignOnJoin: values.assignOnJoin,
       })
 
       if (error) {
@@ -70,6 +73,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
             key: data.role.key,
             description: data.role.description,
             isActive: data.role.isActive,
+            assignOnJoin: data.role.assignOnJoin,
           })
         }
 
@@ -154,6 +158,28 @@ export default function EditRoleForm({ role }: { role: Role }) {
                     placeholder="e.g. A user who is allowed to create a post"
                     disabled={isSubmitting}
                   />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+            <Controller
+              name="assignOnJoin"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Assign to new members</FieldLabel>
+                  <div className="flex h-10 items-center gap-x-2">
+                    <Switch
+                      id={field.name}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-label="Auto-assign this role to new users on sign-up"
+                      disabled={isSubmitting}
+                    />
+                    <span className="text-muted-foreground text-sm">
+                      New users get this role automatically on sign-up
+                    </span>
+                  </div>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
