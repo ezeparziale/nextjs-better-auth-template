@@ -17,7 +17,12 @@ import type {
   RolePermission,
   RolePermissionCreateInput,
 } from "../types"
-import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
+import {
+  dedupeIds,
+  findMissingIds,
+  getPaginationParams,
+  normalizeIdBatch,
+} from "../utils"
 import { validateKey } from "../validation"
 import { sortByPermission, sortByRole, sortDirection } from "./sort-schemas"
 
@@ -484,6 +489,241 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
 
       // Assign to roles if provided (in parallel for better performance)
       if (roleIds && roleIds.length > 0) {
+        await Promise.all(
+          roleIds.map((roleId) =>
+            ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
+              model: "rolePermission",
+              data: {
+                roleId: roleId,
+                permissionId: permission.id,
+              },
+            }),
+          ),
+        )
+      }
+
+      return ctx.json({
+        permission,
+      })
+    },
+  )
+}
+
+/**
+ * ### Endpoint
+ *
+ * POST `/rbac/clone-permission`
+ *
+ * ### API Methods
+ *
+ * **server:**
+ * `auth.api.rbacClonePermission`
+ *
+ * **client:**
+ * `authClient.rbac.clonePermission`
+ */
+export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => {
+  const validationOptions = createValidationOptions(options)
+
+  return createAuthEndpoint(
+    "/rbac/clone-permission",
+    {
+      method: "POST",
+      use: [rbacMiddleware],
+      body: z.object({
+        id: z.string().meta({
+          description: "The id of the permission to clone.",
+        }),
+        name: z.string().trim().min(1).meta({
+          description: "The name of the cloned permission.",
+        }),
+        key: z.string().trim().min(1).meta({
+          description: "The unique key for the cloned permission.",
+        }),
+        description: z.string().trim().min(1).optional().meta({
+          description:
+            "Optional description of the cloned permission. Defaults to the source permission value.",
+        }),
+        isActive: z.boolean().optional().meta({
+          description:
+            "Optional flag to set permission active status. Defaults to the source permission value.",
+        }),
+        copyRoles: z.boolean().optional().default(true).meta({
+          description:
+            "Whether to copy the role assignments from the source permission. Defaults to true.",
+        }),
+      }),
+      metadata: {
+        openapi: {
+          operationId: "rbac.clonePermission",
+          summary: "Clone an existing permission",
+          description:
+            "Create a copy of an existing permission, optionally copying its role assignments.",
+          responses: {
+            200: {
+              description: "Permission cloned successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      permission: {
+                        $ref: "#/components/schemas/Permission",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            404: {
+              description: "Permission or role not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                        ],
+                      },
+                      details: {
+                        type: "object",
+                        description: "Present when code is ROLE_NOT_FOUND.",
+                        properties: {
+                          missingRoleIds: {
+                            type: "array",
+                            description: "The role ids that were not found.",
+                            items: { type: "string" },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Permission key already exists",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["PERMISSION_ALREADY_EXISTS"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (ctx) => {
+      if (options.disabledEndpoints?.includes("clonePermission")) {
+        throw new APIError("NOT_FOUND")
+      }
+
+      const session = ctx.context.session
+
+      ensureUserIsAdmin(session)
+
+      // Find the source permission
+      const sourcePermission = await ctx.context.adapter.findOne<Permission>({
+        model: "permission",
+        where: [
+          {
+            field: "id",
+            value: ctx.body.id,
+          },
+        ],
+      })
+
+      if (!sourcePermission) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
+
+      // Validate the new permission key
+      const key = validateKey("permission", ctx.body.key, validationOptions)
+
+      // Check if a permission with the same key already exists
+      const existingPermission = await ctx.context.adapter.findOne<Permission>({
+        model: "permission",
+        where: [
+          {
+            field: "key",
+            value: key,
+          },
+        ],
+      })
+
+      if (existingPermission) {
+        throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS)
+      }
+
+      // Gather roles to copy from the source permission
+      let roleIds: string[] = []
+      if (ctx.body.copyRoles) {
+        const rolePermissions = await ctx.context.adapter.findMany<RolePermission>({
+          model: "rolePermission",
+          where: [
+            {
+              field: "permissionId",
+              value: sourcePermission.id,
+            },
+          ],
+        })
+
+        roleIds = dedupeIds(rolePermissions.map((rp) => rp.roleId))
+
+        // Validate roles exist (single batched query)
+        const missingRoleIds = await findMissingIds(
+          ctx.context.adapter,
+          "role",
+          roleIds,
+        )
+
+        if (missingRoleIds.length > 0) {
+          throw new APIError("NOT_FOUND", {
+            code: RBAC_ERROR_CODES.ROLE_NOT_FOUND.code,
+            message: RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+            details: { missingRoleIds },
+          })
+        }
+      }
+
+      // Create the cloned permission
+      const permission = await ctx.context.adapter.create<
+        PermissionCreateInput,
+        Permission
+      >({
+        model: "permission",
+        data: {
+          name: ctx.body.name,
+          key,
+          description: ctx.body.description ?? sourcePermission.description,
+          isActive: ctx.body.isActive ?? sourcePermission.isActive,
+          createdBy: session.user.email,
+          updatedBy: session.user.email,
+        },
+      })
+
+      // Copy role assignments to the cloned permission
+      if (roleIds.length > 0) {
         await Promise.all(
           roleIds.map((roleId) =>
             ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({

@@ -1,6 +1,12 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { CopyIcon, MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import {
+  CopyIcon,
+  CopyPlusIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react"
 import { Permission } from "@/lib/auth/rbac-plugin"
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/components/ui/copy-button"
@@ -12,10 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import ClonePermissionDialog from "./clone-permission-dialog"
 import DeletePermissionDialog from "./delete-permission-dialog"
 
 export default function CellActions({ row }: { row: Permission }) {
   const router = useRouter()
+  const [isCloneDialogOpen, setIsCloneDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { copy } = useCopyToClipboard()
 
@@ -40,6 +48,14 @@ export default function CellActions({ row }: { row: Permission }) {
             <PencilIcon />
             Edit
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              setIsCloneDialogOpen(true)
+            }}
+          >
+            <CopyPlusIcon />
+            Clone
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
@@ -52,6 +68,12 @@ export default function CellActions({ row }: { row: Permission }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ClonePermissionDialog
+        key={`clone-permission-${row.id}`}
+        permission={row}
+        isOpen={isCloneDialogOpen}
+        setIsOpen={setIsCloneDialogOpen}
+      />
       <DeletePermissionDialog
         key={`delete-permission-${row.id}`}
         permissionId={row.id}

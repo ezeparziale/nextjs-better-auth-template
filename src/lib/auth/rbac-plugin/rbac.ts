@@ -59,6 +59,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
       rbacListPermissions: routes.rbacListPermissions(opts),
       rbacGetPermission: routes.rbacGetPermission(opts),
       rbacCreatePermission: routes.rbacCreatePermission(opts),
+      rbacClonePermission: routes.rbacClonePermission(opts),
       rbacUpdatePermission: routes.rbacUpdatePermission(opts),
       rbacDeletePermission: routes.rbacDeletePermission(opts),
       rbacGetPermissionsOptions: routes.rbacGetPermissionsOptions(opts),

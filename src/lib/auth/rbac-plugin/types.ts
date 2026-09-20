@@ -72,6 +72,7 @@ export type RBACEndpoint =
   | "listPermissions"
   | "getPermission"
   | "createPermission"
+  | "clonePermission"
   | "updatePermission"
   | "deletePermission"
   | "getPermissionsOptions"
