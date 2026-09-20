@@ -107,6 +107,13 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
+      // A banned user has no access
+      if (user.banned) {
+        return ctx.json({
+          hasPermission: false,
+        })
+      }
+
       // Get the permission by key
       const permission = await ctx.context.adapter.findOne<Permission>({
         model: "permission",
@@ -240,6 +247,26 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
                 },
               },
             },
+            404: {
+              description: "User not found",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["USER_NOT_FOUND"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -250,6 +277,28 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
       }
 
       const session = ctx.context.session
+
+      // Fetch the current user to check status (e.g. banned)
+      const user = await ctx.context.adapter.findOne<User>({
+        model: "user",
+        where: [
+          {
+            field: "id",
+            value: session.user.id,
+          },
+        ],
+      })
+
+      if (!user) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
+      }
+
+      // A banned user has no access
+      if (user.banned) {
+        return ctx.json({
+          hasPermission: false,
+        })
+      }
 
       // Get the permission by key
       const permission = await ctx.context.adapter.findOne<Permission>({
