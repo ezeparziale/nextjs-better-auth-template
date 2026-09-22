@@ -20,6 +20,7 @@ import {
   ROLE_KEY_PATTERN,
 } from "./rbac-patterns"
 import { rbacPlugin } from "./rbac-plugin"
+import { SYSTEM_PROTECTION_MODE } from "./rbac-plugin/system-protection"
 
 // import "server-only"
 
@@ -186,22 +187,43 @@ export const auth = betterAuth({
       roleKeyErrorMessage: ROLE_KEY_ERROR_MESSAGE,
       seedPermissions: [
         {
-          key: "user1.read",
-          name: "Read Users",
-          description: "Can view users",
+          key: "user.read",
+          name: "Read users",
+          description: "Can view users.",
+          isActive: true,
+        },
+        {
+          key: "user.manage",
+          name: "Manage users",
+          description: "Can create, edit and remove users.",
+          isActive: true,
+        },
+        {
+          key: "settings.manage",
+          name: "Manage settings",
+          description: "Can update workspace settings.",
           isActive: true,
         },
       ],
       seedRoles: [
         {
-          key: "admin1",
+          key: "admin",
           name: "Administrator",
-          description: "Full access",
+          description: "Full access to the workspace.",
           isActive: true,
-          permissions: ["user1.read"],
+          permissions: ["user.read", "user.manage", "settings.manage"],
+        },
+        {
+          key: "member",
+          name: "Member",
+          description: "Read-only access to users.",
+          isActive: true,
+          assignOnJoin: true,
+          permissions: ["user.read"],
         },
       ],
       disabledEndpoints: [],
+      systemProtectionMode: SYSTEM_PROTECTION_MODE,
     }),
     adminPlusPlugin(),
     ...(INVITATIONS_ENABLED ? [invitationPlugin({ expiresInDays: 30 })] : []),
