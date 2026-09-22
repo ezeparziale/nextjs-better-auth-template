@@ -29,6 +29,13 @@ export interface UseServerDataTableOptions<TData extends RowData> {
   initialParams: TableDefaultInitialParams
 
   enableSelection?: boolean
+  /**
+   * When selection is enabled, determines whether a given row can be selected.
+   * Used to block selection of rows that cannot be modified (e.g. system roles).
+   * Rows returning `false` render a disabled checkbox and are skipped by the
+   * "select all" toggle.
+   */
+  getRowCanSelect?: (row: TData) => boolean
 
   defaultColumnVisibility?: ColumnVisibilityState
   defaultSorting?: SortingState
@@ -51,6 +58,7 @@ export function useServerDataTable<TData extends RowData>({
   getRowId,
   initialParams,
   enableSelection = false,
+  getRowCanSelect,
   defaultColumnVisibility = DEFAULT_VISIBILITY,
   defaultSorting = DEFAULT_SORTING,
   sortableColumns,
@@ -277,8 +285,8 @@ export function useServerDataTable<TData extends RowData>({
 
   const tableColumns = useMemo(() => {
     if (!enableSelection) return columns
-    return [createSelectColumn<TData>(), ...columns]
-  }, [columns, enableSelection])
+    return [createSelectColumn<TData>({ getRowCanSelect }), ...columns]
+  }, [columns, enableSelection, getRowCanSelect])
 
   const table = useTable({
     ...dataTableOptions,
@@ -296,6 +304,12 @@ export function useServerDataTable<TData extends RowData>({
       ? {
           onRowSelectionChange: setRowSelection,
           enableMultiRowSelection: true,
+          ...(getRowCanSelect
+            ? {
+                getRowCanSelect: (row: { original: TData }) =>
+                  getRowCanSelect(row.original),
+              }
+            : {}),
         }
       : {}),
     onPaginationChange: (updater) => {

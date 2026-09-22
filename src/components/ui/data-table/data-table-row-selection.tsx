@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableFeatures, dataTableFeatures } from "./features"
 
-export function createSelectColumn<TData extends RowData>(): ColumnDef<
-  typeof dataTableFeatures,
-  TData,
-  unknown
-> {
+export function createSelectColumn<TData extends RowData>(options?: {
+  getRowCanSelect?: (row: TData) => boolean
+}): ColumnDef<typeof dataTableFeatures, TData, unknown> {
+  const canSelect = (row: { original: TData }) =>
+    options?.getRowCanSelect ? options.getRowCanSelect(row.original) : true
+
   return {
     id: "select",
     header: ({ table }) => {
@@ -25,13 +26,18 @@ export function createSelectColumn<TData extends RowData>(): ColumnDef<
         />
       )
     },
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    cell: ({ row }) => {
+      const disabled = !canSelect(row)
+
+      return (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          disabled={disabled}
+        />
+      )
+    },
     enableSorting: false,
     enableHiding: false,
     enableColumnFilter: false,
