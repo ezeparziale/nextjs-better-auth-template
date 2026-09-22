@@ -29,6 +29,12 @@ export const schema = {
         defaultValue: false,
         fieldName: "assign_on_join",
       },
+      isSystem: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        fieldName: "is_system",
+      },
       createdAt: {
         type: "date",
         required: true,
@@ -74,6 +80,12 @@ export const schema = {
         required: true,
         defaultValue: true,
         fieldName: "is_active",
+      },
+      isSystem: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        fieldName: "is_system",
       },
       createdAt: {
         type: "date",
