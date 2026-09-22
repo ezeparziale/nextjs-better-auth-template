@@ -58,18 +58,23 @@ async function seedPermissions(
     })
 
     if (!existing) {
-      await db.create<PermissionCreateInput, Permission>({
-        model: "permission",
-        data: {
-          key: permission.key,
-          name: permission.name,
-          description: permission.description,
-          isActive: permission.isActive ?? true,
-          createdBy: "system",
-          updatedBy: "system",
-        },
-      })
-      console.log(`Permission created: ${permission.key}`)
+      try {
+        await db.create<PermissionCreateInput, Permission>({
+          model: "permission",
+          data: {
+            key: permission.key,
+            name: permission.name,
+            description: permission.description,
+            isActive: permission.isActive ?? true,
+            isSystem: true,
+            createdBy: "system",
+            updatedBy: "system",
+          },
+        })
+        console.log(`Permission created: ${permission.key}`)
+      } catch {
+        // Safe check for race conditions during build/worker initialization
+      }
     }
   }
 }
@@ -92,23 +97,28 @@ async function seedRoles(
     })
 
     if (!existing) {
-      const createdRole = await db.create<RoleCreateInput, Role>({
-        model: "role",
-        data: {
-          key: role.key,
-          name: role.name,
-          description: role.description,
-          isActive: role.isActive ?? true,
-          assignOnJoin: role.assignOnJoin ?? false,
-          createdBy: "system",
-          updatedBy: "system",
-        },
-      })
-      console.log(`Role created: ${role.key}`)
+      try {
+        const createdRole = await db.create<RoleCreateInput, Role>({
+          model: "role",
+          data: {
+            key: role.key,
+            name: role.name,
+            description: role.description,
+            isActive: role.isActive ?? true,
+            assignOnJoin: role.assignOnJoin ?? false,
+            isSystem: true,
+            createdBy: "system",
+            updatedBy: "system",
+          },
+        })
+        console.log(`Role created: ${role.key}`)
 
-      // Associate permissions with the role
-      if (role.permissions && role.permissions.length > 0) {
-        await associatePermissionsToRole(db, createdRole.id, role.permissions)
+        // Associate permissions with the role
+        if (role.permissions && role.permissions.length > 0) {
+          await associatePermissionsToRole(db, createdRole.id, role.permissions)
+        }
+      } catch {
+        // Safe check for race conditions during build/worker initialization
       }
     }
   }
