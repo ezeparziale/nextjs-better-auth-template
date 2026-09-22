@@ -1,9 +1,12 @@
+import type { SystemProtectionMode } from "./system-protection"
+
 export type Permission = {
   id: string
   name: string
   key: string
   description: string
   isActive: boolean
+  isSystem: boolean
   createdAt: Date
   updatedAt: Date
   createdBy?: string
@@ -21,6 +24,7 @@ export type Role = {
    * invitation acceptance or any other user creation path.
    */
   assignOnJoin: boolean
+  isSystem: boolean
   createdAt: Date
   updatedAt: Date
   createdBy?: string
@@ -41,8 +45,18 @@ export type UserRole = {
   createdAt: Date
 }
 
-export type PermissionCreateInput = Omit<Permission, "id" | "createdAt" | "updatedAt">
-export type RoleCreateInput = Omit<Role, "id" | "createdAt" | "updatedAt">
+export type PermissionCreateInput = Omit<
+  Permission,
+  "id" | "isSystem" | "createdAt" | "updatedAt"
+> & {
+  isSystem?: boolean
+}
+export type RoleCreateInput = Omit<
+  Role,
+  "id" | "isSystem" | "createdAt" | "updatedAt"
+> & {
+  isSystem?: boolean
+}
 export type RolePermissionCreateInput = Omit<RolePermission, "id" | "createdAt">
 export type UserRoleCreateInput = Omit<UserRole, "id" | "createdAt">
 
@@ -225,4 +239,11 @@ export interface RBACPluginOptions {
    * @default []
    */
   disabledEndpoints?: RBACEndpoint[]
+  /**
+   * System protection mode for roles and permissions with `isSystem: true`.
+   * - `"strict"`: No updates (name, description, key, isActive) or deletions allowed.
+   * - `"allow_metadata_edit"`: Updates to `name` and `description` are allowed, but `key`, `isActive` and deletion remain prohibited.
+   * @default "strict"
+   */
+  systemProtectionMode?: SystemProtectionMode
 }
