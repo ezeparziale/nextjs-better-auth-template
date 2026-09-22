@@ -843,7 +843,7 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
             },
             400: {
               description:
-                "Permission key already exists or batch size cap was exceeded",
+                "Permission key already exists, batch size cap was exceeded, the permission is a system entity or a target role is a system entity",
               content: {
                 "application/json": {
                   schema: {
@@ -851,13 +851,20 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_ALREADY_EXISTS", "BATCH_TOO_LARGE"],
+                        enum: [
+                          "PERMISSION_ALREADY_EXISTS",
+                          "BATCH_TOO_LARGE",
+                          "CANNOT_MODIFY_SYSTEM_PERMISSION",
+                          "CANNOT_MODIFY_SYSTEM_ROLE",
+                        ],
                       },
                       message: {
                         type: "string",
                         enum: [
                           RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_PERMISSION.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
                         ],
                       },
                       details: {
@@ -917,6 +924,29 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
+      if (existingPermission.isSystem) {
+        const mode = options.systemProtectionMode ?? "strict"
+        if (mode === "strict") {
+          throw APIError.from(
+            "BAD_REQUEST",
+            RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_PERMISSION,
+          )
+        }
+        // In "allow_metadata_edit" mode, only name and description are editable;
+        // forbid modifying key, isActive or role assignments
+        if (
+          (key !== undefined && key !== existingPermission.key) ||
+          (ctx.body.isActive !== undefined &&
+            ctx.body.isActive !== existingPermission.isActive) ||
+          ctx.body.roleIds !== undefined
+        ) {
+          throw APIError.from(
+            "BAD_REQUEST",
+            RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_PERMISSION,
+          )
+        }
+      }
+
       // If updating key, check if new key already exists
       if (key && key !== existingPermission.key) {
         const duplicatePermission = await ctx.context.adapter.findOne<Permission>({
@@ -939,13 +969,16 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         ? normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
         : undefined
 
-      // If roleIds provided, validate they exist (single batched query)
+      // If roleIds provided, validate they exist and are not system entities
+      // (single batched query)
       if (roleIds) {
-        const missingRoleIds = await findMissingIds(
-          ctx.context.adapter,
-          "role",
-          roleIds,
-        )
+        const roles = await ctx.context.adapter.findMany<Role>({
+          model: "role",
+          where: [{ field: "id", operator: "in", value: roleIds }],
+        })
+
+        const foundRoleIds = new Set(roles.map((role) => role.id))
+        const missingRoleIds = roleIds.filter((id) => !foundRoleIds.has(id))
 
         if (missingRoleIds.length > 0) {
           throw new APIError("NOT_FOUND", {
@@ -953,6 +986,10 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
             message: RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
             details: { missingRoleIds },
           })
+        }
+
+        if (roles.some((role) => role.isSystem)) {
+          throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE)
         }
       }
 
@@ -1113,7 +1150,7 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
             },
             400: {
               description:
-                "Permission is assigned to roles and the assignment check was not skipped",
+                "Permission is a system entity or is assigned to roles and the assignment check was not skipped",
               content: {
                 "application/json": {
                   schema: {
@@ -1121,11 +1158,15 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["CANNOT_DELETE_ASSIGNED_PERMISSION"],
+                        enum: [
+                          "CANNOT_DELETE_SYSTEM_PERMISSION",
+                          "CANNOT_DELETE_ASSIGNED_PERMISSION",
+                        ],
                       },
                       message: {
                         type: "string",
                         enum: [
+                          RBAC_ERROR_CODES.CANNOT_DELETE_SYSTEM_PERMISSION.message,
                           RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_PERMISSION.message,
                         ],
                       },
@@ -1172,6 +1213,13 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
 
       if (!existingPermission) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
+      }
+
+      if (existingPermission.isSystem) {
+        throw APIError.from(
+          "BAD_REQUEST",
+          RBAC_ERROR_CODES.CANNOT_DELETE_SYSTEM_PERMISSION,
+        )
       }
 
       // If not skipping the check, block deletion when the permission is assigned to roles

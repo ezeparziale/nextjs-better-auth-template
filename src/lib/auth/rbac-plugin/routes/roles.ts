@@ -926,7 +926,8 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
               },
             },
             400: {
-              description: "Role key already exists or batch size cap was exceeded",
+              description:
+                "Role key already exists, batch size cap was exceeded or the role is a system entity",
               content: {
                 "application/json": {
                   schema: {
@@ -934,13 +935,18 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_ALREADY_EXISTS", "BATCH_TOO_LARGE"],
+                        enum: [
+                          "ROLE_ALREADY_EXISTS",
+                          "BATCH_TOO_LARGE",
+                          "CANNOT_MODIFY_SYSTEM_ROLE",
+                        ],
                       },
                       message: {
                         type: "string",
                         enum: [
                           RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message,
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
                         ],
                       },
                       details: {
@@ -998,6 +1004,26 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
 
       if (!existingRole) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      if (existingRole.isSystem) {
+        const mode = options.systemProtectionMode ?? "strict"
+        // Only user membership (userIds) is always allowed on system roles; the
+        // rest of the entity definition (name, description, key, isActive,
+        // assignOnJoin) and the permission set are immutable.
+        const protectedFieldChange =
+          (key !== undefined && key !== existingRole.key) ||
+          (ctx.body.isActive !== undefined &&
+            ctx.body.isActive !== existingRole.isActive) ||
+          (ctx.body.assignOnJoin !== undefined &&
+            ctx.body.assignOnJoin !== existingRole.assignOnJoin) ||
+          ctx.body.permissionIds !== undefined
+        const metadataChange =
+          ctx.body.name !== undefined || ctx.body.description !== undefined
+
+        if (protectedFieldChange || (mode === "strict" && metadataChange)) {
+          throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE)
+        }
       }
 
       // If updating key, check if new key already exists
@@ -1280,7 +1306,7 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
             },
             400: {
               description:
-                "Role is assigned to users and the assignment check was not skipped",
+                "Role is a system entity or is assigned to users and the assignment check was not skipped",
               content: {
                 "application/json": {
                   schema: {
@@ -1288,11 +1314,17 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["CANNOT_DELETE_ASSIGNED_ROLE"],
+                        enum: [
+                          "CANNOT_DELETE_SYSTEM_ROLE",
+                          "CANNOT_DELETE_ASSIGNED_ROLE",
+                        ],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_ROLE.message],
+                        enum: [
+                          RBAC_ERROR_CODES.CANNOT_DELETE_SYSTEM_ROLE.message,
+                          RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_ROLE.message,
+                        ],
                       },
                       details: {
                         type: "object",
@@ -1336,6 +1368,10 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
 
       if (!existingRole) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      if (existingRole.isSystem) {
+        throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.CANNOT_DELETE_SYSTEM_ROLE)
       }
 
       // If not skipping the check, block deletion when the role is assigned to users
@@ -1456,6 +1492,11 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                               type: "string",
                               description: "Role key",
                             },
+                            isSystem: {
+                              type: "boolean",
+                              description:
+                                "Whether the role is a system entity. System roles cannot be modified.",
+                            },
                           },
                         },
                       },
@@ -1471,16 +1512,19 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                             value: "role_123abc",
                             label: "Administrator",
                             key: "admin",
+                            isSystem: true,
                           },
                           {
                             value: "role_456def",
                             label: "Editor",
                             key: "editor",
+                            isSystem: false,
                           },
                           {
                             value: "role_789ghi",
                             label: "Viewer",
                             key: "viewer",
+                            isSystem: false,
                           },
                         ],
                       },
@@ -1564,7 +1608,7 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
           model: "role",
           where: where.length ? where : undefined,
           limit,
-          select: ["id", "name", "key"],
+          select: ["id", "name", "key", "isSystem"],
           sortBy: {
             field: ctx.query?.sortBy || "name",
             direction: ctx.query?.sortDirection || "asc",
@@ -1575,6 +1619,7 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
           value: role.id,
           label: role.name,
           key: role.key,
+          isSystem: role.isSystem,
         }))
 
         return ctx.json({

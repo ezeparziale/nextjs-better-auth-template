@@ -15,6 +15,12 @@ import type {
 } from "../types"
 import { findMissingIds, normalizeIdBatch } from "../utils"
 
+function assertRoleModifiable(role: Role): void {
+  if (role.isSystem) {
+    throw APIError.from("BAD_REQUEST", RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE)
+  }
+}
+
 /**
  * ### Endpoint
  *
@@ -64,6 +70,26 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                           "Permission already assigned to role",
                           "Permission assigned to role successfully",
                         ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "The target role is a system entity and cannot be modified",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["CANNOT_MODIFY_SYSTEM_ROLE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message],
                       },
                     },
                   },
@@ -120,6 +146,8 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      assertRoleModifiable(role)
 
       // Check if permission exists
       const permission = await ctx.context.adapter.findOne<Permission>({
@@ -249,6 +277,26 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                 },
               },
             },
+            400: {
+              description: "The target role is a system entity and cannot be modified",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["CANNOT_MODIFY_SYSTEM_ROLE"],
+                      },
+                      message: {
+                        type: "string",
+                        enum: [RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message],
+                      },
+                    },
+                  },
+                },
+              },
+            },
             404: {
               description: "Role or permission not found",
               content: {
@@ -299,6 +347,8 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      assertRoleModifiable(role)
 
       // Check if permission exists
       const permission = await ctx.context.adapter.findOne<Permission>({
@@ -1179,7 +1229,8 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
               },
             },
             400: {
-              description: "Batch size cap was exceeded",
+              description:
+                "Batch size cap was exceeded or the target role is a system entity",
               content: {
                 "application/json": {
                   schema: {
@@ -1187,11 +1238,14 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["BATCH_TOO_LARGE"],
+                        enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        enum: [
+                          RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
+                        ],
                       },
                       details: {
                         type: "object",
@@ -1268,6 +1322,8 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      assertRoleModifiable(role)
 
       if (ctx.body.permissionIds.length === 0) {
         return ctx.json({
@@ -1438,7 +1494,8 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
               },
             },
             400: {
-              description: "Batch size cap was exceeded",
+              description:
+                "Batch size cap was exceeded or the target role is a system entity",
               content: {
                 "application/json": {
                   schema: {
@@ -1446,11 +1503,14 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["BATCH_TOO_LARGE"],
+                        enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        enum: [
+                          RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
+                        ],
                       },
                       details: {
                         type: "object",
@@ -1527,6 +1587,8 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
       if (!role) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      assertRoleModifiable(role)
 
       if (ctx.body.permissionIds.length === 0) {
         return ctx.json({
@@ -1826,7 +1888,8 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
               },
             },
             400: {
-              description: "Batch size cap was exceeded",
+              description:
+                "Batch size cap was exceeded or a target role is a system entity",
               content: {
                 "application/json": {
                   schema: {
@@ -1834,11 +1897,14 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["BATCH_TOO_LARGE"],
+                        enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        enum: [
+                          RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
+                        ],
                       },
                       details: {
                         type: "object",
@@ -1922,6 +1988,19 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
       }
 
       const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
+
+      // Validate all target roles exist and are not system entities (single
+      // batched query so invalid targets never look like a successful no-op)
+      const roles = await ctx.context.adapter.findMany<Role>({
+        model: "role",
+        where: [{ field: "id", operator: "in", value: roleIds }],
+      })
+
+      if (roles.length !== roleIds.length) {
+        throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
+      }
+
+      roles.forEach(assertRoleModifiable)
 
       // Delete assignments
       const removedCount = await ctx.context.adapter.deleteMany({
@@ -2272,7 +2351,8 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
               },
             },
             400: {
-              description: "Batch size cap was exceeded",
+              description:
+                "Batch size cap was exceeded or a target role is a system entity",
               content: {
                 "application/json": {
                   schema: {
@@ -2280,11 +2360,14 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["BATCH_TOO_LARGE"],
+                        enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        enum: [
+                          RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
+                        ],
                       },
                       details: {
                         type: "object",
@@ -2373,12 +2456,18 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
 
       const roleIds = normalizeIdBatch(ctx.body.roleIds, options, "roleIds")
 
-      // Validate all roles exist (single batched query)
-      const missingRoleIds = await findMissingIds(ctx.context.adapter, "role", roleIds)
+      // Validate all target roles exist and are not system entities (single
+      // batched query so invalid targets never look like a successful no-op)
+      const roles = await ctx.context.adapter.findMany<Role>({
+        model: "role",
+        where: [{ field: "id", operator: "in", value: roleIds }],
+      })
 
-      if (missingRoleIds.length > 0) {
+      if (roles.length !== roleIds.length) {
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
+
+      roles.forEach(assertRoleModifiable)
 
       // Assign the permission to all roles within a transaction so a mid-way
       // failure rolls everything back. Falls back to sequential execution when
