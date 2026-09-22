@@ -64,6 +64,8 @@ interface AssignItemsDialogProps {
   onItemsUpdated: (options?: { resetPagination?: boolean }) => void
   /** Number of items to show on the picker's initial load */
   initialLimit?: number
+  /** Disables the trigger button */
+  disabled?: boolean
   /** Custom success/error messages */
   messages?: {
     success?: string
@@ -89,6 +91,7 @@ export default function AssignItemsDialog({
   onItemsUpdated,
   initialLimit = LIMIT,
   messages = {},
+  disabled = false,
 }: AssignItemsDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoadingAssigned, setIsLoadingAssigned] = useState(false)
@@ -185,7 +188,7 @@ export default function AssignItemsDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" disabled={disabled}>
           <PlusIcon />
           {buttonText}
         </Button>
