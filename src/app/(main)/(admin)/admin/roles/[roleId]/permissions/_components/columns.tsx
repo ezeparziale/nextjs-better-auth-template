@@ -1,6 +1,7 @@
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
+import { LockIcon } from "lucide-react"
 import { Permission } from "@/lib/auth/rbac-plugin/types"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader, dataTableFeatures } from "@/components/ui/data-table"
@@ -8,7 +9,7 @@ import CellActions from "./cell-actions"
 
 const columnHelper = createColumnHelper<typeof dataTableFeatures, Permission>()
 
-export const getColumns = (roleId: string) =>
+export const getColumns = (roleId: string, disabled = false) =>
   columnHelper.columns([
     columnHelper.accessor("name", {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
@@ -16,7 +17,15 @@ export const getColumns = (roleId: string) =>
     columnHelper.accessor("key", {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Key" />,
       cell: ({ row }) => {
-        return <Badge variant="secondary">{row.getValue("key")}</Badge>
+        const isSystem = row.original.isSystem
+        const key = row.getValue("key") as string
+
+        return (
+          <Badge variant="secondary" className="gap-1 font-mono">
+            {isSystem && <LockIcon />}
+            {key}
+          </Badge>
+        )
       },
     }),
     columnHelper.accessor("isActive", {
@@ -36,6 +45,8 @@ export const getColumns = (roleId: string) =>
     }),
     columnHelper.display({
       id: "actions",
-      cell: ({ row }) => <CellActions row={row.original} roleId={roleId} />,
+      cell: ({ row }) => (
+        <CellActions row={row.original} roleId={roleId} disabled={disabled} />
+      ),
     }),
   ])

@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation"
+import { LockIcon } from "lucide-react"
 import { NavItem } from "@/types/types"
 import { requireAdmin } from "@/lib/auth/guards"
 import { getRole } from "@/data/auth/get-role"
+import { Badge } from "@/components/ui/badge"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageHeader } from "@/components/page-header"
 import { SidebarNav } from "@/components/section-sidebar-nav"
@@ -51,10 +53,20 @@ export default async function RoleAdminLayout({
       <DataTableProvider>
         <PageHeader
           title={`Edit ${role?.name}`}
+          tags={
+            role.isSystem ? (
+              <Badge variant="outline" className="gap-1">
+                <LockIcon />
+                System
+              </Badge>
+            ) : undefined
+          }
           description={`ID: ${role?.id}`}
           copyValue={role?.id}
           actions={
-            <DeleteRoleButton roleId={role?.id ?? ""} roleKey={role?.key ?? ""} />
+            !role.isSystem ? (
+              <DeleteRoleButton roleId={role.id} roleKey={role.key} />
+            ) : undefined
           }
           divider
           backLink="/admin/roles"

@@ -7,11 +7,15 @@ import AssignItemsDialog from "@/components/assign-items-dialog"
 
 interface AddPermissionDialogProps {
   roleId: string
+  isSystem?: boolean
 }
 
 const LIMIT = 5
 
-export default function AddPermissionDialog({ roleId }: AddPermissionDialogProps) {
+export default function AddPermissionDialog({
+  roleId,
+  isSystem = false,
+}: AddPermissionDialogProps) {
   const { refreshTable } = useDataTable()
 
   const fetchAssignedPermissions = async (roleId: string) => {
@@ -90,6 +94,7 @@ export default function AddPermissionDialog({ roleId }: AddPermissionDialogProps
       searchPlaceholder="Search permissions by name or key…"
       emptyMessage="No permissions found."
       buttonText="Manage permissions"
+      disabled={isSystem}
       fetchAssignedItems={fetchAssignedPermissions}
       fetchAvailableItems={fetchAvailablePermissions}
       updateItems={updatePermissions}

@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { ROLE_KEY_EXAMPLE } from "@/lib/auth/rbac-patterns"
+import { SYSTEM_PROTECTION_MODE } from "@/lib/auth/rbac-plugin/system-protection"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -26,10 +27,14 @@ type Role = {
   description?: string
   isActive: boolean
   assignOnJoin: boolean
+  isSystem?: boolean
 }
 
 export default function EditRoleForm({ role }: { role: Role }) {
   const router = useRouter()
+
+  const canEditMetadata =
+    !role.isSystem || SYSTEM_PROTECTION_MODE === "allow_metadata_edit"
 
   const form = useForm<FormData>({
     resolver: zodResolver(editRoleSchema),
@@ -102,7 +107,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
                       {...field}
                       id={field.name}
                       placeholder="e.g. Create posts"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !canEditMetadata}
                     />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -121,7 +126,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
                           checked={field.value}
                           onCheckedChange={field.onChange}
                           aria-label="Role active status"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || role.isSystem}
                         />
                       </div>
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -140,7 +145,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
                     {...field}
                     id={field.name}
                     placeholder={`e.g. ${ROLE_KEY_EXAMPLE}`}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || role.isSystem}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -156,7 +161,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
                     {...field}
                     id={field.name}
                     placeholder="e.g. A user who is allowed to create a post"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !canEditMetadata}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -174,7 +179,7 @@ export default function EditRoleForm({ role }: { role: Role }) {
                       checked={field.value}
                       onCheckedChange={field.onChange}
                       aria-label="Auto-assign this role to new users on sign-up"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || role.isSystem}
                     />
                     <span className="text-muted-foreground text-sm">
                       New users get this role automatically on sign-up

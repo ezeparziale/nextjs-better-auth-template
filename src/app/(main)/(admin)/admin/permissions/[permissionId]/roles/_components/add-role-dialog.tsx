@@ -59,11 +59,13 @@ export default function AddRoleDialog({ permissionId }: AddRoleDialogProps) {
     const response = await authClient.rbac.getRolesOptions({ query: params })
 
     if (response.data?.options) {
-      return response.data.options.map((option) => ({
-        value: option.value,
-        label: option.label,
-        subtitle: option.key,
-      }))
+      return response.data.options
+        .filter((option) => !option.isSystem)
+        .map((option) => ({
+          value: option.value,
+          label: option.label,
+          subtitle: option.key,
+        }))
     }
 
     return []

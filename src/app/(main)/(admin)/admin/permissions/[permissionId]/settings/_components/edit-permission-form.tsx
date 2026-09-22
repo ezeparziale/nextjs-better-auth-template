@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import * as z from "zod"
 import { authClient } from "@/lib/auth/auth-client"
 import { PERMISSION_KEY_EXAMPLE } from "@/lib/auth/rbac-patterns"
+import { SYSTEM_PROTECTION_MODE } from "@/lib/auth/rbac-plugin/system-protection"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -25,10 +26,14 @@ type Permission = {
   key: string
   description?: string
   isActive: boolean
+  isSystem?: boolean
 }
 
 export default function EditPermissionForm({ permission }: { permission: Permission }) {
   const router = useRouter()
+
+  const canEditMetadata =
+    !permission.isSystem || SYSTEM_PROTECTION_MODE === "allow_metadata_edit"
 
   const form = useForm<FormData>({
     resolver: zodResolver(editPermissionSchema),
@@ -98,7 +103,7 @@ export default function EditPermissionForm({ permission }: { permission: Permiss
                       {...field}
                       id={field.name}
                       placeholder="e.g. Create posts"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !canEditMetadata}
                     />
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
@@ -117,7 +122,7 @@ export default function EditPermissionForm({ permission }: { permission: Permiss
                           checked={field.value}
                           onCheckedChange={field.onChange}
                           aria-label="Permission active status"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || permission.isSystem}
                         />
                       </div>
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -136,7 +141,7 @@ export default function EditPermissionForm({ permission }: { permission: Permiss
                     {...field}
                     id={field.name}
                     placeholder={`feature.action e.g. ${PERMISSION_KEY_EXAMPLE}`}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || permission.isSystem}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -152,7 +157,7 @@ export default function EditPermissionForm({ permission }: { permission: Permiss
                     {...field}
                     id={field.name}
                     placeholder="e.g. A user who is allowed to create a post"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !canEditMetadata}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>

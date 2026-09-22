@@ -33,6 +33,7 @@ export default async function SettingsRoleAdminPage(props: { params: Params }) {
     description: role.description,
     isActive: role.isActive,
     assignOnJoin: role.assignOnJoin,
+    isSystem: role.isSystem,
   }
 
   return (

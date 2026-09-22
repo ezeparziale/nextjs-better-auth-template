@@ -96,6 +96,7 @@ export default function PermissionRolesTable({
       defaultColumnVisibility: DEFAULT_COLUMN_VISIBILITY,
       sortableColumns: SORTABLE_COLUMNS,
       enableSelection: true,
+      getRowCanSelect: (role) => !role.isSystem,
       defaultSorting: [],
     })
 

@@ -59,6 +59,7 @@ export default function CellActions({ row }: { row: Role }) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
+            disabled={row.isSystem}
             onSelect={() => {
               setIsDeleteDialogOpen(true)
             }}

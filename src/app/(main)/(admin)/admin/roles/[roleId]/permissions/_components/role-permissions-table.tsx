@@ -42,13 +42,15 @@ const SORTABLE_COLUMNS = [
 export default function RolePermissionsTable({
   initialParams,
   roleId,
+  isSystem = false,
 }: {
   initialParams: TableDefaultInitialParams
   roleId: string
+  isSystem?: boolean
 }) {
   const [isBulkRemoveOpen, setIsBulkRemoveOpen] = useState(false)
 
-  const columns = useMemo(() => getColumns(roleId), [roleId])
+  const columns = useMemo(() => getColumns(roleId, isSystem), [roleId, isSystem])
 
   const fetchData = useCallback<TableFetchFn<Permission>>(
     async ({ pageIndex, pageSize, sorting, search }) => {
@@ -95,7 +97,7 @@ export default function RolePermissionsTable({
       initialParams,
       defaultColumnVisibility: DEFAULT_COLUMN_VISIBILITY,
       sortableColumns: SORTABLE_COLUMNS,
-      enableSelection: true,
+      enableSelection: !isSystem,
       defaultSorting: [],
     })
 
@@ -112,28 +114,32 @@ export default function RolePermissionsTable({
         onSearchChange={handleSearchChange}
         onClearSearch={handleClearSearch}
         searchPlaceholder="Search name…"
-        enableSelection
+        enableSelection={!isSystem}
         selectedActions={
-          <Button
-            size="sm"
-            type="button"
-            variant="destructive"
-            disabled={selectedPermissionIds.length === 0}
-            onClick={() => setIsBulkRemoveOpen(true)}
-          >
-            <MinusIcon />
-            Remove
-          </Button>
+          !isSystem ? (
+            <Button
+              size="sm"
+              type="button"
+              variant="destructive"
+              disabled={selectedPermissionIds.length === 0}
+              onClick={() => setIsBulkRemoveOpen(true)}
+            >
+              <MinusIcon />
+              Remove
+            </Button>
+          ) : undefined
         }
         emptyState={{ entityLabel: "permissions", icon: KeyIcon }}
       />
-      <BulkRemovePermissionsDialog
-        roleId={roleId}
-        permissionIds={selectedPermissionIds}
-        isOpen={isBulkRemoveOpen}
-        setIsOpen={setIsBulkRemoveOpen}
-        onCompleted={() => table.resetRowSelection()}
-      />
+      {!isSystem && (
+        <BulkRemovePermissionsDialog
+          roleId={roleId}
+          permissionIds={selectedPermissionIds}
+          isOpen={isBulkRemoveOpen}
+          setIsOpen={setIsBulkRemoveOpen}
+          onCompleted={() => table.resetRowSelection()}
+        />
+      )}
     </>
   )
 }

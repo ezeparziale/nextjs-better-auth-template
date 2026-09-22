@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { requireAdmin } from "@/lib/auth/guards"
 import { definePage } from "@/lib/define-page"
+import { getRole } from "@/data/auth/get-role"
 import { DataTableProvider } from "@/components/ui/data-table"
 import { PageShell } from "@/components/page-shell"
 import AddPermissionDialog from "./_components/add-permission-dialog"
@@ -34,16 +35,27 @@ export default async function PermissionsRoleAdminPage(props: {
 
   const searchParams = await props.searchParams
 
+  const role = await getRole(roleId)
+  const isSystem = role?.isSystem ?? false
+
   return (
     <DataTableProvider>
       <PageShell
         page={PAGE}
         isSection
         actions={[
-          <AddPermissionDialog roleId={roleId} key="btn-action-add-permission" />,
+          <AddPermissionDialog
+            roleId={roleId}
+            isSystem={isSystem}
+            key="btn-action-add-permission"
+          />,
         ]}
       >
-        <RolePermissionsTable roleId={roleId} initialParams={searchParams} />
+        <RolePermissionsTable
+          roleId={roleId}
+          initialParams={searchParams}
+          isSystem={isSystem}
+        />
       </PageShell>
     </DataTableProvider>
   )

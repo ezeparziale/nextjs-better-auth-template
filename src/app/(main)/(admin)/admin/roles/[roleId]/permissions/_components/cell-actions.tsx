@@ -19,9 +19,11 @@ import RemovePermissionDialog from "./remove-permission-dialog"
 export default function CellActions({
   row,
   roleId,
+  disabled = false,
 }: {
   row: Permission
   roleId: string
+  disabled?: boolean
 }) {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
   const { copy } = useCopyToClipboard()
@@ -50,6 +52,7 @@ export default function CellActions({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             variant="destructive"
+            disabled={disabled}
             onSelect={() => {
               setIsRemoveDialogOpen(true)
             }}

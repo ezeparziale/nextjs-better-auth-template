@@ -1,6 +1,7 @@
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
+import { LockIcon } from "lucide-react"
 import { Role } from "@/lib/auth/rbac-plugin"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader, dataTableFeatures } from "@/components/ui/data-table"
@@ -16,7 +17,15 @@ export const columns = columnHelper.columns([
   columnHelper.accessor("key", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Key" />,
     cell: ({ row }) => {
-      return <Badge variant="secondary">{row.getValue("key")}</Badge>
+      const isSystem = row.original.isSystem
+      const key = row.getValue("key") as string
+
+      return (
+        <Badge variant="secondary" className="gap-1 font-mono">
+          {isSystem && <LockIcon />}
+          {key}
+        </Badge>
+      )
     },
   }),
   columnHelper.accessor("isActive", {

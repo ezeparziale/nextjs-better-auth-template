@@ -32,6 +32,7 @@ export default async function SettingsPermissionAdminPage(props: { params: Param
     key: permission.key,
     description: permission.description,
     isActive: permission.isActive,
+    isSystem: permission.isSystem,
   }
 
   return (
