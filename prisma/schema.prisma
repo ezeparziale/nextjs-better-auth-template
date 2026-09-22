@@ -152,6 +152,7 @@ model Role {
   description     String
   is_active       Boolean          @default(true)
   assign_on_join  Boolean          @default(false)
+  is_system       Boolean          @default(false)
   created_at      DateTime         @default(now())
   updated_at      DateTime         @default(now())
   userroles       UserRole[]
@@ -170,6 +171,7 @@ model Permission {
   key             String           @unique
   description     String
   is_active       Boolean          @default(true)
+  is_system       Boolean          @default(false)
   created_at      DateTime         @default(now())
   updated_at      DateTime         @default(now())
   rolepermissions RolePermission[]
