@@ -129,16 +129,27 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
             {
               name: "searchOperator",
               in: "query",
-              description:
-                'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
+              description: "The operator to use for the search.",
               schema: {
                 type: "string",
                 enum: ["contains", "starts_with", "ends_with"],
               },
               examples: {
-                contains: { value: "contains" },
-                starts_with: { value: "starts_with" },
-                ends_with: { value: "ends_with" },
+                contains: {
+                  summary: "Partial match",
+                  description: "Returns any record that contains the entered substring",
+                  value: "contains",
+                },
+                starts_with: {
+                  summary: "Starts with",
+                  description: "Returns records that start exactly with the given term",
+                  value: "starts_with",
+                },
+                ends_with: {
+                  summary: "Ends with",
+                  description: "Returns records that end with the specified term",
+                  value: "ends_with",
+                },
               },
             },
             {
@@ -199,7 +210,7 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
               name: "isActive",
               in: "query",
               description:
-                "Filter by active status. Accepts a boolean (true/1/yes/on, false/0/no/off) or a comma-separated/repeated list.",
+                "Filter the returned roles by their active status. Accepts a boolean (true/1/yes/on, false/0/no/off) or a comma-separated/repeated list.",
               schema: {
                 type: "string",
               },
@@ -297,10 +308,16 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                   schema: {
                     type: "object",
                     properties: {
-                      roles: {
-                        type: "array",
-                        items: {
-                          $ref: "#/components/schemas/Role",
+                      data: {
+                        type: "object",
+                        description: "The list payload.",
+                        properties: {
+                          roles: {
+                            type: "array",
+                            items: {
+                              $ref: "#/components/schemas/Role",
+                            },
+                          },
                         },
                       },
                       total: {
@@ -316,6 +333,37 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                   },
                 },
               },
+            },
+            400: {
+              description: "Invalid query parameters.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                      },
+                      message: {
+                        type: "string",
+                        example:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Not authenticated. Returns an empty body.",
+            },
+            403: {
+              description: "Authenticated but not an admin. Returns an empty body.",
+            },
+            500: {
+              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -380,14 +428,14 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
         })
 
         return ctx.json({
-          roles,
+          data: { roles },
           total,
           limit,
           offset,
         })
       } catch {
         return ctx.json({
-          roles: [],
+          data: { roles: [] },
           total: 0,
           limit,
           offset,
@@ -1869,20 +1917,11 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
           roleKey: z.string().optional().meta({
             description: "The key of the role.",
           }),
-          searchValue: z.string().optional().meta({
-            description: "The value to search in permissions.",
-          }),
-          searchField: z.enum(["name", "key"]).optional().meta({
+          search: z.string().optional().meta({
             description:
-              "The field to search in, defaults to name. Can be `name` or `key`.",
+              "The value to search in permissions. Matches permission name or key, case-insensitive.",
           }),
-          searchOperator: z
-            .enum(["contains", "starts_with", "ends_with"])
-            .meta({
-              description:
-                'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
-            })
-            .optional(),
+          isActive: zBooleanFilter,
           limit: z
             .string()
             .meta({ description: "The number of permissions to return." })
@@ -1912,6 +1951,104 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
           summary: "Get all permissions for a role",
           description:
             "Get all permissions for a role with pagination, search and sorting support",
+          parameters: [
+            {
+              name: "roleId",
+              in: "query",
+              description: "The ID of the role. Required unless roleKey is provided.",
+              schema: {
+                type: "string",
+                example: "role_8xKdMqQ2",
+              },
+            },
+            {
+              name: "roleKey",
+              in: "query",
+              description: "The key of the role. Required unless roleId is provided.",
+              schema: {
+                type: "string",
+                example: "admin",
+              },
+            },
+            {
+              name: "search",
+              in: "query",
+              description:
+                "The value to search in permissions. Matches permission name or key, case-insensitive.",
+              schema: {
+                type: "string",
+                example: "jane",
+              },
+            },
+            {
+              name: "isActive",
+              in: "query",
+              description:
+                "Filter the returned permissions by their active status. Accepts a boolean (true/1/yes/on, false/0/no/off) or a comma-separated/repeated list.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                active: { value: "true" },
+                inactive: { value: "false" },
+              },
+            },
+            {
+              name: "limit",
+              in: "query",
+              description: "The number of permissions to return.",
+              schema: {
+                type: "integer",
+                example: "10",
+              },
+            },
+            {
+              name: "offset",
+              in: "query",
+              description: "The offset to start from.",
+              schema: {
+                type: "integer",
+                example: "0",
+              },
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              description:
+                "The permission field to sort by. Allowed: id, name, key, isActive, createdAt, updatedAt, createdBy, updatedBy.",
+              schema: {
+                type: "string",
+                enum: [
+                  "id",
+                  "name",
+                  "key",
+                  "isActive",
+                  "createdAt",
+                  "updatedAt",
+                  "createdBy",
+                  "updatedBy",
+                ],
+              },
+              examples: {
+                name: { value: "name" },
+                key: { value: "key" },
+                createdAt: { value: "createdAt" },
+              },
+            },
+            {
+              name: "sortDirection",
+              in: "query",
+              description: "The direction to sort by.",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+              },
+              examples: {
+                asc: { value: "asc" },
+                desc: { value: "desc" },
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Role permissions",
@@ -1920,13 +2057,19 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                   schema: {
                     type: "object",
                     properties: {
-                      role: {
-                        $ref: "#/components/schemas/Role",
-                      },
-                      permissions: {
-                        type: "array",
-                        items: {
-                          $ref: "#/components/schemas/Permission",
+                      data: {
+                        type: "object",
+                        description: "The list payload.",
+                        properties: {
+                          role: {
+                            $ref: "#/components/schemas/Role",
+                          },
+                          permissions: {
+                            type: "array",
+                            items: {
+                              $ref: "#/components/schemas/Permission",
+                            },
+                          },
                         },
                       },
                       total: {
@@ -1943,12 +2086,41 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                 },
               },
             },
+            400: {
+              description: "Invalid query parameters.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                      },
+                      message: {
+                        type: "string",
+                        example:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Not authenticated. Returns an empty body.",
+            },
+            403: {
+              description: "Authenticated but not an admin. Returns an empty body.",
+            },
             404: {
               description: "Role not found",
               content: {
                 "application/json": {
                   schema: {
                     type: "object",
+                    required: ["code", "message"],
                     properties: {
                       code: {
                         type: "string",
@@ -1962,6 +2134,9 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                   },
                 },
               },
+            },
+            500: {
+              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -2016,8 +2191,7 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
       // If there are no permissions, return empty result
       if (permissionIds.length === 0) {
         return ctx.json({
-          role,
-          permissions: [],
+          data: { role, permissions: [] },
           total: 0,
           limit,
           offset,
@@ -2033,14 +2207,31 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
         },
       ]
 
-      // Add search filter if provided
-      if (ctx.query?.searchValue) {
-        where.push({
-          field: ctx.query.searchField || "name",
-          operator: ctx.query.searchOperator || "contains",
-          value: ctx.query.searchValue,
-        })
+      // Add search filter over name OR key if provided
+      const search = ctx.query?.search?.trim()
+      if (search) {
+        where.push(
+          {
+            field: "name",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+          {
+            field: "key",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+        )
       }
+
+      // Add isActive filter if provided
+      where.push(
+        ...buildFilterWhere(ctx.query as Record<string, unknown>, {
+          isActive: { field: "isActive", kind: "bool" },
+        }),
+      )
 
       try {
         // Get paginated, sorted and filtered permissions
@@ -2064,16 +2255,14 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
         })
 
         return ctx.json({
-          role,
-          permissions,
+          data: { role, permissions },
           total,
           limit,
           offset,
         })
       } catch {
         return ctx.json({
-          role,
-          permissions: [],
+          data: { role, permissions: [] },
           total: 0,
           limit,
           offset,
@@ -2112,20 +2301,10 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
           roleKey: z.string().optional().meta({
             description: "The key of the role.",
           }),
-          searchValue: z.string().optional().meta({
-            description: "The value to search in users.",
-          }),
-          searchField: z.enum(["name", "email"]).optional().meta({
+          search: z.string().optional().meta({
             description:
-              "The field to search in, defaults to name. Can be `name` or `email`.",
+              "The value to search in users. Matches user name or email, case-insensitive.",
           }),
-          searchOperator: z
-            .enum(["contains", "starts_with", "ends_with"])
-            .meta({
-              description:
-                'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
-            })
-            .optional(),
           limit: z
             .string()
             .meta({ description: "The number of users to return." })
@@ -2155,6 +2334,82 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
           summary: "Get all users for a role",
           description:
             "Get all users for a role with pagination, search and sorting support",
+          parameters: [
+            {
+              name: "roleId",
+              in: "query",
+              description: "The ID of the role. Required unless roleKey is provided.",
+              schema: {
+                type: "string",
+                example: "role_8xKdMqQ2",
+              },
+            },
+            {
+              name: "roleKey",
+              in: "query",
+              description: "The key of the role. Required unless roleId is provided.",
+              schema: {
+                type: "string",
+                example: "admin",
+              },
+            },
+            {
+              name: "search",
+              in: "query",
+              description:
+                "The value to search in users. Matches user name or email, case-insensitive.",
+              schema: {
+                type: "string",
+                example: "jane",
+              },
+            },
+            {
+              name: "limit",
+              in: "query",
+              description: "The number of users to return.",
+              schema: {
+                type: "integer",
+                example: "10",
+              },
+            },
+            {
+              name: "offset",
+              in: "query",
+              description: "The offset to start from.",
+              schema: {
+                type: "integer",
+                example: "0",
+              },
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              description:
+                "The user field to sort by. Allowed: id, name, email, banned, createdAt, updatedAt.",
+              schema: {
+                type: "string",
+                enum: ["id", "name", "email", "banned", "createdAt", "updatedAt"],
+              },
+              examples: {
+                name: { value: "name" },
+                email: { value: "email" },
+                createdAt: { value: "createdAt" },
+              },
+            },
+            {
+              name: "sortDirection",
+              in: "query",
+              description: "The direction to sort by.",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+              },
+              examples: {
+                asc: { value: "asc" },
+                desc: { value: "desc" },
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Role users",
@@ -2163,13 +2418,19 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                   schema: {
                     type: "object",
                     properties: {
-                      role: {
-                        $ref: "#/components/schemas/Role",
-                      },
-                      users: {
-                        type: "array",
-                        items: {
-                          $ref: "#/components/schemas/User",
+                      data: {
+                        type: "object",
+                        description: "The list payload.",
+                        properties: {
+                          role: {
+                            $ref: "#/components/schemas/Role",
+                          },
+                          users: {
+                            type: "array",
+                            items: {
+                              $ref: "#/components/schemas/User",
+                            },
+                          },
                         },
                       },
                       total: {
@@ -2186,12 +2447,41 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                 },
               },
             },
+            400: {
+              description: "Invalid query parameters.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                      },
+                      message: {
+                        type: "string",
+                        example:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Not authenticated. Returns an empty body.",
+            },
+            403: {
+              description: "Authenticated but not an admin. Returns an empty body.",
+            },
             404: {
               description: "Role not found",
               content: {
                 "application/json": {
                   schema: {
                     type: "object",
+                    required: ["code", "message"],
                     properties: {
                       code: {
                         type: "string",
@@ -2205,6 +2495,9 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                   },
                 },
               },
+            },
+            500: {
+              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -2259,8 +2552,7 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
       // If there are no users, return empty result
       if (userIds.length === 0) {
         return ctx.json({
-          role,
-          users: [],
+          data: { role, users: [] },
           total: 0,
           limit,
           offset,
@@ -2276,13 +2568,23 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
         },
       ]
 
-      // Add search filter if provided
-      if (ctx.query?.searchValue) {
-        where.push({
-          field: ctx.query.searchField || "name",
-          operator: ctx.query.searchOperator || "contains",
-          value: ctx.query.searchValue,
-        })
+      // Add search filter over name OR email if provided
+      const search = ctx.query?.search?.trim()
+      if (search) {
+        where.push(
+          {
+            field: "name",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+          {
+            field: "email",
+            operator: "contains",
+            value: search,
+            connector: "OR",
+          },
+        )
       }
 
       try {
@@ -2307,16 +2609,14 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
         })
 
         return ctx.json({
-          role,
-          users,
+          data: { role, users },
           total,
           limit,
           offset,
         })
       } catch {
         return ctx.json({
-          role,
-          users: [],
+          data: { role, users: [] },
           total: 0,
           limit,
           offset,
