@@ -83,7 +83,7 @@ export default function ClonePermissionDialog({
 
       if (error) {
         if (
-          error.code === "INVALID_PERMISSION_KEY" ||
+          error.code === "EMPTY_PERMISSION_KEY" ||
           error.code === "INVALID_PERMISSION_KEY_LENGTH" ||
           error.code === "INVALID_PERMISSION_KEY_FORMAT" ||
           error.code === "PERMISSION_ALREADY_EXISTS"

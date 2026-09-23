@@ -88,7 +88,7 @@ export default function CloneRoleDialog({
 
       if (error) {
         if (
-          error.code === "INVALID_ROLE_KEY" ||
+          error.code === "EMPTY_ROLE_KEY" ||
           error.code === "INVALID_ROLE_KEY_LENGTH" ||
           error.code === "INVALID_ROLE_KEY_FORMAT" ||
           error.code === "ROLE_ALREADY_EXISTS"

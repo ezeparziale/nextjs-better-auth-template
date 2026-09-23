@@ -50,7 +50,7 @@ export default function CreateUserForm({ showTitle = false }: { showTitle?: bool
 
       if (error) {
         if (
-          error.code === "INVALID_PERMISSION_KEY" ||
+          error.code === "EMPTY_PERMISSION_KEY" ||
           error.code === "INVALID_PERMISSION_KEY_LENGTH" ||
           error.code === "INVALID_PERMISSION_KEY_FORMAT"
         ) {

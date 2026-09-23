@@ -608,7 +608,8 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
               },
             },
             400: {
-              description: "Role already exists or batch size cap was exceeded",
+              description:
+                "Role key already exists, batch size cap was exceeded or the key is invalid",
               content: {
                 "application/json": {
                   schema: {
@@ -616,13 +617,23 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_ALREADY_EXISTS", "BATCH_TOO_LARGE"],
+                        enum: [
+                          "ROLE_ALREADY_EXISTS",
+                          "BATCH_TOO_LARGE",
+                          "EMPTY_ROLE_KEY",
+                          "INVALID_ROLE_KEY_LENGTH",
+                          "INVALID_ROLE_KEY_FORMAT",
+                        ],
                       },
                       message: {
                         type: "string",
                         enum: [
                           RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message,
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.EMPTY_ROLE_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_ROLE_KEY_LENGTH.message,
+                          options.roleKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_ROLE_KEY_FORMAT.message,
                         ],
                       },
                       details: {
@@ -886,7 +897,7 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
               },
             },
             400: {
-              description: "Role key already exists",
+              description: "Role key already exists or the key is invalid",
               content: {
                 "application/json": {
                   schema: {
@@ -894,11 +905,22 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_ALREADY_EXISTS"],
+                        enum: [
+                          "ROLE_ALREADY_EXISTS",
+                          "EMPTY_ROLE_KEY",
+                          "INVALID_ROLE_KEY_LENGTH",
+                          "INVALID_ROLE_KEY_FORMAT",
+                        ],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message],
+                        enum: [
+                          RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message,
+                          RBAC_ERROR_CODES.EMPTY_ROLE_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_ROLE_KEY_LENGTH.message,
+                          options.roleKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_ROLE_KEY_FORMAT.message,
+                        ],
                       },
                     },
                   },
@@ -1181,7 +1203,7 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
             },
             400: {
               description:
-                "Role key already exists, batch size cap was exceeded or the role is a system entity",
+                "Role key already exists, batch size cap was exceeded, the role is a system entity or the key is invalid",
               content: {
                 "application/json": {
                   schema: {
@@ -1193,6 +1215,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           "ROLE_ALREADY_EXISTS",
                           "BATCH_TOO_LARGE",
                           "CANNOT_MODIFY_SYSTEM_ROLE",
+                          "EMPTY_ROLE_KEY",
+                          "INVALID_ROLE_KEY_LENGTH",
+                          "INVALID_ROLE_KEY_FORMAT",
                         ],
                       },
                       message: {
@@ -1201,6 +1226,10 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.ROLE_ALREADY_EXISTS.message,
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
+                          RBAC_ERROR_CODES.EMPTY_ROLE_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_ROLE_KEY_LENGTH.message,
+                          options.roleKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_ROLE_KEY_FORMAT.message,
                         ],
                       },
                       details: {

@@ -589,7 +589,8 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
               },
             },
             400: {
-              description: "Permission already exists or batch size cap was exceeded",
+              description:
+                "Permission already exists, batch size cap was exceeded or the key is invalid",
               content: {
                 "application/json": {
                   schema: {
@@ -597,13 +598,23 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_ALREADY_EXISTS", "BATCH_TOO_LARGE"],
+                        enum: [
+                          "PERMISSION_ALREADY_EXISTS",
+                          "BATCH_TOO_LARGE",
+                          "EMPTY_PERMISSION_KEY",
+                          "INVALID_PERMISSION_KEY_LENGTH",
+                          "INVALID_PERMISSION_KEY_FORMAT",
+                        ],
                       },
                       message: {
                         type: "string",
                         enum: [
                           RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
+                          RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
+                          options.permissionKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
                         ],
                       },
                       details: {
@@ -851,7 +862,7 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
               },
             },
             400: {
-              description: "Permission key already exists",
+              description: "Permission key already exists or the key is invalid",
               content: {
                 "application/json": {
                   schema: {
@@ -859,11 +870,22 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_ALREADY_EXISTS"],
+                        enum: [
+                          "PERMISSION_ALREADY_EXISTS",
+                          "EMPTY_PERMISSION_KEY",
+                          "INVALID_PERMISSION_KEY_LENGTH",
+                          "INVALID_PERMISSION_KEY_FORMAT",
+                        ],
                       },
                       message: {
                         type: "string",
-                        enum: [RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message],
+                        enum: [
+                          RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
+                          RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
+                          options.permissionKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
+                        ],
                       },
                     },
                   },
@@ -1084,7 +1106,7 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
             },
             400: {
               description:
-                "Permission key already exists, batch size cap was exceeded, the permission is a system entity or a target role is a system entity",
+                "Permission key already exists, batch size cap was exceeded, the permission is a system entity, a target role is a system entity or the key is invalid",
               content: {
                 "application/json": {
                   schema: {
@@ -1097,6 +1119,9 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                           "BATCH_TOO_LARGE",
                           "CANNOT_MODIFY_SYSTEM_PERMISSION",
                           "CANNOT_MODIFY_SYSTEM_ROLE",
+                          "EMPTY_PERMISSION_KEY",
+                          "INVALID_PERMISSION_KEY_LENGTH",
+                          "INVALID_PERMISSION_KEY_FORMAT",
                         ],
                       },
                       message: {
@@ -1106,6 +1131,10 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_PERMISSION.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
+                          RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
+                          options.permissionKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
                         ],
                       },
                       details: {

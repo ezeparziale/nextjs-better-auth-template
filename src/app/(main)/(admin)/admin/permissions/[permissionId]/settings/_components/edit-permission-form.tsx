@@ -57,7 +57,7 @@ export default function EditPermissionForm({ permission }: { permission: Permiss
 
       if (error) {
         if (
-          error.code === "INVALID_PERMISSION_KEY" ||
+          error.code === "EMPTY_PERMISSION_KEY" ||
           error.code === "INVALID_PERMISSION_KEY_LENGTH" ||
           error.code === "INVALID_PERMISSION_KEY_FORMAT"
         ) {
