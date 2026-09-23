@@ -127,7 +127,7 @@ export default function UsersTable({
       }
 
       return {
-        rows: data.users || [],
+        rows: data.data.users || [],
         total: data.total || 0,
       }
     },

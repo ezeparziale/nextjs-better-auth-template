@@ -29,10 +29,10 @@ export default function AddRoleDialog({ userId }: AddRoleDialogProps) {
         },
       })
 
-      if (assignedRes.data?.roles && assignedRes.data.roles.length > 0) {
-        allRoles.push(...assignedRes.data.roles)
+      if (assignedRes.data?.data.roles && assignedRes.data.data.roles.length > 0) {
+        allRoles.push(...assignedRes.data.data.roles)
 
-        if (assignedRes.data.roles.length < pageSize) {
+        if (assignedRes.data.data.roles.length < pageSize) {
           hasMore = false
         } else {
           page++
