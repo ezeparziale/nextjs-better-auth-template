@@ -626,16 +626,29 @@ export const adminPlusPlugin = () => {
                 {
                   name: "searchOperator",
                   in: "query",
-                  description:
-                    'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
+                  description: "The operator to use for the search.",
                   schema: {
                     type: "string",
                     enum: ["contains", "starts_with", "ends_with"],
                   },
                   examples: {
-                    contains: { value: "contains" },
-                    starts_with: { value: "starts_with" },
-                    ends_with: { value: "ends_with" },
+                    contains: {
+                      summary: "Partial match",
+                      description:
+                        "Returns any record that contains the entered substring",
+                      value: "contains",
+                    },
+                    starts_with: {
+                      summary: "Starts with",
+                      description:
+                        "Returns records that start exactly with the given term",
+                      value: "starts_with",
+                    },
+                    ends_with: {
+                      summary: "Ends with",
+                      description: "Returns records that end with the specified term",
+                      value: "ends_with",
+                    },
                   },
                 },
                 {
@@ -777,10 +790,16 @@ export const adminPlusPlugin = () => {
                       schema: {
                         type: "object",
                         properties: {
-                          users: {
-                            type: "array",
-                            items: {
-                              $ref: "#/components/schemas/User",
+                          data: {
+                            type: "object",
+                            description: "The list payload.",
+                            properties: {
+                              users: {
+                                type: "array",
+                                items: {
+                                  $ref: "#/components/schemas/User",
+                                },
+                              },
                             },
                           },
                           total: {
@@ -793,10 +812,41 @@ export const adminPlusPlugin = () => {
                             type: "number",
                           },
                         },
-                        required: ["users", "total"],
+                        required: ["data", "total"],
                       },
                     },
                   },
+                },
+                400: {
+                  description: "Invalid query parameters.",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        required: ["code", "message"],
+                        properties: {
+                          code: {
+                            type: "string",
+                            enum: ["VALIDATION_ERROR"],
+                          },
+                          message: {
+                            type: "string",
+                            example:
+                              "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                401: {
+                  description: "Not authenticated. Returns an empty body.",
+                },
+                403: {
+                  description: "Authenticated but not an admin. Returns an empty body.",
+                },
+                500: {
+                  description: "Internal server error. Returns an empty body.",
                 },
               },
             },
@@ -847,14 +897,14 @@ export const adminPlusPlugin = () => {
               where.length ? where : undefined,
             )
             return ctx.json({
-              users: users as UserWithRole[],
+              data: { users: users as UserWithRole[] },
               total: total,
               limit: Number(ctx.query?.limit) || undefined,
               offset: Number(ctx.query?.offset) || undefined,
             })
           } catch {
             return ctx.json({
-              users: [],
+              data: { users: [] },
               total: 0,
             })
           }
