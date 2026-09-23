@@ -46,6 +46,14 @@ const FILTERS = [
       { label: "Inactive", value: "false" },
     ],
   },
+  {
+    columnId: "assignOnJoin",
+    title: "Assignment",
+    options: [
+      { label: "On join", value: "true" },
+      { label: "Manual", value: "false" },
+    ],
+  },
 ]
 
 export default function RolesTable({
@@ -67,9 +75,14 @@ export default function RolesTable({
       }
 
       const isActive = filters["isActive"]
+      const assignOnJoin = filters["assignOnJoin"]
 
       if (isActive && isActive.length > 0) {
         queryParams.isActive = isActive.map((value) => value === "true")
+      }
+
+      if (assignOnJoin && assignOnJoin.length > 0) {
+        queryParams.assignOnJoin = assignOnJoin.map((value) => value === "true")
       }
 
       if (sorting.length > 0) {

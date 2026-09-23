@@ -89,6 +89,7 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
         sortDirection,
         isActive: zBooleanFilter,
         isSystem: zBooleanFilter,
+        assignOnJoin: zBooleanFilter,
         createdAt: zDayFilter,
         createdFrom: zDayFilter,
         createdTo: zDayFilter,
@@ -221,6 +222,19 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
               },
             },
             {
+              name: "assignOnJoin",
+              in: "query",
+              description:
+                "Filter by on-join assignment. Accepts a boolean (true/1/yes/on, false/0/no/off) or a comma-separated/repeated list.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                on_join: { value: "true" },
+                manual: { value: "false" },
+              },
+            },
+            {
               name: "createdAt",
               in: "query",
               description: "Filter by creation day (YYYY-MM-DD, UTC).",
@@ -329,6 +343,7 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
       const roleFilters: Record<string, FilterFieldConfig> = {
         isActive: { field: "isActive", kind: "bool" },
         isSystem: { field: "isSystem", kind: "bool" },
+        assignOnJoin: { field: "assignOnJoin", kind: "bool" },
         createdAt: { field: "createdAt", kind: "day" },
         createdFrom: { field: "createdAt", kind: "dateFrom" },
         createdTo: { field: "createdAt", kind: "dateTo" },
