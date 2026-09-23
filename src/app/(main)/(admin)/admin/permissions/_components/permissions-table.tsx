@@ -65,16 +65,10 @@ export default function PermissionsTable({
         queryParams.searchOperator = "contains"
       }
 
-      const filterList = Object.entries(filters)
-        .map(([field, values]) => ({
-          field,
-          operator: values.length > 1 ? "in" : "eq",
-          value: values.length > 1 ? values : values[0],
-        }))
-        .filter((f) => f.value !== undefined && f.value !== "")
+      const isActive = filters["isActive"]
 
-      if (filterList.length > 0) {
-        queryParams.filters = JSON.stringify(filterList)
+      if (isActive && isActive.length > 0) {
+        queryParams.isActive = isActive.map((value) => value === "true")
       }
 
       if (sorting.length > 0) {
