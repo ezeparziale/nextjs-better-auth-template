@@ -20,6 +20,7 @@ const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   key: true,
   isActive: true,
+  isSystem: false,
   assignOnJoin: true,
   createdAt: false,
   updatedAt: true,
@@ -44,6 +45,14 @@ const FILTERS = [
     options: [
       { label: "Active", value: "true" },
       { label: "Inactive", value: "false" },
+    ],
+  },
+  {
+    columnId: "isSystem",
+    title: "System",
+    options: [
+      { label: "System", value: "true" },
+      { label: "User-created", value: "false" },
     ],
   },
   {
@@ -75,10 +84,15 @@ export default function RolesTable({
       }
 
       const isActive = filters["isActive"]
+      const isSystem = filters["isSystem"]
       const assignOnJoin = filters["assignOnJoin"]
 
       if (isActive && isActive.length > 0) {
         queryParams.isActive = isActive.map((value) => value === "true")
+      }
+
+      if (isSystem && isSystem.length > 0) {
+        queryParams.isSystem = isSystem.map((value) => value === "true")
       }
 
       if (assignOnJoin && assignOnJoin.length > 0) {

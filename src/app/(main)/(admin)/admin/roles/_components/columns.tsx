@@ -40,6 +40,18 @@ export const columns = columnHelper.columns([
       )
     },
   }),
+  columnHelper.accessor("isSystem", {
+    header: ({ column }) => <DataTableColumnHeader column={column} title="System" />,
+    cell: ({ row }) => {
+      const isSystem = row.getValue("isSystem")
+
+      return (
+        <Badge variant={isSystem ? "secondary" : "outline"}>
+          {isSystem ? "System" : "User-created"}
+        </Badge>
+      )
+    },
+  }),
   columnHelper.accessor("assignOnJoin", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Auto-assign" />

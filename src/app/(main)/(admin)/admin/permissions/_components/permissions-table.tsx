@@ -20,6 +20,7 @@ const DEFAULT_COLUMN_VISIBILITY = {
   name: true,
   key: true,
   isActive: true,
+  isSystem: false,
   createdAt: false,
   updatedAt: true,
   createdBy: false,
@@ -45,6 +46,14 @@ const FILTERS = [
       { label: "Inactive", value: "false" },
     ],
   },
+  {
+    columnId: "isSystem",
+    title: "System",
+    options: [
+      { label: "System", value: "true" },
+      { label: "User-created", value: "false" },
+    ],
+  },
 ]
 
 export default function PermissionsTable({
@@ -66,9 +75,14 @@ export default function PermissionsTable({
       }
 
       const isActive = filters["isActive"]
+      const isSystem = filters["isSystem"]
 
       if (isActive && isActive.length > 0) {
         queryParams.isActive = isActive.map((value) => value === "true")
+      }
+
+      if (isSystem && isSystem.length > 0) {
+        queryParams.isSystem = isSystem.map((value) => value === "true")
       }
 
       if (sorting.length > 0) {
