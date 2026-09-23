@@ -1,7 +1,13 @@
 import type { Where } from "better-auth"
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
-import { parseFiltersParam } from "../../shared/filters"
+import {
+  buildFilterWhere,
+  zBooleanFilter,
+  zDayFilter,
+  type FilterFieldConfig,
+} from "../../shared/filters"
+import type { OpenApiParameter } from "../../shared/openapi-types"
 import {
   createPaginationConfig,
   createValidationOptions,
@@ -81,18 +87,194 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
           .default(paginationConfig.defaultOffset),
         sortBy: sortByRole,
         sortDirection,
-        filters: z
-          .string()
-          .meta({
-            description: "A JSON string representing an array of filters.",
-          })
-          .optional(),
+        isActive: zBooleanFilter,
+        isSystem: zBooleanFilter,
+        createdAt: zDayFilter,
+        createdFrom: zDayFilter,
+        createdTo: zDayFilter,
+        updatedAt: zDayFilter,
+        updatedFrom: zDayFilter,
+        updatedTo: zDayFilter,
       }),
       metadata: {
         openapi: {
           operationId: "rbac.listRoles",
           summary: "List roles",
           description: "List roles",
+          parameters: [
+            {
+              name: "searchValue",
+              in: "query",
+              description: "The value to search.",
+              schema: {
+                type: "string",
+                example: "jane",
+              },
+            },
+            {
+              name: "searchField",
+              in: "query",
+              description:
+                "The field to search in, defaults to name. Can be `name` or `key`.",
+              schema: {
+                type: "string",
+                enum: ["name", "key"],
+              },
+              examples: {
+                name: { value: "name" },
+                key: { value: "key" },
+              },
+            },
+            {
+              name: "searchOperator",
+              in: "query",
+              description:
+                'The operator to use for the search. Can be `contains`, `starts_with` or `ends_with`. Eg: "contains"',
+              schema: {
+                type: "string",
+                enum: ["contains", "starts_with", "ends_with"],
+              },
+              examples: {
+                contains: { value: "contains" },
+                starts_with: { value: "starts_with" },
+                ends_with: { value: "ends_with" },
+              },
+            },
+            {
+              name: "limit",
+              in: "query",
+              description: "The number of roles to return.",
+              schema: {
+                type: "integer",
+                example: "10",
+              },
+            },
+            {
+              name: "offset",
+              in: "query",
+              description: "The offset to start from.",
+              schema: {
+                type: "integer",
+                example: "0",
+              },
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              description:
+                "The role field to sort by. Allowed: id, name, key, isActive, createdAt, updatedAt, createdBy, updatedBy.",
+              schema: {
+                type: "string",
+                enum: [
+                  "id",
+                  "name",
+                  "key",
+                  "isActive",
+                  "createdAt",
+                  "updatedAt",
+                  "createdBy",
+                  "updatedBy",
+                ],
+              },
+              examples: {
+                name: { value: "name" },
+                createdAt: { value: "createdAt" },
+              },
+            },
+            {
+              name: "sortDirection",
+              in: "query",
+              description: "The direction to sort by.",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+              },
+              examples: {
+                asc: { value: "asc" },
+                desc: { value: "desc" },
+              },
+            },
+            {
+              name: "isActive",
+              in: "query",
+              description:
+                "Filter by active status. Accepts a boolean (true/1/yes/on, false/0/no/off) or a comma-separated/repeated list.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                active: { value: "true" },
+                inactive: { value: "false" },
+              },
+            },
+            {
+              name: "isSystem",
+              in: "query",
+              description:
+                "Filter by system status. Accepts a boolean (true/1/yes/on, false/0/no/off) or a comma-separated/repeated list.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                system: { value: "true" },
+                user_created: { value: "false" },
+              },
+            },
+            {
+              name: "createdAt",
+              in: "query",
+              description: "Filter by creation day (YYYY-MM-DD, UTC).",
+              schema: {
+                type: "string",
+                example: "2026-09-22",
+              },
+            },
+            {
+              name: "createdFrom",
+              in: "query",
+              description: "Filter by creation day start (inclusive, YYYY-MM-DD).",
+              schema: {
+                type: "string",
+                example: "2026-09-01",
+              },
+            },
+            {
+              name: "createdTo",
+              in: "query",
+              description: "Filter by creation day end (exclusive, YYYY-MM-DD).",
+              schema: {
+                type: "string",
+                example: "2026-09-22",
+              },
+            },
+            {
+              name: "updatedAt",
+              in: "query",
+              description: "Filter by last update day (YYYY-MM-DD, UTC).",
+              schema: {
+                type: "string",
+                example: "2026-09-22",
+              },
+            },
+            {
+              name: "updatedFrom",
+              in: "query",
+              description: "Filter by last update day start (inclusive, YYYY-MM-DD).",
+              schema: {
+                type: "string",
+                example: "2026-09-01",
+              },
+            },
+            {
+              name: "updatedTo",
+              in: "query",
+              description: "Filter by last update day end (exclusive, YYYY-MM-DD).",
+              schema: {
+                type: "string",
+                example: "2026-09-22",
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "List roles",
@@ -144,9 +326,18 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
         })
       }
 
-      if (ctx.query?.filters) {
-        where.push(...parseFiltersParam(ctx.query.filters))
+      const roleFilters: Record<string, FilterFieldConfig> = {
+        isActive: { field: "isActive", kind: "bool" },
+        isSystem: { field: "isSystem", kind: "bool" },
+        createdAt: { field: "createdAt", kind: "day" },
+        createdFrom: { field: "createdAt", kind: "dateFrom" },
+        createdTo: { field: "createdAt", kind: "dateTo" },
+        updatedAt: { field: "updatedAt", kind: "day" },
+        updatedFrom: { field: "updatedAt", kind: "dateFrom" },
+        updatedTo: { field: "updatedAt", kind: "dateTo" },
       }
+
+      where.push(...buildFilterWhere(ctx.query as Record<string, unknown>, roleFilters))
 
       const { limit, offset } = getPaginationParams(
         ctx.query?.limit,

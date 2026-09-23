@@ -1,84 +1,153 @@
 import type { Where } from "better-auth"
-import { APIError } from "better-auth/api"
+import * as z from "zod"
 
-type FilterValue =
-  string | number | boolean | string[] | number[] | boolean[] | undefined
+const DAY_MS = 86_400_000
 
 /**
- * Parses a JSON string of filters (e.g. `[{"field":"isActive","operator":"eq","value":"true"}]`)
- * into Better Auth `Where[]` conditions.
+ * Filter param for boolean columns. Accepts a single value, a comma-separated
+ * list (`?isActive=true,false`) or repeated params (`?isActive=true&isActive=false`).
  *
- * - Coerces `"true"` / `"false"` values to booleans.
- * - For the `in` operator, accepts arrays or comma-separated strings and coerces
- *   all-boolean lists; a mix of `true` and `false` is treated as "no filter".
- *
- * Throws an `APIError("BAD_REQUEST")` if the payload is malformed.
+ * Zod coerces the accepted boolean strings (`true/1/yes/on`, `false/0/no/off`,
+ * case-insensitive via `z.stringbool()`); anything else → 400.
  */
-export function parseFiltersParam(filtersJson: string): Where[] {
+export const zBooleanFilter = z
+  .preprocess(
+    (value) =>
+      Array.isArray(value)
+        ? value
+        : typeof value === "string"
+          ? value
+              .split(",")
+              .map((v) => v.trim())
+              .filter(Boolean)
+          : value,
+    z.array(z.stringbool()).or(z.boolean()),
+  )
+  .optional()
+
+/**
+ * Filter param for a single day (`YYYY-MM-DD`, UTC semantics). Used for exact
+ * day and range (`-From`/`-To`) date filters.
+ */
+export const zDayFilter = z
+  .string()
+  .refine(isValidDay, "Date must be a valid day in YYYY-MM-DD format.")
+  .optional()
+
+/**
+ * Filter param for a raw multi-value list (e.g. `role=admin,user`).
+ */
+export const zListFilter = z
+  .preprocess(
+    (value) =>
+      Array.isArray(value)
+        ? value
+        : typeof value === "string"
+          ? value
+              .split(",")
+              .map((v) => v.trim())
+              .filter(Boolean)
+          : value,
+    z.array(z.string()),
+  )
+  .optional()
+
+export type FilterFieldConfig =
+  | { field: string; kind: "bool" }
+  | { field: string; kind: "list" }
+  | { field: string; kind: "dateFrom" }
+  | { field: string; kind: "dateTo" }
+  | { field: string; kind: "day" }
+
+/**
+ * Builds a typed `Where[]` for list endpoints from validated filter query
+ * params against a per-model whitelist. Conditions are ANDed together by the
+ * adapter.
+ *
+ * - `bool`: scalar → `eq`; a mix of `true` and `false` is treated as "no
+ *   filter" (it would match everything).
+ * - `list`: scalar → `eq`; multiple values → `in`.
+ * - `dateFrom`/`dateTo`: `YYYY-MM-DD` → `gte` (start of day) / `lt` (start of
+ *   next day, exclusive upper bound).
+ * - `day`: single `YYYY-MM-DD` → `[gte start, lt start+1day)`.
+ */
+export function buildFilterWhere(
+  query: Record<string, unknown>,
+  config: Record<string, FilterFieldConfig>,
+): Where[] {
   const where: Where[] = []
 
-  try {
-    const filters = JSON.parse(filtersJson) as Where[]
-    for (const filter of filters) {
-      let filterValue = filter.value as FilterValue
+  for (const [param, cfg] of Object.entries(config)) {
+    const raw = query[param]
+    if (raw === undefined || raw === null) continue
 
-      if (filter.operator === "in") {
-        try {
-          if (typeof filterValue === "string") {
-            if (filterValue.startsWith("[")) {
-              filterValue = JSON.parse(filterValue)
-            } else {
-              filterValue = filterValue.split(",").map((v) => v.trim())
-            }
-          }
-        } catch {
-          if (typeof filterValue === "string") {
-            filterValue = filterValue.split(",").map((v) => v.trim())
-          }
-        }
-        if (!Array.isArray(filterValue)) {
-          throw new APIError("BAD_REQUEST", {
-            message: "Value must be an array",
-          })
-        }
-        const boolValues: boolean[] = []
-        let isAllBooleans = true
-        for (const v of filterValue) {
-          if (v === "true" || v === true) {
-            boolValues.push(true)
-          } else if (v === "false" || v === false) {
-            boolValues.push(false)
-          } else {
-            isAllBooleans = false
-            break
-          }
-        }
-
-        if (isAllBooleans) {
-          if (boolValues.includes(true) && boolValues.includes(false)) {
-            continue
-          }
-          filterValue = boolValues
-        }
-      } else if (filterValue === "true") {
-        filterValue = true
-      } else if (filterValue === "false") {
-        filterValue = false
-      }
-
-      if (filterValue !== undefined) {
-        where.push({
-          field: filter.field,
-          operator: filter.operator || "eq",
-          value: filterValue as unknown as string[],
-        })
-      }
+    if (cfg.kind === "bool") {
+      const values = (Array.isArray(raw) ? raw : [raw]).filter(
+        (v): v is boolean => typeof v === "boolean",
+      )
+      if (values.length === 0) continue
+      const unique = [...new Set(values)]
+      if (unique.length > 1) continue
+      where.push({ field: cfg.field, value: unique[0] })
+      continue
     }
-  } catch {
-    throw new APIError("BAD_REQUEST", {
-      message: "Invalid filters format",
-    })
+
+    if (cfg.kind === "list") {
+      const values = (Array.isArray(raw) ? raw : String(raw).split(","))
+        .map((v) => String(v).trim())
+        .filter(Boolean)
+      if (values.length === 0) continue
+      if (values.length === 1) {
+        where.push({ field: cfg.field, value: values[0] })
+      } else {
+        where.push({ field: cfg.field, operator: "in", value: values })
+      }
+      continue
+    }
+
+    const startMs = toDayMs(String(raw))
+    if (Number.isNaN(startMs)) continue
+
+    if (cfg.kind === "dateFrom") {
+      where.push({ field: cfg.field, operator: "gte", value: new Date(startMs) })
+    } else if (cfg.kind === "dateTo") {
+      where.push({
+        field: cfg.field,
+        operator: "lt",
+        value: new Date(startMs + DAY_MS),
+      })
+    } else if (cfg.kind === "day") {
+      where.push(
+        { field: cfg.field, operator: "gte", value: new Date(startMs) },
+        {
+          field: cfg.field,
+          operator: "lt",
+          value: new Date(startMs + DAY_MS),
+        },
+      )
+    }
   }
 
   return where
+}
+
+function toDayMs(value: string): number {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return Number.NaN
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const date = new Date(Date.UTC(year, month - 1, day))
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return Number.NaN
+  }
+  return date.getTime()
+}
+
+function isValidDay(value: string): boolean {
+  return !Number.isNaN(toDayMs(value))
 }
