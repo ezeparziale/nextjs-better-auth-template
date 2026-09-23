@@ -113,7 +113,7 @@ export default function RolesTable({
       }
 
       return {
-        rows: data.roles || [],
+        rows: data.data.roles || [],
         total: data.total || 0,
       }
     },

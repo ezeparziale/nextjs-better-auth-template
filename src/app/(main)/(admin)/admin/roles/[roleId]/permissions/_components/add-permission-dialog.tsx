@@ -33,10 +33,13 @@ export default function AddPermissionDialog({
         },
       })
 
-      if (assignedRes.data?.permissions && assignedRes.data.permissions.length > 0) {
-        allPermissions.push(...assignedRes.data.permissions)
+      if (
+        assignedRes.data?.data.permissions &&
+        assignedRes.data.data.permissions.length > 0
+      ) {
+        allPermissions.push(...assignedRes.data.data.permissions)
 
-        if (assignedRes.data.permissions.length < pageSize) {
+        if (assignedRes.data.data.permissions.length < pageSize) {
           hasMore = false
         } else {
           page++

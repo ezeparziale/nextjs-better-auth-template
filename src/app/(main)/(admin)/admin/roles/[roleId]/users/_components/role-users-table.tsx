@@ -48,9 +48,7 @@ export default function RoleUsersTable({
       }
 
       if (search) {
-        queryParams.searchValue = search
-        queryParams.searchField = "email"
-        queryParams.searchOperator = "contains"
+        queryParams.search = search
       }
 
       if (sorting.length > 0) {
@@ -70,7 +68,7 @@ export default function RoleUsersTable({
       }
 
       return {
-        rows: data.users || [],
+        rows: data.data.users || [],
         total: data.total || 0,
       }
     },
@@ -99,7 +97,7 @@ export default function RoleUsersTable({
         searchInput={searchInput}
         onSearchChange={handleSearchChange}
         onClearSearch={handleClearSearch}
-        searchPlaceholder="Search email…"
+        searchPlaceholder="Search name or email…"
         enableSelection
         selectedActions={
           <Button

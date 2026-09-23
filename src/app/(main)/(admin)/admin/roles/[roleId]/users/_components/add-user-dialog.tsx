@@ -27,16 +27,16 @@ export default function AddUserDialog({ roleId }: AddUserDialogProps) {
         },
       })
 
-      if (assignedRes.data?.users && assignedRes.data.users.length > 0) {
+      if (assignedRes.data?.data.users && assignedRes.data.data.users.length > 0) {
         // Users tienen email en lugar de name
         allUsers.push(
-          ...assignedRes.data.users.map((user) => ({
+          ...assignedRes.data.data.users.map((user) => ({
             id: user.id,
             name: user.email, // usamos email como nombre
           })),
         )
 
-        if (assignedRes.data.users.length < pageSize) {
+        if (assignedRes.data.data.users.length < pageSize) {
           hasMore = false
         } else {
           page++
