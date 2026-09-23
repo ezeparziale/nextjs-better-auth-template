@@ -35,7 +35,7 @@ export const columns = columnHelper.columns([
     },
   }),
   columnHelper.accessor("isActive", {
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
       const isActive = row.getValue("isActive")
 
@@ -46,7 +46,7 @@ export const columns = columnHelper.columns([
       )
     },
     meta: {
-      displayName: "Active",
+      displayName: "Status",
     },
   }),
   columnHelper.accessor("isSystem", {
