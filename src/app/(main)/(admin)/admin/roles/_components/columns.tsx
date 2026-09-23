@@ -13,6 +13,9 @@ const columnHelper = createColumnHelper<typeof dataTableFeatures, Role>()
 export const columns = columnHelper.columns([
   columnHelper.accessor("name", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
+    meta: {
+      displayName: "Name",
+    },
   }),
   columnHelper.accessor("key", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Key" />,
@@ -27,6 +30,9 @@ export const columns = columnHelper.columns([
         </Badge>
       )
     },
+    meta: {
+      displayName: "Key",
+    },
   }),
   columnHelper.accessor("isActive", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="Active" />,
@@ -39,6 +45,9 @@ export const columns = columnHelper.columns([
         </Badge>
       )
     },
+    meta: {
+      displayName: "Active",
+    },
   }),
   columnHelper.accessor("isSystem", {
     header: ({ column }) => <DataTableColumnHeader column={column} title="System" />,
@@ -50,6 +59,9 @@ export const columns = columnHelper.columns([
           {isSystem ? "System" : "User-created"}
         </Badge>
       )
+    },
+    meta: {
+      displayName: "System",
     },
   }),
   columnHelper.accessor("assignOnJoin", {
@@ -65,6 +77,9 @@ export const columns = columnHelper.columns([
         </Badge>
       )
     },
+    meta: {
+      displayName: "Auto-assign",
+    },
   }),
   columnHelper.accessor("createdAt", {
     header: ({ column }) => (
@@ -73,6 +88,9 @@ export const columns = columnHelper.columns([
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
       return <DateDescription date={date} />
+    },
+    meta: {
+      displayName: "Created at",
     },
   }),
   columnHelper.accessor("updatedAt", {
@@ -83,16 +101,25 @@ export const columns = columnHelper.columns([
       const date = new Date(row.getValue("updatedAt"))
       return <DateDescription date={date} />
     },
+    meta: {
+      displayName: "Updated at",
+    },
   }),
   columnHelper.accessor("createdBy", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created By" />
     ),
+    meta: {
+      displayName: "Created By",
+    },
   }),
   columnHelper.accessor("updatedBy", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated By" />
     ),
+    meta: {
+      displayName: "Updated By",
+    },
   }),
   columnHelper.display({
     id: "actions",
