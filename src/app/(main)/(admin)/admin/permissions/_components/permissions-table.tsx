@@ -99,7 +99,7 @@ export default function PermissionsTable({
       }
 
       return {
-        rows: data.permissions || [],
+        rows: data.data.permissions || [],
         total: data.total || 0,
       }
     },

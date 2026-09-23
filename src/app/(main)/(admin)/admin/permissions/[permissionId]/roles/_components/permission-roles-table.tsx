@@ -58,9 +58,7 @@ export default function PermissionRolesTable({
       }
 
       if (search) {
-        queryParams.searchValue = search
-        queryParams.searchField = "name"
-        queryParams.searchOperator = "contains"
+        queryParams.search = search
       }
 
       if (sorting.length > 0) {
@@ -80,7 +78,7 @@ export default function PermissionRolesTable({
       }
 
       return {
-        rows: data.roles || [],
+        rows: data.data.roles || [],
         total: data.total || 0,
       }
     },
@@ -110,7 +108,7 @@ export default function PermissionRolesTable({
         searchInput={searchInput}
         onSearchChange={handleSearchChange}
         onClearSearch={handleClearSearch}
-        searchPlaceholder="Search name…"
+        searchPlaceholder="Search name or key…"
         enableSelection
         selectedActions={
           <Button
