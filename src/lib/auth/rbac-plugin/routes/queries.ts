@@ -33,9 +33,11 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user.",
+          example: "user_9mQGfY2Z",
         }),
         permissionKey: z.string().meta({
           description: "The key of the permission to check.",
+          example: "post:create",
         }),
       }),
       metadata: {
@@ -43,6 +45,29 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
           operationId: "rbac.checkPermission",
           summary: "Check if a user has a specific permission",
           description: "Check if a user has a specific permission through their roles",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    permissionKey: {
+                      type: "string",
+                      description: "The key of the permission to check.",
+                      example: "post:create",
+                    },
+                  },
+                  required: ["userId", "permissionKey"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission check result",
@@ -53,7 +78,19 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
                     properties: {
                       hasPermission: {
                         type: "boolean",
+                        description:
+                          "Whether the user has the permission through an active assigned role.",
                       },
+                    },
+                  },
+                  examples: {
+                    granted: {
+                      summary: "Permission granted",
+                      value: { hasPermission: true },
+                    },
+                    denied: {
+                      summary: "Permission denied",
+                      value: { hasPermission: false },
                     },
                   },
                 },
@@ -69,10 +106,23 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
@@ -223,6 +273,7 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         permissionKey: z.string().meta({
           description: "The key of the permission to check.",
+          example: "post:create",
         }),
       }),
       metadata: {
@@ -231,6 +282,24 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
           summary: "Check if the current user has a specific permission",
           description:
             "Check if the authenticated user has a specific permission through their roles",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    permissionKey: {
+                      type: "string",
+                      description: "The key of the permission to check.",
+                      example: "post:create",
+                    },
+                  },
+                  required: ["permissionKey"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission check result",
@@ -241,7 +310,19 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       hasPermission: {
                         type: "boolean",
+                        description:
+                          "Whether the user has the permission through an active assigned role.",
                       },
+                    },
+                  },
+                  examples: {
+                    granted: {
+                      summary: "Permission granted",
+                      value: { hasPermission: true },
+                    },
+                    denied: {
+                      summary: "Permission denied",
+                      value: { hasPermission: false },
                     },
                   },
                 },
@@ -257,10 +338,23 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },

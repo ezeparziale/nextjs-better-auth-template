@@ -109,7 +109,7 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
               description: "The value to search.",
               schema: {
                 type: "string",
-                example: "jane",
+                example: "editor",
               },
             },
             {
@@ -189,8 +189,14 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                 ],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
+                key: { value: "key" },
+                isActive: { value: "isActive" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
+                createdBy: { value: "createdBy" },
+                updatedBy: { value: "updatedBy" },
               },
             },
             {
@@ -322,12 +328,46 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
+                      },
+                    },
+                  },
+                  examples: {
+                    roles: {
+                      summary: "List of roles",
+                      value: {
+                        data: {
+                          roles: [
+                            {
+                              id: "role_8xKdMqQ2",
+                              name: "Editor",
+                              key: "editor",
+                              description:
+                                "Can edit content and manage their own posts.",
+                              isActive: true,
+                              assignOnJoin: false,
+                              isSystem: false,
+                              createdAt: "2026-09-18T15:04:05.000Z",
+                              updatedAt: "2026-09-20T09:12:33.000Z",
+                              createdBy: "admin@app.dev",
+                              updatedBy: "admin@app.dev",
+                            },
+                          ],
+                        },
+                        total: 42,
+                        limit: 10,
+                        offset: 0,
                       },
                     },
                   },
@@ -345,25 +385,28 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -500,10 +543,23 @@ export const rbacGetRole = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -568,22 +624,31 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         name: z.string().trim().min(1).meta({
           description: "The name of the role.",
+          example: "Editor",
         }),
         key: z.string().trim().min(1).meta({
           description: "The unique key for the role.",
+          example: "editor",
         }),
         description: z.string().trim().min(1).meta({
           description: "The description of the role.",
+          example: "Can edit content and manage their own posts.",
         }),
-        permissionIds: z.array(z.string()).optional().meta({
-          description: "Optional array of permission IDs to assign to the role.",
-        }),
+        permissionIds: z
+          .array(z.string())
+          .optional()
+          .meta({
+            description: "Optional array of permission IDs to assign to the role.",
+            example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
+          }),
         isActive: z.boolean().optional().meta({
           description: "Optional flag to set role active status. Defaults to true.",
+          example: true,
         }),
         assignOnJoin: z.boolean().optional().meta({
           description:
             "Optional flag that makes this role auto-assigned to new users. Defaults to false.",
+          example: false,
         }),
       }),
       metadata: {
@@ -591,6 +656,53 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
           operationId: "rbac.createRole",
           summary: "Create a new role",
           description: "Create a new role",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      type: "string",
+                      description: "The name of the role.",
+                      example: "Editor",
+                    },
+                    key: {
+                      type: "string",
+                      description: "The unique key for the role.",
+                      example: "editor",
+                    },
+                    description: {
+                      type: "string",
+                      description: "The description of the role.",
+                      example: "Can edit content and manage their own posts.",
+                    },
+                    permissionIds: {
+                      type: "array",
+                      description:
+                        "Optional array of permission IDs to assign to the role.",
+                      items: { type: "string" },
+                      example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
+                    },
+                    isActive: {
+                      type: "boolean",
+                      description:
+                        "Optional flag to set role active status. Defaults to true.",
+                      example: true,
+                    },
+                    assignOnJoin: {
+                      type: "boolean",
+                      description:
+                        "Optional flag that makes this role auto-assigned to new users. Defaults to false.",
+                      example: false,
+                    },
+                  },
+                  required: ["name", "key", "description"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role created successfully",
@@ -624,6 +736,8 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
                           "INVALID_ROLE_KEY_LENGTH",
                           "INVALID_ROLE_KEY_FORMAT",
                         ],
+                        description: "The error code.",
+                        example: "ROLE_ALREADY_EXISTS",
                       },
                       message: {
                         type: "string",
@@ -635,25 +749,74 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
                           options.roleKeyErrorMessage ??
                             RBAC_ERROR_CODES.INVALID_ROLE_KEY_FORMAT.message,
                         ],
+                        description:
+                          "Human-readable error message. See `code` for the specific validation/conflict error.",
+                        example: "Role with this key already exists.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "permissionIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    roleAlreadyExists: {
+                      summary: "Role with this key already exists.",
+                      value: {
+                        code: "ROLE_ALREADY_EXISTS",
+                        message: "Role with this key already exists.",
+                      },
+                    },
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "permissionIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    emptyRoleKey: {
+                      summary: "Role key cannot be empty.",
+                      value: {
+                        code: "EMPTY_ROLE_KEY",
+                        message: "Role key cannot be empty.",
+                      },
+                    },
+                    invalidRoleKeyLength: {
+                      summary: "Role key length is outside the configured limits.",
+                      value: {
+                        code: "INVALID_ROLE_KEY_LENGTH",
+                        message: "Role key length is outside the configured limits.",
+                      },
+                    },
+                    invalidRoleKeyFormat: {
+                      summary: "Role key does not match the configured format.",
+                      value: {
+                        code: "INVALID_ROLE_KEY_FORMAT",
+                        message: "Role key does not match the configured format.",
                       },
                     },
                   },
@@ -670,20 +833,38 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Permission not found.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is PERMISSION_NOT_FOUND.",
+                        description:
+                          "Present when code is PERMISSION_NOT_FOUND. The permission ids that were not found.",
                         properties: {
                           missingPermissionIds: {
                             type: "array",
                             description: "The permission ids that were not found.",
                             items: { type: "string" },
+                            example: ["permission_zzZz9xQp"],
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
+                        details: {
+                          missingPermissionIds: ["permission_zzZz9xQp"],
                         },
                       },
                     },
@@ -802,31 +983,39 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         id: z.string().meta({
           description: "The id of the role to clone.",
+          example: "role_8xKdMqQ2",
         }),
         name: z.string().meta({
           description: "The name of the cloned role.",
+          example: "Editor (Copy)",
         }),
         key: z.string().meta({
           description: "The unique key for the cloned role.",
+          example: "editor_copy",
         }),
         description: z.string().optional().meta({
           description: "Optional description of the cloned role.",
+          example: "Same permissions as Editor, for staging.",
         }),
         isActive: z.boolean().optional().meta({
           description:
             "Optional flag to set role active status. Defaults to the source role value.",
+          example: true,
         }),
         assignOnJoin: z.boolean().optional().meta({
           description:
             "Optional flag that makes the cloned role auto-assigned to new users. Defaults to the source role value.",
+          example: false,
         }),
         copyPermissions: z.boolean().optional().default(true).meta({
           description:
             "Whether to copy the permissions from the source role. Defaults to true.",
+          example: true,
         }),
         copyUsers: z.boolean().optional().default(true).meta({
           description:
             "Whether to copy the user assignments from the source role. Defaults to true.",
+          example: true,
         }),
       }),
       metadata: {
@@ -835,6 +1024,63 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
           summary: "Clone an existing role",
           description:
             "Create a copy of an existing role, optionally copying its permissions.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "The id of the role to clone.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    name: {
+                      type: "string",
+                      description: "The name of the cloned role.",
+                      example: "Editor (Copy)",
+                    },
+                    key: {
+                      type: "string",
+                      description: "The unique key for the cloned role.",
+                      example: "editor_copy",
+                    },
+                    description: {
+                      type: "string",
+                      description: "Optional description of the cloned role.",
+                      example: "Same permissions as Editor, for staging.",
+                    },
+                    isActive: {
+                      type: "boolean",
+                      description:
+                        "Optional flag to set role active status. Defaults to the source role value.",
+                      example: true,
+                    },
+                    assignOnJoin: {
+                      type: "boolean",
+                      description:
+                        "Optional flag that makes the cloned role auto-assigned to new users. Defaults to the source role value.",
+                      example: false,
+                    },
+                    copyPermissions: {
+                      type: "boolean",
+                      description:
+                        "Whether to copy the permissions from the source role. Defaults to true.",
+                      example: true,
+                    },
+                    copyUsers: {
+                      type: "boolean",
+                      description:
+                        "Whether to copy the user assignments from the source role. Defaults to true.",
+                      example: true,
+                    },
+                  },
+                  required: ["id", "name", "key"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role cloned successfully",
@@ -865,6 +1111,8 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                           "PERMISSION_NOT_FOUND",
                           "USER_NOT_FOUND",
                         ],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -873,6 +1121,9 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the source role does not exist, `Permission not found.` when a permission to copy does not exist, `User not found.` when a user to copy does not exist.",
+                        example: "Role not found.",
                       },
                       details: {
                         type: "object",
@@ -883,13 +1134,42 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                             type: "array",
                             description: "The permission ids that were not found.",
                             items: { type: "string" },
+                            example: ["permission_zzZz9xQp"],
                           },
                           missingUserIds: {
                             type: "array",
                             description: "The user ids that were not found.",
                             items: { type: "string" },
+                            example: ["user_zzZz9xQp"],
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
+                        details: {
+                          missingPermissionIds: ["permission_zzZz9xQp"],
+                          missingUserIds: ["user_zzZz9xQp"],
+                        },
+                      },
+                    },
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
@@ -911,6 +1191,8 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                           "INVALID_ROLE_KEY_LENGTH",
                           "INVALID_ROLE_KEY_FORMAT",
                         ],
+                        description: "The error code.",
+                        example: "ROLE_ALREADY_EXISTS",
                       },
                       message: {
                         type: "string",
@@ -921,6 +1203,39 @@ export const rbacCloneRole = <O extends RBACPluginOptions>(options: O) => {
                           options.roleKeyErrorMessage ??
                             RBAC_ERROR_CODES.INVALID_ROLE_KEY_FORMAT.message,
                         ],
+                        description:
+                          "Human-readable error message. See `code` for the specific conflict/validation error.",
+                        example: "Role with this key already exists.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleAlreadyExists: {
+                      summary: "Role with this key already exists.",
+                      value: {
+                        code: "ROLE_ALREADY_EXISTS",
+                        message: "Role with this key already exists.",
+                      },
+                    },
+                    emptyRoleKey: {
+                      summary: "Role key cannot be empty.",
+                      value: {
+                        code: "EMPTY_ROLE_KEY",
+                        message: "Role key cannot be empty.",
+                      },
+                    },
+                    invalidRoleKeyLength: {
+                      summary: "Role key length is outside the configured limits.",
+                      value: {
+                        code: "INVALID_ROLE_KEY_LENGTH",
+                        message: "Role key length is outside the configured limits.",
+                      },
+                    },
+                    invalidRoleKeyFormat: {
+                      summary: "Role key does not match the configured format.",
+                      value: {
+                        code: "INVALID_ROLE_KEY_FORMAT",
+                        message: "Role key does not match the configured format.",
                       },
                     },
                   },
@@ -1110,36 +1425,108 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         id: z.string().meta({
           description: "The id of the role to update.",
+          example: "role_8xKdMqQ2",
         }),
         name: z.string().trim().min(1).optional().meta({
           description: "The new name of the role.",
+          example: "Content Editor",
         }),
         key: z.string().trim().min(1).optional().meta({
           description: "The new key for the role.",
+          example: "content_editor",
         }),
         description: z.string().trim().min(1).optional().meta({
           description: "The new description of the role.",
+          example: "Edits and publishes content.",
         }),
         isActive: z.boolean().optional().meta({
           description: "Optional flag to set role active status.",
+          example: true,
         }),
         assignOnJoin: z.boolean().optional().meta({
           description: "Optional flag that makes this role auto-assigned to new users.",
+          example: false,
         }),
-        permissionIds: z.array(z.string()).optional().meta({
-          description:
-            "Optional array of permission IDs to replace current permissions.",
-        }),
-        userIds: z.array(z.string()).optional().meta({
-          description:
-            "Optional array of user IDs to replace current users assigned to this role.",
-        }),
+        permissionIds: z
+          .array(z.string())
+          .optional()
+          .meta({
+            description:
+              "Optional array of permission IDs to replace current permissions.",
+            example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
+          }),
+        userIds: z
+          .array(z.string())
+          .optional()
+          .meta({
+            description:
+              "Optional array of user IDs to replace current users assigned to this role.",
+            example: ["user_9mQGfY2Z", "user_2pQkLmW6"],
+          }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.updateRole",
           summary: "Update an existing role",
           description: "Update an existing role",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "The id of the role to update.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    name: {
+                      type: "string",
+                      description: "The new name of the role.",
+                      example: "Content Editor",
+                    },
+                    key: {
+                      type: "string",
+                      description: "The new key for the role.",
+                      example: "content_editor",
+                    },
+                    description: {
+                      type: "string",
+                      description: "The new description of the role.",
+                      example: "Edits and publishes content.",
+                    },
+                    isActive: {
+                      type: "boolean",
+                      description: "Optional flag to set role active status.",
+                      example: true,
+                    },
+                    assignOnJoin: {
+                      type: "boolean",
+                      description:
+                        "Optional flag that makes this role auto-assigned to new users.",
+                      example: false,
+                    },
+                    permissionIds: {
+                      type: "array",
+                      description:
+                        "Optional array of permission IDs to replace current permissions.",
+                      items: { type: "string" },
+                      example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
+                    },
+                    userIds: {
+                      type: "array",
+                      description:
+                        "Optional array of user IDs to replace current users assigned to this role.",
+                      items: { type: "string" },
+                      example: ["user_9mQGfY2Z", "user_2pQkLmW6"],
+                    },
+                  },
+                  required: ["id"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role updated successfully",
@@ -1170,6 +1557,8 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           "PERMISSION_NOT_FOUND",
                           "USER_NOT_FOUND",
                         ],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -1178,6 +1567,9 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the source role does not exist, `Permission not found.` when a permission to copy does not exist, `User not found.` when a user to copy does not exist.",
+                        example: "Role not found.",
                       },
                       details: {
                         type: "object",
@@ -1188,13 +1580,42 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                             type: "array",
                             description: "The permission ids that were not found.",
                             items: { type: "string" },
+                            example: ["permission_zzZz9xQp"],
                           },
                           missingUserIds: {
                             type: "array",
                             description: "The user ids that were not found.",
                             items: { type: "string" },
+                            example: ["user_zzZz9xQp"],
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
+                        details: {
+                          missingPermissionIds: ["permission_zzZz9xQp"],
+                          missingUserIds: ["user_zzZz9xQp"],
+                        },
+                      },
+                    },
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
@@ -1219,6 +1640,8 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           "INVALID_ROLE_KEY_LENGTH",
                           "INVALID_ROLE_KEY_FORMAT",
                         ],
+                        description: "The error code.",
+                        example: "ROLE_ALREADY_EXISTS",
                       },
                       message: {
                         type: "string",
@@ -1231,25 +1654,81 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
                           options.roleKeyErrorMessage ??
                             RBAC_ERROR_CODES.INVALID_ROLE_KEY_FORMAT.message,
                         ],
+                        description:
+                          "Human-readable error message. See `code` for the specific conflict/validation error.",
+                        example: "Role with this key already exists.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "permissionIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    roleAlreadyExists: {
+                      summary: "Role with this key already exists.",
+                      value: {
+                        code: "ROLE_ALREADY_EXISTS",
+                        message: "Role with this key already exists.",
+                      },
+                    },
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "permissionIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
+                      },
+                    },
+                    emptyRoleKey: {
+                      summary: "Role key cannot be empty.",
+                      value: {
+                        code: "EMPTY_ROLE_KEY",
+                        message: "Role key cannot be empty.",
+                      },
+                    },
+                    invalidRoleKeyLength: {
+                      summary: "Role key length is outside the configured limits.",
+                      value: {
+                        code: "INVALID_ROLE_KEY_LENGTH",
+                        message: "Role key length is outside the configured limits.",
+                      },
+                    },
+                    invalidRoleKeyFormat: {
+                      summary: "Role key does not match the configured format.",
+                      value: {
+                        code: "INVALID_ROLE_KEY_FORMAT",
+                        message: "Role key does not match the configured format.",
                       },
                     },
                   },
@@ -1537,10 +2016,12 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         id: z.string().meta({
           description: "The id of the role to delete.",
+          example: "role_8xKdMqQ2",
         }),
         skipAssignmentCheck: z.boolean().optional().meta({
           description:
             "Skips the assignment check and deletes the role even if it is assigned to users. Defaults to false.",
+          example: false,
         }),
       }),
       metadata: {
@@ -1548,6 +2029,30 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
           operationId: "rbac.deleteRole",
           summary: "Delete a role",
           description: "Delete a role",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "The id of the role to delete.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    skipAssignmentCheck: {
+                      type: "boolean",
+                      description:
+                        "Skips the assignment check and deletes the role even if it is assigned to users. Defaults to false.",
+                      example: false,
+                    },
+                  },
+                  required: ["id"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role deleted successfully",
@@ -1558,9 +2063,20 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable result.",
+                      },
+                    },
+                  },
+                  examples: {
+                    deleted: {
+                      summary: "Role deleted",
+                      value: {
+                        success: true,
+                        message: "Role deleted successfully",
                       },
                     },
                   },
@@ -1577,10 +2093,23 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -1601,6 +2130,8 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                           "CANNOT_DELETE_SYSTEM_ROLE",
                           "CANNOT_DELETE_ASSIGNED_ROLE",
                         ],
+                        description: "The error code.",
+                        example: "CANNOT_DELETE_ASSIGNED_ROLE",
                       },
                       message: {
                         type: "string",
@@ -1608,6 +2139,9 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.CANNOT_DELETE_SYSTEM_ROLE.message,
                           RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_ROLE.message,
                         ],
+                        description:
+                          "Human-readable error message. `Cannot delete system role.` for system entities, `Cannot delete role that is assigned to users.` when the role still has users and the check was not skipped.",
+                        example: "Cannot delete role that is assigned to users.",
                       },
                       details: {
                         type: "object",
@@ -1617,7 +2151,27 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                           assignedUsers: {
                             type: "number",
                             description: "The number of users assigned to the role.",
+                            example: 4,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    cannotDeleteSystemRole: {
+                      summary: "Cannot delete system role.",
+                      value: {
+                        code: "CANNOT_DELETE_SYSTEM_ROLE",
+                        message: "Cannot delete system role.",
+                      },
+                    },
+                    cannotDeleteAssignedRole: {
+                      summary: "Cannot delete role that is assigned to users.",
+                      value: {
+                        code: "CANNOT_DELETE_ASSIGNED_ROLE",
+                        message: "Cannot delete role that is assigned to users.",
+                        details: {
+                          assignedUsers: 4,
                         },
                       },
                     },
@@ -1792,19 +2346,19 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                       value: {
                         options: [
                           {
-                            value: "role_123abc",
+                            value: "role_8xKdMqQ2",
                             label: "Administrator",
                             key: "admin",
                             isSystem: true,
                           },
                           {
-                            value: "role_456def",
+                            value: "role_7jOpYz83",
                             label: "Editor",
                             key: "editor",
                             isSystem: false,
                           },
                           {
-                            value: "role_789ghi",
+                            value: "role_9lVnPqR4",
                             label: "Viewer",
                             key: "viewer",
                             isSystem: false,
@@ -1823,12 +2377,12 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                       value: {
                         options: [
                           {
-                            value: "role_123abc",
+                            value: "role_8xKdMqQ2",
                             label: "Administrator",
                             key: "admin",
                           },
                           {
-                            value: "role_456def",
+                            value: "role_7jOpYz83",
                             label: "Admin Assistant",
                             key: "admin_assistant",
                           },
@@ -2006,7 +2560,7 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                 "The value to search in permissions. Matches permission name or key, case-insensitive.",
               schema: {
                 type: "string",
-                example: "jane",
+                example: "user:read",
               },
             },
             {
@@ -2059,9 +2613,14 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                 ],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
                 key: { value: "key" },
+                isActive: { value: "isActive" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
+                createdBy: { value: "createdBy" },
+                updatedBy: { value: "updatedBy" },
               },
             },
             {
@@ -2103,12 +2662,18 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
                       },
                     },
                   },
@@ -2126,22 +2691,28 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
             },
             404: {
               description: "Role not found",
@@ -2154,18 +2725,28 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
                 },
               },
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -2420,9 +3001,12 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                 enum: ["id", "name", "email", "banned", "createdAt", "updatedAt"],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
                 email: { value: "email" },
+                banned: { value: "banned" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
               },
             },
             {
@@ -2464,12 +3048,18 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
                       },
                     },
                   },
@@ -2487,22 +3077,28 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
             },
             404: {
               description: "Role not found",
@@ -2515,18 +3111,28 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
                 },
               },
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },

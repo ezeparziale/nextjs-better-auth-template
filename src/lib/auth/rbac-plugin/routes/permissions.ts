@@ -105,7 +105,7 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
               description: "The value to search.",
               schema: {
                 type: "string",
-                example: "jane",
+                example: "user:read",
               },
             },
             {
@@ -185,8 +185,14 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
                 ],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
+                key: { value: "key" },
+                isActive: { value: "isActive" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
+                createdBy: { value: "createdBy" },
+                updatedBy: { value: "updatedBy" },
               },
             },
             {
@@ -305,12 +311,44 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
+                      },
+                    },
+                  },
+                  examples: {
+                    permissions: {
+                      summary: "List of permissions",
+                      value: {
+                        data: {
+                          permissions: [
+                            {
+                              id: "permission_2nQxLvK8",
+                              name: "Create Post",
+                              key: "post:create",
+                              description: "Allows creating posts.",
+                              isActive: true,
+                              isSystem: false,
+                              createdAt: "2026-09-18T15:04:05.000Z",
+                              updatedAt: "2026-09-20T09:12:33.000Z",
+                              createdBy: "admin@app.dev",
+                              updatedBy: "admin@app.dev",
+                            },
+                          ],
+                        },
+                        total: 42,
+                        limit: 10,
+                        offset: 0,
                       },
                     },
                   },
@@ -328,25 +366,28 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -484,10 +525,23 @@ export const rbacGetPermission = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Permission not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -552,26 +606,75 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
       body: z.object({
         name: z.string().trim().min(1).meta({
           description: "The name of the permission.",
+          example: "Create Post",
         }),
         key: z.string().trim().min(1).meta({
           description: "The unique key for the permission.",
+          example: "post:create",
         }),
         description: z.string().trim().min(1).meta({
           description: "The description of the permission.",
+          example: "Allows creating posts.",
         }),
         isActive: z.boolean().optional().meta({
           description:
             "Optional flag to set permission active status. Defaults to true.",
+          example: true,
         }),
-        roleIds: z.array(z.string()).optional().meta({
-          description: "Optional array of role IDs to assign this permission to.",
-        }),
+        roleIds: z
+          .array(z.string())
+          .optional()
+          .meta({
+            description: "Optional array of role IDs to assign this permission to.",
+            example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+          }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.createPermission",
           summary: "Create a new permission",
           description: "Create a new permission",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      type: "string",
+                      description: "The name of the permission.",
+                      example: "Create Post",
+                    },
+                    key: {
+                      type: "string",
+                      description: "The unique key for the permission.",
+                      example: "post:create",
+                    },
+                    description: {
+                      type: "string",
+                      description: "The description of the permission.",
+                      example: "Allows creating posts.",
+                    },
+                    isActive: {
+                      type: "boolean",
+                      description:
+                        "Optional flag to set permission active status. Defaults to true.",
+                      example: true,
+                    },
+                    roleIds: {
+                      type: "array",
+                      description:
+                        "Optional array of role IDs to assign this permission to.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["name", "key", "description"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission created successfully",
@@ -605,6 +708,8 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                           "INVALID_PERMISSION_KEY_LENGTH",
                           "INVALID_PERMISSION_KEY_FORMAT",
                         ],
+                        description: "The error code.",
+                        example: "PERMISSION_ALREADY_EXISTS",
                       },
                       message: {
                         type: "string",
@@ -616,25 +721,74 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                           options.permissionKeyErrorMessage ??
                             RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
                         ],
+                        description:
+                          "Human-readable error message. See `code` for the specific validation/conflict error.",
+                        example: "Permission with this key already exists.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionAlreadyExists: {
+                      summary: "Permission with this key already exists.",
+                      value: {
+                        code: "PERMISSION_ALREADY_EXISTS",
+                        message: "Permission with this key already exists.",
+                      },
+                    },
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    emptyPermissionKey: {
+                      summary: "Permission key cannot be empty.",
+                      value: {
+                        code: "EMPTY_PERMISSION_KEY",
+                        message: "Permission key cannot be empty.",
+                      },
+                    },
+                    invalidPermissionKeyLength: {
+                      summary: "Permission with this key already exists.",
+                      value: {
+                        code: "INVALID_PERMISSION_KEY_LENGTH",
+                        message: "Permission with this key already exists.",
+                      },
+                    },
+                    invalidPermissionKeyFormat: {
+                      summary: "Permission key does not match the configured format.",
+                      value: {
+                        code: "INVALID_PERMISSION_KEY_FORMAT",
+                        message: "Permission key does not match the configured format.",
                       },
                     },
                   },
@@ -651,20 +805,38 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.ROLE_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Role not found.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is ROLE_NOT_FOUND.",
+                        description:
+                          "Present when code is ROLE_NOT_FOUND. The role ids that were not found.",
                         properties: {
                           missingRoleIds: {
                             type: "array",
                             description: "The role ids that were not found.",
                             items: { type: "string" },
+                            example: ["role_zzZz9xQp"],
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                        details: {
+                          missingRoleIds: ["role_zzZz9xQp"],
                         },
                       },
                     },
@@ -785,24 +957,30 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
       body: z.object({
         id: z.string().meta({
           description: "The id of the permission to clone.",
+          example: "permission_2nQxLvK8",
         }),
         name: z.string().trim().min(1).meta({
           description: "The name of the cloned permission.",
+          example: "Delete Post (Copy)",
         }),
         key: z.string().trim().min(1).meta({
           description: "The unique key for the cloned permission.",
+          example: "post:delete_copy",
         }),
         description: z.string().trim().min(1).optional().meta({
           description:
             "Optional description of the cloned permission. Defaults to the source permission value.",
+          example: "Same as Delete Post, for staging.",
         }),
         isActive: z.boolean().optional().meta({
           description:
             "Optional flag to set permission active status. Defaults to the source permission value.",
+          example: true,
         }),
         copyRoles: z.boolean().optional().default(true).meta({
           description:
             "Whether to copy the role assignments from the source permission. Defaults to true.",
+          example: true,
         }),
       }),
       metadata: {
@@ -811,6 +989,52 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
           summary: "Clone an existing permission",
           description:
             "Create a copy of an existing permission, optionally copying its role assignments.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "The id of the permission to clone.",
+                      example: "permission_2nQxLvK8",
+                    },
+                    name: {
+                      type: "string",
+                      description: "The name of the cloned permission.",
+                      example: "Delete Post (Copy)",
+                    },
+                    key: {
+                      type: "string",
+                      description: "The unique key for the cloned permission.",
+                      example: "post:delete_copy",
+                    },
+                    description: {
+                      type: "string",
+                      description:
+                        "Optional description of the cloned permission. Defaults to the source permission value.",
+                      example: "Same as Delete Post, for staging.",
+                    },
+                    isActive: {
+                      type: "boolean",
+                      description:
+                        "Optional flag to set permission active status. Defaults to the source permission value.",
+                      example: true,
+                    },
+                    copyRoles: {
+                      type: "boolean",
+                      description:
+                        "Whether to copy the role assignments from the source permission. Defaults to true.",
+                      example: true,
+                    },
+                  },
+                  required: ["id", "name", "key"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission cloned successfully",
@@ -837,6 +1061,8 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -844,48 +1070,108 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Permission not found.` when the source permission does not exist, `Role not found.` when one of the roles to copy was not found.",
+                        example: "Permission not found.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is ROLE_NOT_FOUND.",
+                        description:
+                          "Present when code is ROLE_NOT_FOUND. The role ids that were not found.",
                         properties: {
                           missingRoleIds: {
                             type: "array",
                             description: "The role ids that were not found.",
                             items: { type: "string" },
+                            example: ["role_zzZz9xQp"],
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                        details: {
+                          missingRoleIds: ["role_zzZz9xQp"],
                         },
                       },
                     },
                   },
                 },
               },
-            },
-            400: {
-              description: "Permission key already exists or the key is invalid",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    properties: {
-                      code: {
-                        type: "string",
-                        enum: [
-                          "PERMISSION_ALREADY_EXISTS",
-                          "EMPTY_PERMISSION_KEY",
-                          "INVALID_PERMISSION_KEY_LENGTH",
-                          "INVALID_PERMISSION_KEY_FORMAT",
-                        ],
+              400: {
+                description: "Permission key already exists or the key is invalid",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        code: {
+                          type: "string",
+                          enum: [
+                            "PERMISSION_ALREADY_EXISTS",
+                            "EMPTY_PERMISSION_KEY",
+                            "INVALID_PERMISSION_KEY_LENGTH",
+                            "INVALID_PERMISSION_KEY_FORMAT",
+                          ],
+                          description: "The error code.",
+                          example: "PERMISSION_ALREADY_EXISTS",
+                        },
+                        message: {
+                          type: "string",
+                          enum: [
+                            RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
+                            RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
+                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
+                            options.permissionKeyErrorMessage ??
+                              RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
+                          ],
+                          description:
+                            "Human-readable error message. See `code` for the specific conflict/validation error.",
+                          example: "Permission with this key already exists.",
+                        },
                       },
-                      message: {
-                        type: "string",
-                        enum: [
-                          RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
-                          RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
-                          RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
-                          options.permissionKeyErrorMessage ??
-                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
-                        ],
+                    },
+                    examples: {
+                      permissionAlreadyExists: {
+                        summary: "Permission with this key already exists.",
+                        value: {
+                          code: "PERMISSION_ALREADY_EXISTS",
+                          message: "Permission with this key already exists.",
+                        },
+                      },
+                      emptyPermissionKey: {
+                        summary: "Permission key cannot be empty.",
+                        value: {
+                          code: "EMPTY_PERMISSION_KEY",
+                          message: "Permission key cannot be empty.",
+                        },
+                      },
+                      invalidPermissionKeyLength: {
+                        summary: "Permission with this key already exists.",
+                        value: {
+                          code: "INVALID_PERMISSION_KEY_LENGTH",
+                          message: "Permission with this key already exists.",
+                        },
+                      },
+                      invalidPermissionKeyFormat: {
+                        summary: "Permission key does not match the configured format.",
+                        value: {
+                          code: "INVALID_PERMISSION_KEY_FORMAT",
+                          message:
+                            "Permission key does not match the configured format.",
+                        },
                       },
                     },
                   },
@@ -1031,29 +1317,83 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
       body: z.object({
         id: z.string().meta({
           description: "The id of the permission to update.",
+          example: "permission_2nQxLvK8",
         }),
         name: z.string().trim().min(1).optional().meta({
           description: "The new name of the permission.",
+          example: "Create Article",
         }),
         key: z.string().trim().min(1).optional().meta({
           description: "The new key for the permission.",
+          example: "article:create",
         }),
         description: z.string().trim().min(1).optional().meta({
           description: "The new description of the permission.",
+          example: "Allows creating articles.",
         }),
         isActive: z.boolean().optional().meta({
           description: "Optional flag to set permission active status.",
+          example: true,
         }),
-        roleIds: z.array(z.string()).optional().meta({
-          description:
-            "Optional array of role IDs to replace current role assignments.",
-        }),
+        roleIds: z
+          .array(z.string())
+          .optional()
+          .meta({
+            description:
+              "Optional array of role IDs to replace current role assignments.",
+            example: ["role_8xKdMqQ2"],
+          }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.updatePermission",
           summary: "Update an existing permission",
           description: "Update an existing permission",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "The id of the permission to update.",
+                      example: "permission_2nQxLvK8",
+                    },
+                    name: {
+                      type: "string",
+                      description: "The new name of the permission.",
+                      example: "Create Article",
+                    },
+                    key: {
+                      type: "string",
+                      description: "The new key for the permission.",
+                      example: "article:create",
+                    },
+                    description: {
+                      type: "string",
+                      description: "The new description of the permission.",
+                      example: "Allows creating articles.",
+                    },
+                    isActive: {
+                      type: "boolean",
+                      description: "Optional flag to set permission active status.",
+                      example: true,
+                    },
+                    roleIds: {
+                      type: "array",
+                      description:
+                        "Optional array of role IDs to replace current role assignments.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2"],
+                    },
+                  },
+                  required: ["id"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission updated successfully",
@@ -1080,6 +1420,8 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -1087,16 +1429,40 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Permission not found.` when the permission does not exist, `Role not found.` when one of the target roles was not found.",
+                        example: "Permission not found.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is ROLE_NOT_FOUND.",
+                        description:
+                          "Present when code is ROLE_NOT_FOUND. The role ids that were not found.",
                         properties: {
                           missingRoleIds: {
                             type: "array",
                             description: "The role ids that were not found.",
                             items: { type: "string" },
+                            example: ["role_zzZz9xQp"],
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                        details: {
+                          missingRoleIds: ["role_zzZz9xQp"],
                         },
                       },
                     },
@@ -1123,6 +1489,8 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                           "INVALID_PERMISSION_KEY_LENGTH",
                           "INVALID_PERMISSION_KEY_FORMAT",
                         ],
+                        description: "The error code.",
+                        example: "PERMISSION_ALREADY_EXISTS",
                       },
                       message: {
                         type: "string",
@@ -1136,25 +1504,88 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                           options.permissionKeyErrorMessage ??
                             RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
                         ],
+                        description:
+                          "Human-readable error message. See `code` for the specific conflict/validation error.",
+                        example: "Permission with this key already exists.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionAlreadyExists: {
+                      summary: "Permission with this key already exists.",
+                      value: {
+                        code: "PERMISSION_ALREADY_EXISTS",
+                        message: "Permission with this key already exists.",
+                      },
+                    },
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    cannotModifySystemPermission: {
+                      summary: "Cannot modify system permission.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_PERMISSION",
+                        message: "Cannot modify system permission.",
+                      },
+                    },
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
+                      },
+                    },
+                    emptyPermissionKey: {
+                      summary: "Permission key cannot be empty.",
+                      value: {
+                        code: "EMPTY_PERMISSION_KEY",
+                        message: "Permission key cannot be empty.",
+                      },
+                    },
+                    invalidPermissionKeyLength: {
+                      summary: "Permission with this key already exists.",
+                      value: {
+                        code: "INVALID_PERMISSION_KEY_LENGTH",
+                        message: "Permission with this key already exists.",
+                      },
+                    },
+                    invalidPermissionKeyFormat: {
+                      summary: "Permission key does not match the configured format.",
+                      value: {
+                        code: "INVALID_PERMISSION_KEY_FORMAT",
+                        message: "Permission key does not match the configured format.",
                       },
                     },
                   },
@@ -1368,10 +1799,12 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
       body: z.object({
         id: z.string().meta({
           description: "The id of the permission to delete.",
+          example: "permission_2nQxLvK8",
         }),
         skipAssignmentCheck: z.boolean().optional().meta({
           description:
             "Skips the assignment check and deletes the permission even if it is assigned to roles. Defaults to false.",
+          example: false,
         }),
       }),
       metadata: {
@@ -1379,6 +1812,30 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
           operationId: "rbac.deletePermission",
           summary: "Delete a permission",
           description: "Delete a permission",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "The id of the permission to delete.",
+                      example: "permission_2nQxLvK8",
+                    },
+                    skipAssignmentCheck: {
+                      type: "boolean",
+                      description:
+                        "Skips the assignment check and deletes the permission even if it is assigned to roles. Defaults to false.",
+                      example: false,
+                    },
+                  },
+                  required: ["id"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission deleted successfully",
@@ -1389,9 +1846,20 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable result.",
+                      },
+                    },
+                  },
+                  examples: {
+                    deleted: {
+                      summary: "Permission deleted",
+                      value: {
+                        success: true,
+                        message: "Permission deleted successfully",
                       },
                     },
                   },
@@ -1408,10 +1876,23 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Permission not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -1432,6 +1913,8 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                           "CANNOT_DELETE_SYSTEM_PERMISSION",
                           "CANNOT_DELETE_ASSIGNED_PERMISSION",
                         ],
+                        description: "The error code.",
+                        example: "CANNOT_DELETE_ASSIGNED_PERMISSION",
                       },
                       message: {
                         type: "string",
@@ -1439,6 +1922,9 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                           RBAC_ERROR_CODES.CANNOT_DELETE_SYSTEM_PERMISSION.message,
                           RBAC_ERROR_CODES.CANNOT_DELETE_ASSIGNED_PERMISSION.message,
                         ],
+                        description:
+                          "Human-readable error message. `Cannot delete system permission.` for system entities, `Cannot delete permission that is assigned to roles.` when the permission is still assigned and the check was not skipped.",
+                        example: "Cannot delete permission that is assigned to roles.",
                       },
                       details: {
                         type: "object",
@@ -1449,7 +1935,27 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                             type: "number",
                             description:
                               "The number of roles the permission is assigned to.",
+                            example: 3,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    cannotDeleteSystemPermission: {
+                      summary: "Cannot delete system permission.",
+                      value: {
+                        code: "CANNOT_DELETE_SYSTEM_PERMISSION",
+                        message: "Cannot delete system permission.",
+                      },
+                    },
+                    cannotDeleteAssignedPermission: {
+                      summary: "Cannot delete permission that is assigned to roles.",
+                      value: {
+                        code: "CANNOT_DELETE_ASSIGNED_PERMISSION",
+                        message: "Cannot delete permission that is assigned to roles.",
+                        details: {
+                          assignedRoles: 3,
                         },
                       },
                     },
@@ -1616,17 +2122,17 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                       value: {
                         options: [
                           {
-                            value: "perm_123abc",
+                            value: "permission_2nQxLvK8",
                             label: "Read users",
                             key: "users:read",
                           },
                           {
-                            value: "perm_456def",
+                            value: "permission_5fRtYmX4",
                             label: "Write users",
                             key: "users:write",
                           },
                           {
-                            value: "perm_789ghi",
+                            value: "permission_4nKjSdW6",
                             label: "Delete users",
                             key: "users:delete",
                           },
@@ -1644,12 +2150,12 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                       value: {
                         options: [
                           {
-                            value: "perm_123abc",
+                            value: "permission_2nQxLvK8",
                             label: "Read users",
                             key: "users:read",
                           },
                           {
-                            value: "perm_456def",
+                            value: "permission_5fRtYmX4",
                             label: "Write users",
                             key: "users:write",
                           },
@@ -1881,9 +2387,14 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                 ],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
                 key: { value: "key" },
+                isActive: { value: "isActive" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
+                createdBy: { value: "createdBy" },
+                updatedBy: { value: "updatedBy" },
               },
             },
             {
@@ -1925,12 +2436,18 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
                       },
                     },
                   },
@@ -1948,22 +2465,28 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
             },
             404: {
               description: "Permission not found",
@@ -1976,18 +2499,28 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Permission not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
                 },
               },
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },

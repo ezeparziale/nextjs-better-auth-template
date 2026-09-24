@@ -43,16 +43,42 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
       body: z.object({
         roleId: z.string().meta({
           description: "The id of the role.",
+          example: "role_8xKdMqQ2",
         }),
         permissionId: z.string().meta({
           description: "The id of the permission to assign.",
+          example: "permission_2nQxLvK8",
         }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.assignPermissionToRole",
           summary: "Assign a permission to a role",
-          description: "Assign a permission to a role",
+          description:
+            "Assign a permission to a role. If the permission is already assigned to the role, the call is a no-op and returns `Permission already assigned to role`.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    permissionId: {
+                      type: "string",
+                      description: "The id of the permission to assign.",
+                      example: "permission_2nQxLvK8",
+                    },
+                  },
+                  required: ["roleId", "permissionId"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission assigned successfully",
@@ -63,13 +89,32 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
+                        description:
+                          "Human-readable result. `Permission already assigned to role` when the assignment already existed, `Permission assigned to role successfully` when it was created.",
                         enum: [
                           "Permission already assigned to role",
                           "Permission assigned to role successfully",
                         ],
+                      },
+                    },
+                  },
+                  examples: {
+                    assigned: {
+                      summary: "Permission assigned to role",
+                      value: {
+                        success: true,
+                        message: "Permission assigned to role successfully",
+                      },
+                    },
+                    alreadyAssigned: {
+                      summary: "Permission already assigned to role",
+                      value: {
+                        success: true,
+                        message: "Permission already assigned to role",
                       },
                     },
                   },
@@ -86,10 +131,23 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                       code: {
                         type: "string",
                         enum: ["CANNOT_MODIFY_SYSTEM_ROLE"],
+                        description: "The error code.",
+                        example: "CANNOT_MODIFY_SYSTEM_ROLE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message],
+                        description: "Human-readable error message.",
+                        example: "Cannot modify system role.",
+                      },
+                    },
+                  },
+                  examples: {
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
                       },
                     },
                   },
@@ -106,6 +164,8 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -113,6 +173,25 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the role does not exist, `Permission not found.` when the permission does not exist.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -247,16 +326,42 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
       body: z.object({
         roleId: z.string().meta({
           description: "The id of the role.",
+          example: "role_8xKdMqQ2",
         }),
         permissionId: z.string().meta({
           description: "The id of the permission to remove.",
+          example: "permission_2nQxLvK8",
         }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.removePermissionFromRole",
           summary: "Remove a permission from a role",
-          description: "Remove a permission from a role",
+          description:
+            "Remove a permission from a role. If the permission is not assigned to the role, the call is a no-op and still succeeds.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    permissionId: {
+                      type: "string",
+                      description: "The id of the permission to remove.",
+                      example: "permission_2nQxLvK8",
+                    },
+                  },
+                  required: ["roleId", "permissionId"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission removed successfully",
@@ -267,10 +372,21 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
                         enum: ["Permission removed from role successfully"],
+                        description: "Human-readable result.",
+                      },
+                    },
+                  },
+                  examples: {
+                    removed: {
+                      summary: "Permission removed from role",
+                      value: {
+                        success: true,
+                        message: "Permission removed from role successfully",
                       },
                     },
                   },
@@ -287,10 +403,23 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["CANNOT_MODIFY_SYSTEM_ROLE"],
+                        description: "The error code.",
+                        example: "CANNOT_MODIFY_SYSTEM_ROLE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message],
+                        description: "Human-readable error message.",
+                        example: "Cannot modify system role.",
+                      },
+                    },
+                  },
+                  examples: {
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
                       },
                     },
                   },
@@ -307,6 +436,8 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -314,6 +445,25 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the role does not exist, `Permission not found.` when the permission does not exist.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -410,16 +560,42 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user.",
+          example: "user_9mQGfY2Z",
         }),
         roleId: z.string().meta({
           description: "The id of the role to assign.",
+          example: "role_8xKdMqQ2",
         }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.assignRoleToUser",
           summary: "Assign a role to a user",
-          description: "Assign a role to a user",
+          description:
+            "Assign a role to a user. If the user already has the role, the call is a no-op and returns `Role already assigned to user`.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role to assign.",
+                      example: "role_8xKdMqQ2",
+                    },
+                  },
+                  required: ["userId", "roleId"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role assigned successfully",
@@ -430,13 +606,32 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
+                        description:
+                          "Human-readable result. `Role already assigned to user` when the assignment already existed, `Role assigned to user successfully` when it was created.",
                         enum: [
                           "Role already assigned to user",
                           "Role assigned to user successfully",
                         ],
+                      },
+                    },
+                  },
+                  examples: {
+                    assigned: {
+                      summary: "Role assigned to user",
+                      value: {
+                        success: true,
+                        message: "Role assigned to user successfully",
+                      },
+                    },
+                    alreadyAssigned: {
+                      summary: "Role already assigned to user",
+                      value: {
+                        success: true,
+                        message: "Role already assigned to user",
                       },
                     },
                   },
@@ -453,6 +648,8 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -460,6 +657,25 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `User not found.` when the user does not exist, `Role not found.` when the role does not exist.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -590,16 +806,42 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user.",
+          example: "user_9mQGfY2Z",
         }),
         roleId: z.string().meta({
           description: "The id of the role to remove.",
+          example: "role_8xKdMqQ2",
         }),
       }),
       metadata: {
         openapi: {
           operationId: "rbac.removeRoleFromUser",
           summary: "Remove a role from a user",
-          description: "Remove a role from a user",
+          description:
+            "Remove a role from a user. Removing a role the user does not have is a no-op.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role to remove.",
+                      example: "role_8xKdMqQ2",
+                    },
+                  },
+                  required: ["userId", "roleId"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role removed successfully",
@@ -610,10 +852,21 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
                         enum: ["Role removed from user successfully"],
+                        description: "Human-readable result.",
+                      },
+                    },
+                  },
+                  examples: {
+                    removed: {
+                      summary: "Role removed from user",
+                      value: {
+                        success: true,
+                        message: "Role removed from user successfully",
                       },
                     },
                   },
@@ -630,6 +883,8 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -637,6 +892,25 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `User not found.` when the user does not exist, `Role not found.` when the role does not exist.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -731,9 +1005,11 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
       body: z.object({
         roleId: z.string().meta({
           description: "The id of the role to assign.",
+          example: "role_8xKdMqQ2",
         }),
         userIds: z.array(z.string()).meta({
           description: "The ids of the users to assign the role to.",
+          example: ["user_9mQGfY2Z", "user_2pQkLmW6"],
         }),
       }),
       metadata: {
@@ -742,6 +1018,30 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
           summary: "Assign a role to multiple users",
           description:
             "Assign a role to multiple users in a single call. Users who already have the role are skipped.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role to assign.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    userIds: {
+                      type: "array",
+                      description: "The ids of the users to assign the role to.",
+                      items: { type: "string" },
+                      example: ["user_9mQGfY2Z", "user_2pQkLmW6"],
+                    },
+                  },
+                  required: ["roleId", "userIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role assigned successfully",
@@ -753,22 +1053,38 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Role assigned to 2 user(s)",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of users the role was assigned to.",
-                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of users that already had the role.",
-                        example: 1,
+                      },
+                    },
+                  },
+                  examples: {
+                    assigned: {
+                      summary: "Role assigned to users",
+                      value: {
+                        success: true,
+                        message: "Role assigned to 2 user(s)",
+                        assignedCount: 2,
+                        skippedCount: 1,
+                      },
+                    },
+                    noUsersAssigned: {
+                      summary: "No users in batch",
+                      value: {
+                        success: true,
+                        message: "No users provided",
+                        assignedCount: 0,
+                        skippedCount: 0,
                       },
                     },
                   },
@@ -785,28 +1101,50 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        description: "Human-readable error message.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
                         },
                       },
                     },
@@ -824,6 +1162,8 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -831,6 +1171,25 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `User not found.` when the user does not exist, `Role not found.` when at least one role does not exist.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -988,9 +1347,11 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
       body: z.object({
         roleId: z.string().meta({
           description: "The id of the role to remove.",
+          example: "role_8xKdMqQ2",
         }),
         userIds: z.array(z.string()).meta({
           description: "The ids of the users to remove the role from.",
+          example: ["user_9mQGfY2Z", "user_2pQkLmW6"],
         }),
       }),
       metadata: {
@@ -998,6 +1359,30 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
           operationId: "rbac.bulkRemoveRoleFromUsers",
           summary: "Remove a role from multiple users",
           description: "Remove a role from multiple users in a single call.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role to remove.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    userIds: {
+                      type: "array",
+                      description: "The ids of the users to remove the role from.",
+                      items: { type: "string" },
+                      example: ["user_9mQGfY2Z", "user_2pQkLmW6"],
+                    },
+                  },
+                  required: ["roleId", "userIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Role removed successfully",
@@ -1009,17 +1394,32 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Role removed from 2 user(s)",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of users the role was removed from.",
-                        example: 2,
+                      },
+                    },
+                  },
+                  examples: {
+                    removed: {
+                      summary: "Role removed from users",
+                      value: {
+                        success: true,
+                        message: "Role removed from 2 user(s)",
+                        removedCount: 2,
+                      },
+                    },
+                    noUsersRemoved: {
+                      summary: "No users in batch",
+                      value: {
+                        success: true,
+                        message: "No users provided",
+                        removedCount: 0,
                       },
                     },
                   },
@@ -1036,28 +1436,50 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        description: "Human-readable error message.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
                         },
                       },
                     },
@@ -1075,6 +1497,8 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "USER_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -1082,6 +1506,25 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the role does not exist, `User not found.` when at least one user does not exist.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
@@ -1183,9 +1626,11 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
       body: z.object({
         roleId: z.string().meta({
           description: "The id of the role.",
+          example: "role_8xKdMqQ2",
         }),
         permissionIds: z.array(z.string()).meta({
           description: "The ids of the permissions to assign.",
+          example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
         }),
       }),
       metadata: {
@@ -1194,6 +1639,30 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
           summary: "Assign multiple permissions to a role",
           description:
             "Assign multiple permissions to a role in a single call. Permissions already assigned to the role are skipped.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    permissionIds: {
+                      type: "array",
+                      description: "The ids of the permissions to assign.",
+                      items: { type: "string" },
+                      example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
+                    },
+                  },
+                  required: ["roleId", "permissionIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permissions assigned successfully",
@@ -1205,23 +1674,39 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Assigned 3 permission(s) to role",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of permissions assigned to the role.",
-                        example: 3,
                       },
                       skippedCount: {
                         type: "number",
                         description:
                           "Number of permissions already assigned to the role.",
-                        example: 1,
+                      },
+                    },
+                  },
+                  examples: {
+                    assigned: {
+                      summary: "Permissions assigned to role",
+                      value: {
+                        success: true,
+                        message: "Assigned 3 permission(s) to role",
+                        assignedCount: 3,
+                        skippedCount: 1,
+                      },
+                    },
+                    noPermissionsAssigned: {
+                      summary: "No permissions in batch",
+                      value: {
+                        success: true,
+                        message: "No permissions provided",
+                        assignedCount: 0,
+                        skippedCount: 0,
                       },
                     },
                   },
@@ -1239,6 +1724,8 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
@@ -1246,25 +1733,53 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
                         ],
+                        description:
+                          "Human-readable error message. `Too many ids provided in a single request.` when the batch cap was exceeded, `Cannot modify system role.` when a target role is a system entity and cannot be modified.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
                       },
                     },
                   },
@@ -1281,6 +1796,8 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -1288,6 +1805,25 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the role does not exist, `Permission not found.` when at least one permission does not exist.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -1455,9 +1991,11 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
       body: z.object({
         roleId: z.string().meta({
           description: "The id of the role.",
+          example: "role_8xKdMqQ2",
         }),
         permissionIds: z.array(z.string()).meta({
           description: "The ids of the permissions to remove.",
+          example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
         }),
       }),
       metadata: {
@@ -1465,6 +2003,30 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
           operationId: "rbac.bulkRemovePermissionsFromRole",
           summary: "Remove multiple permissions from a role",
           description: "Remove multiple permissions from a role in a single call.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    roleId: {
+                      type: "string",
+                      description: "The id of the role.",
+                      example: "role_8xKdMqQ2",
+                    },
+                    permissionIds: {
+                      type: "array",
+                      description: "The ids of the permissions to remove.",
+                      items: { type: "string" },
+                      example: ["permission_2nQxLvK8", "permission_5fRtYmX4"],
+                    },
+                  },
+                  required: ["roleId", "permissionIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permissions removed successfully",
@@ -1476,17 +2038,32 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Removed 3 permission(s) from role",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of permissions removed from the role.",
-                        example: 3,
+                      },
+                    },
+                  },
+                  examples: {
+                    removed: {
+                      summary: "Permissions removed from role",
+                      value: {
+                        success: true,
+                        message: "Removed 3 permission(s) from role",
+                        removedCount: 3,
+                      },
+                    },
+                    noPermissionsRemoved: {
+                      summary: "No permissions in batch",
+                      value: {
+                        success: true,
+                        message: "No permissions provided",
+                        removedCount: 0,
                       },
                     },
                   },
@@ -1504,6 +2081,8 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
@@ -1511,25 +2090,53 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
                         ],
+                        description:
+                          "Human-readable error message. `Too many ids provided in a single request.` when the batch cap was exceeded, `Cannot modify system role.` when a target role is a system entity and cannot be modified.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
                       },
                     },
                   },
@@ -1546,6 +2153,8 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -1553,6 +2162,25 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Role not found.` when the role does not exist, `Permission not found.` when at least one permission does not exist.",
+                        example: "Role not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -1664,9 +2292,11 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user.",
+          example: "user_9mQGfY2Z",
         }),
         roleIds: z.array(z.string()).meta({
           description: "The ids of the roles to remove.",
+          example: ["role_8xKdMqQ2", "role_7jOpYz83"],
         }),
       }),
       metadata: {
@@ -1674,6 +2304,30 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
           operationId: "rbac.bulkRemoveRolesFromUser",
           summary: "Remove multiple roles from a user",
           description: "Remove multiple roles from a user in a single call.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    roleIds: {
+                      type: "array",
+                      description: "The ids of the roles to remove.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["userId", "roleIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Roles removed successfully",
@@ -1685,17 +2339,32 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Removed 2 role(s) from user",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of roles removed from the user.",
-                        example: 2,
+                      },
+                    },
+                  },
+                  examples: {
+                    removed: {
+                      summary: "Roles removed from user",
+                      value: {
+                        success: true,
+                        message: "Removed 2 role(s) from user",
+                        removedCount: 2,
+                      },
+                    },
+                    noRolesRemoved: {
+                      summary: "No roles in batch",
+                      value: {
+                        success: true,
+                        message: "No roles provided",
+                        removedCount: 0,
                       },
                     },
                   },
@@ -1712,28 +2381,50 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        description: "Human-readable error message.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
                         },
                       },
                     },
@@ -1751,10 +2442,23 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
@@ -1849,9 +2553,11 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
       body: z.object({
         permissionId: z.string().meta({
           description: "The id of the permission.",
+          example: "permission_2nQxLvK8",
         }),
         roleIds: z.array(z.string()).meta({
           description: "The ids of the roles to remove.",
+          example: ["role_8xKdMqQ2", "role_7jOpYz83"],
         }),
       }),
       metadata: {
@@ -1859,6 +2565,30 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
           operationId: "rbac.bulkRemoveRolesFromPermission",
           summary: "Remove multiple roles from a permission",
           description: "Remove multiple roles from a permission in a single call.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    permissionId: {
+                      type: "string",
+                      description: "The id of the permission.",
+                      example: "permission_2nQxLvK8",
+                    },
+                    roleIds: {
+                      type: "array",
+                      description: "The ids of the roles to remove.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["permissionId", "roleIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Roles removed successfully",
@@ -1870,17 +2600,32 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Removed 2 role(s) from permission",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of roles removed from the permission.",
-                        example: 2,
+                      },
+                    },
+                  },
+                  examples: {
+                    removed: {
+                      summary: "Roles removed from permission",
+                      value: {
+                        success: true,
+                        message: "Removed 2 role(s) from permission",
+                        removedCount: 2,
+                      },
+                    },
+                    noRolesRemoved: {
+                      summary: "No roles in batch",
+                      value: {
+                        success: true,
+                        message: "No roles provided",
+                        removedCount: 0,
                       },
                     },
                   },
@@ -1898,6 +2643,8 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
@@ -1905,25 +2652,53 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
                         ],
+                        description:
+                          "Human-readable error message. `Too many ids provided in a single request.` when the batch cap was exceeded, `Cannot modify system role.` when a target role is a system entity and cannot be modified.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
                       },
                     },
                   },
@@ -1940,10 +2715,23 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "Permission not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -2049,9 +2837,11 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user.",
+          example: "user_9mQGfY2Z",
         }),
         roleIds: z.array(z.string()).meta({
           description: "The ids of the roles to assign.",
+          example: ["role_8xKdMqQ2", "role_7jOpYz83"],
         }),
       }),
       metadata: {
@@ -2060,6 +2850,30 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
           summary: "Assign multiple roles to a user",
           description:
             "Assign multiple roles to a user in a single call. Roles already assigned to the user are skipped.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    roleIds: {
+                      type: "array",
+                      description: "The ids of the roles to assign.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["userId", "roleIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Roles assigned successfully",
@@ -2071,22 +2885,38 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Assigned 2 role(s) to user",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of roles assigned to the user.",
-                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of roles already assigned and skipped.",
-                        example: 1,
+                      },
+                    },
+                  },
+                  examples: {
+                    assigned: {
+                      summary: "Roles assigned to user",
+                      value: {
+                        success: true,
+                        message: "Assigned 2 role(s) to user",
+                        assignedCount: 2,
+                        skippedCount: 1,
+                      },
+                    },
+                    noRolesAssigned: {
+                      summary: "No roles in batch",
+                      value: {
+                        success: true,
+                        message: "No roles provided",
+                        assignedCount: 0,
+                        skippedCount: 0,
                       },
                     },
                   },
@@ -2103,28 +2933,50 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        description: "Human-readable error message.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
                         },
                       },
                     },
@@ -2142,6 +2994,8 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -2149,6 +3003,25 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `User not found.` when the user does not exist, `Role not found.` when at least one role does not exist.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -2306,9 +3179,11 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
       body: z.object({
         permissionId: z.string().meta({
           description: "The id of the permission to assign.",
+          example: "permission_2nQxLvK8",
         }),
         roleIds: z.array(z.string()).meta({
           description: "The ids of the roles to assign the permission to.",
+          example: ["role_8xKdMqQ2", "role_7jOpYz83"],
         }),
       }),
       metadata: {
@@ -2317,6 +3192,30 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
           summary: "Assign a permission to multiple roles",
           description:
             "Assign a permission to multiple roles in a single call. Roles that already have the permission are skipped.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    permissionId: {
+                      type: "string",
+                      description: "The id of the permission to assign.",
+                      example: "permission_2nQxLvK8",
+                    },
+                    roleIds: {
+                      type: "array",
+                      description: "The ids of the roles to assign the permission to.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["permissionId", "roleIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Permission assigned successfully",
@@ -2328,22 +3227,38 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
-                        example: true,
                       },
                       message: {
                         type: "string",
                         description: "Human-readable summary of the result.",
-                        example: "Permission assigned to 2 role(s)",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of roles the permission was assigned to.",
-                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of roles that already had the permission.",
-                        example: 1,
+                      },
+                    },
+                  },
+                  examples: {
+                    assigned: {
+                      summary: "Permission assigned to roles",
+                      value: {
+                        success: true,
+                        message: "Permission assigned to 2 role(s)",
+                        assignedCount: 2,
+                        skippedCount: 1,
+                      },
+                    },
+                    noRolesAssigned: {
+                      summary: "No roles in batch",
+                      value: {
+                        success: true,
+                        message: "No roles provided",
+                        assignedCount: 0,
+                        skippedCount: 0,
                       },
                     },
                   },
@@ -2361,6 +3276,8 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE", "CANNOT_MODIFY_SYSTEM_ROLE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
@@ -2368,25 +3285,53 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.BATCH_TOO_LARGE.message,
                           RBAC_ERROR_CODES.CANNOT_MODIFY_SYSTEM_ROLE.message,
                         ],
+                        description:
+                          "Human-readable error message. `Too many ids provided in a single request.` when the batch cap was exceeded, `Cannot modify system role.` when a target role is a system entity and cannot be modified.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
                         },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
+                        },
+                      },
+                    },
+                    cannotModifySystemRole: {
+                      summary: "Cannot modify system role.",
+                      value: {
+                        code: "CANNOT_MODIFY_SYSTEM_ROLE",
+                        message: "Cannot modify system role.",
                       },
                     },
                   },
@@ -2403,6 +3348,8 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                       code: {
                         type: "string",
                         enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "PERMISSION_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -2410,6 +3357,25 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                           RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `Permission not found.` when the permission does not exist, `Role not found.` when at least one role does not exist.",
+                        example: "Permission not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },

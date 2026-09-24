@@ -141,9 +141,14 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                 ],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
                 key: { value: "key" },
+                isActive: { value: "isActive" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
+                createdBy: { value: "createdBy" },
+                updatedBy: { value: "updatedBy" },
               },
             },
             {
@@ -176,9 +181,22 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                             description: "Minimal user info (id, name, email).",
                             type: "object",
                             properties: {
-                              id: { type: "string" },
-                              name: { type: "string", nullable: true },
-                              email: { type: "string" },
+                              id: {
+                                type: "string",
+                                description: "The user id.",
+                                example: "user_9mQGfY2Z",
+                              },
+                              name: {
+                                type: "string",
+                                nullable: true,
+                                description: "The user name.",
+                                example: "Jane Doe",
+                              },
+                              email: {
+                                type: "string",
+                                description: "The user email.",
+                                example: "jane@example.com",
+                              },
                             },
                           },
                           roles: {
@@ -191,12 +209,18 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
                       },
                     },
                   },
@@ -214,22 +238,28 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
             },
             404: {
               description: "User not found",
@@ -242,18 +272,28 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
                 },
               },
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -452,7 +492,7 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                 "The value to search in permissions. Matches permission name or key, case-insensitive.",
               schema: {
                 type: "string",
-                example: "jane",
+                example: "user:read",
               },
             },
             {
@@ -505,9 +545,14 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                 ],
               },
               examples: {
+                id: { value: "id" },
                 name: { value: "name" },
                 key: { value: "key" },
+                isActive: { value: "isActive" },
                 createdAt: { value: "createdAt" },
+                updatedAt: { value: "updatedAt" },
+                createdBy: { value: "createdBy" },
+                updatedBy: { value: "updatedBy" },
               },
             },
             {
@@ -540,9 +585,22 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                             description: "Minimal user info (id, name, email).",
                             type: "object",
                             properties: {
-                              id: { type: "string" },
-                              name: { type: "string", nullable: true },
-                              email: { type: "string" },
+                              id: {
+                                type: "string",
+                                description: "The user id.",
+                                example: "user_9mQGfY2Z",
+                              },
+                              name: {
+                                type: "string",
+                                nullable: true,
+                                description: "The user name.",
+                                example: "Jane Doe",
+                              },
+                              email: {
+                                type: "string",
+                                description: "The user email.",
+                                example: "jane@example.com",
+                              },
                             },
                           },
                           permissions: {
@@ -555,12 +613,18 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                       },
                       total: {
                         type: "number",
+                        description: "Total number of matching records.",
+                        example: 42,
                       },
                       limit: {
                         type: "number",
+                        description: "Maximum number of records returned.",
+                        example: 10,
                       },
                       offset: {
                         type: "number",
+                        description: "Offset used for pagination.",
+                        example: 0,
                       },
                     },
                   },
@@ -578,22 +642,28 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
                       },
                       message: {
                         type: "string",
+                        description: "Human-readable validation error message.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
+                  examples: {
+                    validationError: {
+                      summary: "VALIDATION_ERROR",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message: "VALIDATION_ERROR",
+                      },
+                    },
+                  },
                 },
               },
-            },
-            401: {
-              description: "Not authenticated. Returns an empty body.",
-            },
-            403: {
-              description: "Authenticated but not an admin. Returns an empty body.",
             },
             404: {
               description: "User not found",
@@ -606,18 +676,28 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.USER_NOT_FOUND.message],
+                        description: "Human-readable error message.",
+                        example: "User not found.",
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
                       },
                     },
                   },
                 },
               },
-            },
-            500: {
-              description: "Internal server error. Returns an empty body.",
             },
           },
         },
@@ -786,9 +866,11 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user.",
+          example: "user_9mQGfY2Z",
         }),
         roleIds: z.array(z.string()).meta({
           description: "Array of role IDs to set for the user.",
+          example: ["role_8xKdMqQ2", "role_7jOpYz83"],
         }),
       }),
       metadata: {
@@ -797,6 +879,30 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
           summary: "Set roles for a user",
           description:
             "Replace user's current roles with the provided array of role IDs. Adds new roles, removes old ones, and keeps existing ones.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    roleIds: {
+                      type: "array",
+                      description: "Array of role IDs to set for the user.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["userId", "roleIds"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "Roles set successfully",
@@ -807,9 +913,12 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                     properties: {
                       success: {
                         type: "boolean",
+                        description: "Whether the operation succeeded.",
                       },
                       message: {
                         type: "string",
+                        description:
+                          "Human-readable result. Includes the number of roles added, removed and kept.",
                       },
                       added: {
                         type: "number",
@@ -822,6 +931,18 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       kept: {
                         type: "number",
                         description: "Number of roles kept unchanged",
+                      },
+                    },
+                  },
+                  examples: {
+                    updated: {
+                      summary: "Roles set for user",
+                      value: {
+                        success: true,
+                        message: "User roles updated successfully",
+                        added: 2,
+                        removed: 1,
+                        kept: 1,
                       },
                     },
                   },
@@ -838,28 +959,50 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        description: "Human-readable error message.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
                         },
                       },
                     },
@@ -877,6 +1020,8 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -884,16 +1029,40 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `User not found.` when the user does not exist, `Role not found.` when one of the roles was not found.",
+                        example: "User not found.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is ROLE_NOT_FOUND.",
+                        description:
+                          "Present when code is ROLE_NOT_FOUND. The role ids that were not found.",
                         properties: {
                           missingRoleIds: {
                             type: "array",
                             description: "The role ids that were not found.",
                             items: { type: "string" },
+                            example: ["role_zzZz9xQp"],
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                        details: {
+                          missingRoleIds: ["role_zzZz9xQp"],
                         },
                       },
                     },
@@ -1099,17 +1268,17 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                       value: {
                         options: [
                           {
-                            value: "user_123abc",
+                            value: "user_9mQGfY2Z",
                             label: "john.doe@example.com",
                             name: "John Doe",
                           },
                           {
-                            value: "user_456def",
+                            value: "user_2pQkLmW6",
                             label: "jane.smith@example.com",
                             name: "Jane Smith",
                           },
                           {
-                            value: "user_789ghi",
+                            value: "user_1aBcDeF3",
                             label: "admin@example.com",
                             name: null,
                           },
@@ -1127,12 +1296,12 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                       value: {
                         options: [
                           {
-                            value: "user_123abc",
+                            value: "user_9mQGfY2Z",
                             label: "john.doe@example.com",
                             name: "John Doe",
                           },
                           {
-                            value: "user_456def",
+                            value: "user_2pQkLmW6",
                             label: "johnny.smith@example.com",
                             name: "Johnny Smith",
                           },
@@ -1242,10 +1411,15 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
       body: z.object({
         userId: z.string().meta({
           description: "The id of the user to update.",
+          example: "user_9mQGfY2Z",
         }),
-        roleIds: z.array(z.string()).optional().meta({
-          description: "Optional array of role IDs to replace current user roles.",
-        }),
+        roleIds: z
+          .array(z.string())
+          .optional()
+          .meta({
+            description: "Optional array of role IDs to replace current user roles.",
+            example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+          }),
       }),
       metadata: {
         openapi: {
@@ -1253,6 +1427,31 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
           summary: "Update user roles",
           description:
             "Update user's roles. Replace current roles with the provided array of role IDs.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    userId: {
+                      type: "string",
+                      description: "The id of the user to update.",
+                      example: "user_9mQGfY2Z",
+                    },
+                    roleIds: {
+                      type: "array",
+                      description:
+                        "Optional array of role IDs to replace current user roles.",
+                      items: { type: "string" },
+                      example: ["role_8xKdMqQ2", "role_7jOpYz83"],
+                    },
+                  },
+                  required: ["userId"],
+                },
+              },
+            },
+          },
           responses: {
             200: {
               description: "User updated",
@@ -1279,28 +1478,50 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["BATCH_TOO_LARGE"],
+                        description: "The error code.",
+                        example: "BATCH_TOO_LARGE",
                       },
                       message: {
                         type: "string",
                         enum: [RBAC_ERROR_CODES.BATCH_TOO_LARGE.message],
+                        description: "Human-readable error message.",
+                        example: "Too many ids provided in a single request.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is BATCH_TOO_LARGE.",
+                        description:
+                          "Present when code is BATCH_TOO_LARGE. Describes the array field that exceeded the `maxBatchAssignmentSize` cap.",
                         properties: {
                           ids: {
                             type: "string",
                             description: "The id array field that exceeded the cap.",
+                            example: "roleIds",
                           },
                           provided: {
                             type: "number",
                             description:
                               "Number of unique ids provided in the request.",
+                            example: 15,
                           },
                           maxBatchAssignmentSize: {
                             type: "number",
                             description: "The configured cap that was exceeded.",
+                            example: 10,
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    batchTooLarge: {
+                      summary: "Too many ids provided in a single request.",
+                      value: {
+                        code: "BATCH_TOO_LARGE",
+                        message: "Too many ids provided in a single request.",
+                        details: {
+                          ids: "roleIds",
+                          provided: 15,
+                          maxBatchAssignmentSize: 10,
                         },
                       },
                     },
@@ -1318,6 +1539,8 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
                       code: {
                         type: "string",
                         enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        description: "The error code.",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
@@ -1325,16 +1548,40 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
+                        description:
+                          "Human-readable error message. `User not found.` when the user does not exist, `Role not found.` when one of the roles was not found.",
+                        example: "User not found.",
                       },
                       details: {
                         type: "object",
-                        description: "Present when code is ROLE_NOT_FOUND.",
+                        description:
+                          "Present when code is ROLE_NOT_FOUND. The role ids that were not found.",
                         properties: {
                           missingRoleIds: {
                             type: "array",
                             description: "The role ids that were not found.",
                             items: { type: "string" },
+                            example: ["role_zzZz9xQp"],
                           },
+                        },
+                      },
+                    },
+                  },
+                  examples: {
+                    userNotFound: {
+                      summary: "User not found.",
+                      value: {
+                        code: "USER_NOT_FOUND",
+                        message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
+                        details: {
+                          missingRoleIds: ["role_zzZz9xQp"],
                         },
                       },
                     },
