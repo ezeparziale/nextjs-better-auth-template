@@ -90,6 +90,7 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
@@ -99,6 +100,7 @@ export const rbacAssignPermissionToRole = <O extends RBACPluginOptions>(options:
                           "Permission already assigned to role",
                           "Permission assigned to role successfully",
                         ],
+                        example: "Permission assigned to role successfully",
                       },
                     },
                   },
@@ -373,11 +375,14 @@ export const rbacRemovePermissionFromRole = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
                         enum: ["Permission removed from role successfully"],
-                        description: "Human-readable result.",
+                        description:
+                          "Human-readable result. Always `Permission removed from role successfully`.",
+                        example: "Permission removed from role successfully",
                       },
                     },
                   },
@@ -607,6 +612,7 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
@@ -616,6 +622,7 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                           "Role already assigned to user",
                           "Role assigned to user successfully",
                         ],
+                        example: "Role assigned to user successfully",
                       },
                     },
                   },
@@ -632,6 +639,41 @@ export const rbacAssignRoleToUser = <O extends RBACPluginOptions>(options: O) =>
                       value: {
                         success: true,
                         message: "Role already assigned to user",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid request body.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[body.roleId] Invalid input: expected string, received undefined",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid request body",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[body.roleId] Invalid input: expected string, received undefined",
                       },
                     },
                   },
@@ -853,11 +895,14 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
                         enum: ["Role removed from user successfully"],
-                        description: "Human-readable result.",
+                        description:
+                          "Human-readable result. Always `Role removed from user successfully`.",
+                        example: "Role removed from user successfully",
                       },
                     },
                   },
@@ -867,6 +912,41 @@ export const rbacRemoveRoleFromUser = <O extends RBACPluginOptions>(options: O) 
                       value: {
                         success: true,
                         message: "Role removed from user successfully",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid request body.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[body.roleId] Invalid input: expected string, received undefined",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid request body",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[body.roleId] Invalid input: expected string, received undefined",
                       },
                     },
                   },
@@ -1053,18 +1133,23 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Role assigned to N user(s)` when the batch was processed, `No users provided` when the `userIds` array was empty.",
+                        example: "Role assigned to 2 user(s)",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of users the role was assigned to.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of users that already had the role.",
+                        example: 1,
                       },
                     },
                   },
@@ -1394,14 +1479,18 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Role removed from N user(s)` when the batch was processed, `No users provided` when the `userIds` array was empty.",
+                        example: "Role removed from 2 user(s)",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of users the role was removed from.",
+                        example: 2,
                       },
                     },
                   },
@@ -1488,7 +1577,7 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
               },
             },
             404: {
-              description: "Role or user not found",
+              description: "User or role not found",
               content: {
                 "application/json": {
                   schema: {
@@ -1496,35 +1585,35 @@ export const rbacBulkRemoveRoleFromUsers = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["ROLE_NOT_FOUND", "USER_NOT_FOUND"],
+                        enum: ["USER_NOT_FOUND", "ROLE_NOT_FOUND"],
                         description: "The error code.",
-                        example: "ROLE_NOT_FOUND",
+                        example: "USER_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                           RBAC_ERROR_CODES.USER_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
                         ],
                         description:
-                          "Human-readable error message. `Role not found.` when the role does not exist, `User not found.` when at least one user does not exist.",
-                        example: "Role not found.",
+                          "Human-readable error message. `User not found.` when at least one user does not exist, `Role not found.` when the role does not exist.",
+                        example: "User not found.",
                       },
                     },
                   },
                   examples: {
-                    roleNotFound: {
-                      summary: "Role not found.",
-                      value: {
-                        code: "ROLE_NOT_FOUND",
-                        message: "Role not found.",
-                      },
-                    },
                     userNotFound: {
                       summary: "User not found.",
                       value: {
                         code: "USER_NOT_FOUND",
                         message: "User not found.",
+                      },
+                    },
+                    roleNotFound: {
+                      summary: "Role not found.",
+                      value: {
+                        code: "ROLE_NOT_FOUND",
+                        message: "Role not found.",
                       },
                     },
                   },
@@ -1674,19 +1763,24 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Assigned N permission(s) to role` when the batch was processed, `No permissions provided` when the `permissionIds` array was empty.",
+                        example: "Assigned 2 permission(s) to role",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of permissions assigned to the role.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description:
                           "Number of permissions already assigned to the role.",
+                        example: 1,
                       },
                     },
                   },
@@ -2038,14 +2132,18 @@ export const rbacBulkRemovePermissionsFromRole = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Removed N permission(s) from role` when the batch was processed, `No permissions provided` when the `permissionIds` array was empty.",
+                        example: "Removed 2 permission(s) from role",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of permissions removed from the role.",
+                        example: 2,
                       },
                     },
                   },
@@ -2339,14 +2437,18 @@ export const rbacBulkRemoveRolesFromUser = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Removed N role(s) from user` when the batch was processed, `No roles provided` when the `roleIds` array was empty.",
+                        example: "Removed 2 role(s) from user",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of roles removed from the user.",
+                        example: 2,
                       },
                     },
                   },
@@ -2600,14 +2702,18 @@ export const rbacBulkRemoveRolesFromPermission = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Removed N role(s) from permission` when the batch was processed, `No roles provided` when the `roleIds` array was empty.",
+                        example: "Removed 2 role(s) from permission",
                       },
                       removedCount: {
                         type: "number",
                         description: "Number of roles removed from the permission.",
+                        example: 2,
                       },
                     },
                   },
@@ -2885,18 +2991,23 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Assigned N role(s) to user` when the batch was processed, `No roles provided` when the `roleIds` array was empty.",
+                        example: "Assigned 2 role(s) to user",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of roles assigned to the user.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of roles already assigned and skipped.",
+                        example: 1,
                       },
                     },
                   },
@@ -3227,18 +3338,23 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable summary of the result.",
+                        description:
+                          "Human-readable summary of the result. `Permission assigned to N role(s)` when the batch was processed, `No roles provided` when the `roleIds` array was empty.",
+                        example: "Permission assigned to 2 role(s)",
                       },
                       assignedCount: {
                         type: "number",
                         description: "Number of roles the permission was assigned to.",
+                        example: 2,
                       },
                       skippedCount: {
                         type: "number",
                         description: "Number of roles that already had the permission.",
+                        example: 1,
                       },
                     },
                   },
@@ -3339,7 +3455,7 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
               },
             },
             404: {
-              description: "Permission or role not found",
+              description: "Role or permission not found",
               content: {
                 "application/json": {
                   schema: {
@@ -3347,35 +3463,35 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                         description: "The error code.",
-                        example: "PERMISSION_NOT_FOUND",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
                         description:
-                          "Human-readable error message. `Permission not found.` when the permission does not exist, `Role not found.` when at least one role does not exist.",
-                        example: "Permission not found.",
+                          "Human-readable error message. `Role not found.` when at least one role does not exist, `Permission not found.` when the permission does not exist.",
+                        example: "Role not found.",
                       },
                     },
                   },
                   examples: {
-                    permissionNotFound: {
-                      summary: "Permission not found.",
-                      value: {
-                        code: "PERMISSION_NOT_FOUND",
-                        message: "Permission not found.",
-                      },
-                    },
                     roleNotFound: {
                       summary: "Role not found.",
                       value: {
                         code: "ROLE_NOT_FOUND",
                         message: "Role not found.",
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },

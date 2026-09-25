@@ -101,7 +101,8 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
         openapi: {
           operationId: "rbac.listRoles",
           summary: "List roles",
-          description: "List roles",
+          description:
+            "List roles with pagination, search, sorting and typed filters. Returns the matching roles plus the total count, limit and offset used.",
           parameters: [
             {
               name: "searchValue",
@@ -315,10 +316,11 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                     type: "object",
                     properties: {
                       data: {
-                        type: "object",
                         description: "The list payload.",
+                        type: "object",
                         properties: {
                           roles: {
+                            description: "The list payload items.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/Role",
@@ -398,10 +400,11 @@ export const rbacListRoles = <O extends RBACPluginOptions>(options: O) => {
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
@@ -516,7 +519,20 @@ export const rbacGetRole = <O extends RBACPluginOptions>(options: O) => {
         openapi: {
           operationId: "rbac.getRole",
           summary: "Get an existing role",
-          description: "Get an existing role",
+          description:
+            "Get a single role by id, including its system flag, auto-assign setting and audit metadata.",
+          parameters: [
+            {
+              name: "id",
+              in: "query",
+              required: true,
+              description: "The id of the role.",
+              schema: {
+                type: "string",
+                example: "role_8xKdMqQ2",
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Role",
@@ -655,7 +671,8 @@ export const rbacCreateRole = <O extends RBACPluginOptions>(options: O) => {
         openapi: {
           operationId: "rbac.createRole",
           summary: "Create a new role",
-          description: "Create a new role",
+          description:
+            "Create a new role. Optionally assign a set of permissions to it in the same call.",
           requestBody: {
             required: true,
             content: {
@@ -1468,7 +1485,8 @@ export const rbacUpdateRole = <O extends RBACPluginOptions>(options: O) => {
         openapi: {
           operationId: "rbac.updateRole",
           summary: "Update an existing role",
-          description: "Update an existing role",
+          description:
+            "Update an existing role. When `permissionIds` or `userIds` are provided they replace the current assignments of the role.",
           requestBody: {
             required: true,
             content: {
@@ -2028,7 +2046,8 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
         openapi: {
           operationId: "rbac.deleteRole",
           summary: "Delete a role",
-          description: "Delete a role",
+          description:
+            "Delete a role after cleaning up its permission and user assignments. System roles cannot be deleted, and roles with assigned users are rejected with `CANNOT_DELETE_ASSIGNED_ROLE` unless `skipAssignmentCheck` is true.",
           requestBody: {
             required: true,
             content: {
@@ -2064,10 +2083,14 @@ export const rbacDeleteRole = <O extends RBACPluginOptions>(options: O) => {
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable result.",
+                        enum: ["Role deleted successfully"],
+                        description:
+                          "Human-readable result. Always `Role deleted successfully`.",
+                        example: "Role deleted successfully",
                       },
                     },
                   },
@@ -2303,6 +2326,76 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
           summary: "Get roles as select options",
           description:
             "Get roles formatted as value/label pairs for select components. Supports search, limit and sorting parameters.",
+          parameters: [
+            {
+              name: "onlyActive",
+              in: "query",
+              description:
+                "Filter to return only active roles. Accepts a boolean (true/1/yes/on, false/0/no/off). Defaults to true.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                active: { value: "true" },
+                all: { value: "false" },
+              },
+            },
+            {
+              name: "search",
+              in: "query",
+              description: "Search term to filter roles by name or key.",
+              schema: {
+                type: "string",
+                example: "admin",
+              },
+            },
+            {
+              name: "limit",
+              in: "query",
+              description: "Maximum number of results to return.",
+              schema: {
+                type: "integer",
+                example: "10",
+              },
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              description:
+                "The role field to sort by. Allowed: id, name, key, isActive, createdAt, updatedAt, createdBy, updatedBy.",
+              schema: {
+                type: "string",
+                enum: [
+                  "id",
+                  "name",
+                  "key",
+                  "isActive",
+                  "createdAt",
+                  "updatedAt",
+                  "createdBy",
+                  "updatedBy",
+                ],
+              },
+              examples: {
+                name: { value: "name" },
+                key: { value: "key" },
+                createdAt: { value: "createdAt" },
+              },
+            },
+            {
+              name: "sortDirection",
+              in: "query",
+              description: "The direction to sort by. Defaults to asc.",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+              },
+              examples: {
+                asc: { value: "asc" },
+                desc: { value: "desc" },
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Successfully retrieved roles options",
@@ -2313,6 +2406,7 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                     properties: {
                       options: {
                         type: "array",
+                        description: "The roles that matched the filters.",
                         items: {
                           type: "object",
                           required: ["value", "label"],
@@ -2320,19 +2414,23 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                             value: {
                               type: "string",
                               description: "Role ID",
+                              example: "role_8xKdMqQ2",
                             },
                             label: {
                               type: "string",
                               description: "Role name",
+                              example: "Administrator",
                             },
                             key: {
                               type: "string",
                               description: "Role key",
+                              example: "admin",
                             },
                             isSystem: {
                               type: "boolean",
                               description:
                                 "Whether the role is a system entity. System roles cannot be modified.",
+                              example: true,
                             },
                           },
                         },
@@ -2387,6 +2485,41 @@ export const rbacGetRolesOptions = <O extends RBACPluginOptions>(options: O) => 
                             key: "admin_assistant",
                           },
                         ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid query parameters.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid query parameters",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
@@ -2646,13 +2779,14 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                     type: "object",
                     properties: {
                       data: {
-                        type: "object",
                         description: "The list payload.",
+                        type: "object",
                         properties: {
                           role: {
                             $ref: "#/components/schemas/Role",
                           },
                           permissions: {
+                            description: "The permissions assigned to the role.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/Permission",
@@ -2696,7 +2830,8 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable validation error message.",
+                        description:
+                          "Human-readable validation error message. `Either roleId or roleKey is required.` when neither identifier is provided, `Provide either roleId or roleKey, not both.` when both are provided.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
@@ -2704,10 +2839,27 @@ export const rbacGetRolePermissions = <O extends RBACPluginOptions>(options: O) 
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                      missingRoleIdentifier: {
+                        summary: "Missing identifier",
+                        description: "Neither roleId nor roleKey was provided.",
+                        value: {
+                          code: "VALIDATION_ERROR",
+                          message: "Either roleId or roleKey is required.",
+                        },
+                      },
+                      bothRoleIdentifiers: {
+                        summary: "Conflicting identifiers",
+                        description: "Both roleId and roleKey were provided.",
+                        value: {
+                          code: "VALIDATION_ERROR",
+                          message: "Provide either roleId or roleKey, not both.",
+                        },
                       },
                     },
                   },
@@ -3032,13 +3184,14 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                     type: "object",
                     properties: {
                       data: {
-                        type: "object",
                         description: "The list payload.",
+                        type: "object",
                         properties: {
                           role: {
                             $ref: "#/components/schemas/Role",
                           },
                           users: {
+                            description: "The users the role is assigned to.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/User",
@@ -3082,7 +3235,8 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable validation error message.",
+                        description:
+                          "Human-readable validation error message. `Either roleId or roleKey is required.` when neither identifier is provided, `Provide either roleId or roleKey, not both.` when both are provided.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
@@ -3090,10 +3244,27 @@ export const rbacGetRoleUsers = <O extends RBACPluginOptions>(options: O) => {
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                      missingRoleIdentifier: {
+                        summary: "Missing identifier",
+                        description: "Neither roleId nor roleKey was provided.",
+                        value: {
+                          code: "VALIDATION_ERROR",
+                          message: "Either roleId or roleKey is required.",
+                        },
+                      },
+                      bothRoleIdentifiers: {
+                        summary: "Conflicting identifiers",
+                        description: "Both roleId and roleKey were provided.",
+                        value: {
+                          code: "VALIDATION_ERROR",
+                          message: "Provide either roleId or roleKey, not both.",
+                        },
                       },
                     },
                   },

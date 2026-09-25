@@ -97,7 +97,8 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
         openapi: {
           operationId: "rbac.listPermissions",
           summary: "List permissions",
-          description: "List permissions",
+          description:
+            "List permissions with pagination, search, sorting and typed filters. Returns the matching permissions plus the total count, limit and offset used.",
           parameters: [
             {
               name: "searchValue",
@@ -298,10 +299,11 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
                     type: "object",
                     properties: {
                       data: {
-                        type: "object",
                         description: "The list payload.",
+                        type: "object",
                         properties: {
                           permissions: {
+                            description: "The list payload items.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/Permission",
@@ -379,10 +381,11 @@ export const rbacListPermissions = <O extends RBACPluginOptions>(options: O) => 
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
@@ -498,7 +501,20 @@ export const rbacGetPermission = <O extends RBACPluginOptions>(options: O) => {
         openapi: {
           operationId: "rbac.getPermission",
           summary: "Get an existing permission",
-          description: "Get an existing permission",
+          description:
+            "Get a single permission by id, including its system flag and audit metadata.",
+          parameters: [
+            {
+              name: "id",
+              in: "query",
+              required: true,
+              description: "The id of the permission.",
+              schema: {
+                type: "string",
+                example: "permission_2nQxLvK8",
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Permission",
@@ -633,7 +649,8 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
         openapi: {
           operationId: "rbac.createPermission",
           summary: "Create a new permission",
-          description: "Create a new permission",
+          description:
+            "Create a new permission. Optionally assign it to a set of roles in the same call.",
           requestBody: {
             required: true,
             content: {
@@ -1060,19 +1077,19 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                         description: "The error code.",
-                        example: "PERMISSION_NOT_FOUND",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
                         description:
-                          "Human-readable error message. `Permission not found.` when the source permission does not exist, `Role not found.` when one of the roles to copy was not found.",
-                        example: "Permission not found.",
+                          "Human-readable error message. `Role not found.` when one of the roles to copy was not found, `Permission not found.` when the source permission does not exist.",
+                        example: "Role not found.",
                       },
                       details: {
                         type: "object",
@@ -1090,13 +1107,6 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                     },
                   },
                   examples: {
-                    permissionNotFound: {
-                      summary: "Permission not found.",
-                      value: {
-                        code: "PERMISSION_NOT_FOUND",
-                        message: "Permission not found.",
-                      },
-                    },
                     roleNotFound: {
                       summary: "Role not found.",
                       value: {
@@ -1105,6 +1115,13 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                         details: {
                           missingRoleIds: ["role_zzZz9xQp"],
                         },
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -1348,7 +1365,8 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         openapi: {
           operationId: "rbac.updatePermission",
           summary: "Update an existing permission",
-          description: "Update an existing permission",
+          description:
+            "Update an existing permission. When `roleIds` is provided it replaces the current roles the permission is assigned to.",
           requestBody: {
             required: true,
             content: {
@@ -1411,7 +1429,7 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
               },
             },
             404: {
-              description: "Permission not found or Role not found",
+              description: "Role or permission not found",
               content: {
                 "application/json": {
                   schema: {
@@ -1419,19 +1437,19 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                     properties: {
                       code: {
                         type: "string",
-                        enum: ["PERMISSION_NOT_FOUND", "ROLE_NOT_FOUND"],
+                        enum: ["ROLE_NOT_FOUND", "PERMISSION_NOT_FOUND"],
                         description: "The error code.",
-                        example: "PERMISSION_NOT_FOUND",
+                        example: "ROLE_NOT_FOUND",
                       },
                       message: {
                         type: "string",
                         enum: [
-                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                           RBAC_ERROR_CODES.ROLE_NOT_FOUND.message,
+                          RBAC_ERROR_CODES.PERMISSION_NOT_FOUND.message,
                         ],
                         description:
-                          "Human-readable error message. `Permission not found.` when the permission does not exist, `Role not found.` when one of the target roles was not found.",
-                        example: "Permission not found.",
+                          "Human-readable error message. `Role not found.` when one of the target roles was not found, `Permission not found.` when the permission does not exist.",
+                        example: "Role not found.",
                       },
                       details: {
                         type: "object",
@@ -1449,13 +1467,6 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                     },
                   },
                   examples: {
-                    permissionNotFound: {
-                      summary: "Permission not found.",
-                      value: {
-                        code: "PERMISSION_NOT_FOUND",
-                        message: "Permission not found.",
-                      },
-                    },
                     roleNotFound: {
                       summary: "Role not found.",
                       value: {
@@ -1464,6 +1475,13 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                         details: {
                           missingRoleIds: ["role_zzZz9xQp"],
                         },
+                      },
+                    },
+                    permissionNotFound: {
+                      summary: "Permission not found.",
+                      value: {
+                        code: "PERMISSION_NOT_FOUND",
+                        message: "Permission not found.",
                       },
                     },
                   },
@@ -1811,7 +1829,8 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
         openapi: {
           operationId: "rbac.deletePermission",
           summary: "Delete a permission",
-          description: "Delete a permission",
+          description:
+            "Delete a permission after cleaning up its role assignments. System permissions cannot be deleted, and permissions assigned to roles are rejected with `CANNOT_DELETE_ASSIGNED_PERMISSION` unless `skipAssignmentCheck` is true.",
           requestBody: {
             required: true,
             content: {
@@ -1847,10 +1866,14 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable result.",
+                        enum: ["Permission deleted successfully"],
+                        description:
+                          "Human-readable result. Always `Permission deleted successfully`.",
+                        example: "Permission deleted successfully",
                       },
                     },
                   },
@@ -2084,6 +2107,76 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
           summary: "Get permissions as select options",
           description:
             "Get permissions formatted as value/label pairs for select components. Supports search, limit and sorting parameters.",
+          parameters: [
+            {
+              name: "onlyActive",
+              in: "query",
+              description:
+                "Filter to return only active permissions. Accepts a boolean (true/1/yes/on, false/0/no/off). Defaults to true.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                active: { value: "true" },
+                all: { value: "false" },
+              },
+            },
+            {
+              name: "search",
+              in: "query",
+              description: "Search term to filter permissions by name or key.",
+              schema: {
+                type: "string",
+                example: "users",
+              },
+            },
+            {
+              name: "limit",
+              in: "query",
+              description: "Maximum number of results to return.",
+              schema: {
+                type: "integer",
+                example: "10",
+              },
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              description:
+                "The permission field to sort by. Allowed: id, name, key, isActive, createdAt, updatedAt, createdBy, updatedBy.",
+              schema: {
+                type: "string",
+                enum: [
+                  "id",
+                  "name",
+                  "key",
+                  "isActive",
+                  "createdAt",
+                  "updatedAt",
+                  "createdBy",
+                  "updatedBy",
+                ],
+              },
+              examples: {
+                name: { value: "name" },
+                key: { value: "key" },
+                createdAt: { value: "createdAt" },
+              },
+            },
+            {
+              name: "sortDirection",
+              in: "query",
+              description: "The direction to sort by. Defaults to asc.",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+              },
+              examples: {
+                asc: { value: "asc" },
+                desc: { value: "desc" },
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Successfully retrieved permissions options",
@@ -2094,6 +2187,7 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                     properties: {
                       options: {
                         type: "array",
+                        description: "The permissions that matched the filters.",
                         items: {
                           type: "object",
                           required: ["value", "label"],
@@ -2101,14 +2195,17 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                             value: {
                               type: "string",
                               description: "Permission ID",
+                              example: "permission_2nQxLvK8",
                             },
                             label: {
                               type: "string",
                               description: "Permission name",
+                              example: "Read users",
                             },
                             key: {
                               type: "string",
                               description: "Permission key",
+                              example: "users:read",
                             },
                           },
                         },
@@ -2160,6 +2257,41 @@ export const rbacGetPermissionsOptions = <O extends RBACPluginOptions>(options: 
                             key: "users:write",
                           },
                         ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid query parameters.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid query parameters",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
@@ -2420,13 +2552,14 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                     type: "object",
                     properties: {
                       data: {
-                        type: "object",
                         description: "The list payload.",
+                        type: "object",
                         properties: {
                           permission: {
                             $ref: "#/components/schemas/Permission",
                           },
                           roles: {
+                            description: "The roles the permission is assigned to.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/Role",
@@ -2470,7 +2603,8 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                       },
                       message: {
                         type: "string",
-                        description: "Human-readable validation error message.",
+                        description:
+                          "Human-readable validation error message. `Either permissionId or permissionKey is required.` when neither identifier is provided, `Provide either permissionId or permissionKey, not both.` when both are provided.",
                         example:
                           "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
@@ -2478,10 +2612,30 @@ export const rbacGetPermissionRoles = <O extends RBACPluginOptions>(options: O) 
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                      missingPermissionIdentifier: {
+                        summary: "Missing identifier",
+                        description:
+                          "Neither permissionId nor permissionKey was provided.",
+                        value: {
+                          code: "VALIDATION_ERROR",
+                          message: "Either permissionId or permissionKey is required.",
+                        },
+                      },
+                      bothPermissionIdentifiers: {
+                        summary: "Conflicting identifiers",
+                        description:
+                          "Both permissionId and permissionKey were provided.",
+                        value: {
+                          code: "VALIDATION_ERROR",
+                          message:
+                            "Provide either permissionId or permissionKey, not both.",
+                        },
                       },
                     },
                   },

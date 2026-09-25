@@ -80,6 +80,7 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
                         type: "boolean",
                         description:
                           "Whether the user has the permission through an active assigned role.",
+                        example: true,
                       },
                     },
                   },
@@ -91,6 +92,41 @@ export const rbacCheckPermission = <O extends RBACPluginOptions>(options: O) => 
                     denied: {
                       summary: "Permission denied",
                       value: { hasPermission: false },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid request body.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[body.userId] Invalid input: expected string, received undefined",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid request body",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[body.userId] Invalid input: expected string, received undefined",
+                      },
                     },
                   },
                 },
@@ -312,6 +348,7 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
                         type: "boolean",
                         description:
                           "Whether the user has the permission through an active assigned role.",
+                        example: true,
                       },
                     },
                   },
@@ -323,6 +360,41 @@ export const rbacHasPermission = <O extends RBACPluginOptions>(options: O) => {
                     denied: {
                       summary: "Permission denied",
                       value: { hasPermission: false },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid request body.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[body.permissionKey] Invalid input: expected string, received undefined",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid request body",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[body.permissionKey] Invalid input: expected string, received undefined",
+                      },
                     },
                   },
                 },

@@ -200,6 +200,7 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                             },
                           },
                           roles: {
+                            description: "The roles assigned to the user.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/Role",
@@ -251,10 +252,11 @@ export const rbacGetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
@@ -604,6 +606,8 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                             },
                           },
                           permissions: {
+                            description:
+                              "The permissions the user has through their roles.",
                             type: "array",
                             items: {
                               $ref: "#/components/schemas/Permission",
@@ -655,10 +659,11 @@ export const rbacGetUserPermissions = <O extends RBACPluginOptions>(options: O) 
                   },
                   examples: {
                     validationError: {
-                      summary: "VALIDATION_ERROR",
+                      summary: "Invalid query parameters",
                       value: {
                         code: "VALIDATION_ERROR",
-                        message: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
@@ -914,23 +919,29 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
                       success: {
                         type: "boolean",
                         description: "Whether the operation succeeded.",
+                        example: true,
                       },
                       message: {
                         type: "string",
+                        enum: ["User roles updated successfully"],
                         description:
-                          "Human-readable result. Includes the number of roles added, removed and kept.",
+                          "Human-readable result. Always `User roles updated successfully`. The number of roles added, removed and kept is reported in the `added`, `removed` and `kept` counters.",
+                        example: "User roles updated successfully",
                       },
                       added: {
                         type: "number",
                         description: "Number of roles added",
+                        example: 2,
                       },
                       removed: {
                         type: "number",
                         description: "Number of roles removed",
+                        example: 1,
                       },
                       kept: {
                         type: "number",
                         description: "Number of roles kept unchanged",
+                        example: 1,
                       },
                     },
                   },
@@ -1230,6 +1241,67 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
           summary: "Get users as select options",
           description:
             "Get users formatted as value/label pairs for select components. Supports search, limit and sorting parameters. Only active (not banned) users are returned when onlyActive is true.",
+          parameters: [
+            {
+              name: "onlyActive",
+              in: "query",
+              description:
+                "Filter to return only active users (not banned). Accepts a boolean (true/1/yes/on, false/0/no/off). Defaults to false.",
+              schema: {
+                type: "string",
+              },
+              examples: {
+                active: { value: "true" },
+                all: { value: "false" },
+              },
+            },
+            {
+              name: "search",
+              in: "query",
+              description: "Search term to filter users by email or name.",
+              schema: {
+                type: "string",
+                example: "john",
+              },
+            },
+            {
+              name: "limit",
+              in: "query",
+              description: "Maximum number of results to return.",
+              schema: {
+                type: "integer",
+                example: "10",
+              },
+            },
+            {
+              name: "sortBy",
+              in: "query",
+              description:
+                "The user field to sort by. Allowed: id, name, email, banned, createdAt, updatedAt.",
+              schema: {
+                type: "string",
+                enum: ["id", "name", "email", "banned", "createdAt", "updatedAt"],
+              },
+              examples: {
+                name: { value: "name" },
+                email: { value: "email" },
+                createdAt: { value: "createdAt" },
+              },
+            },
+            {
+              name: "sortDirection",
+              in: "query",
+              description: "The direction to sort by. Defaults to asc.",
+              schema: {
+                type: "string",
+                enum: ["asc", "desc"],
+              },
+              examples: {
+                asc: { value: "asc" },
+                desc: { value: "desc" },
+              },
+            },
+          ] satisfies OpenApiParameter[],
           responses: {
             200: {
               description: "Successfully retrieved users options",
@@ -1240,6 +1312,7 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                     properties: {
                       options: {
                         type: "array",
+                        description: "The users that matched the filters.",
                         items: {
                           type: "object",
                           required: ["value", "label"],
@@ -1247,14 +1320,19 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                             value: {
                               type: "string",
                               description: "User ID",
+                              example: "user_9mQGfY2Z",
                             },
                             label: {
                               type: "string",
                               description: "User email address",
+                              example: "john.doe@example.com",
                             },
                             name: {
                               type: "string",
-                              description: "User display name",
+                              nullable: true,
+                              description:
+                                "User display name. Null when the user has no name set.",
+                              example: "John Doe",
                             },
                           },
                         },
@@ -1306,6 +1384,41 @@ export const rbacGetUsersOptions = <O extends RBACPluginOptions>(options: O) => 
                             name: "Johnny Smith",
                           },
                         ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Invalid query parameters.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["code", "message"],
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: ["VALIDATION_ERROR"],
+                        description: "The error code.",
+                        example: "VALIDATION_ERROR",
+                      },
+                      message: {
+                        type: "string",
+                        description: "Human-readable validation error message.",
+                        example:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
+                      },
+                    },
+                  },
+                  examples: {
+                    validationError: {
+                      summary: "Invalid query parameters",
+                      value: {
+                        code: "VALIDATION_ERROR",
+                        message:
+                          "[query.sortDirection] Invalid input: expected 'asc' | 'desc', received 'sideways'",
                       },
                     },
                   },
