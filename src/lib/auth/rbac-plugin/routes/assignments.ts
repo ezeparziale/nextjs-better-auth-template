@@ -1,6 +1,6 @@
-import type { DBTransactionAdapter } from "better-auth"
 import { APIError, createAuthEndpoint } from "better-auth/api"
 import * as z from "zod"
+import { assignBatch } from "../batch-assign"
 import { ensureUserIsAdmin, rbacMiddleware } from "../call"
 import { RBAC_ERROR_CODES } from "../error-codes"
 import type {
@@ -1328,75 +1328,16 @@ export const rbacBulkAssignRoleToUsers = <O extends RBACPluginOptions>(options: 
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.USER_NOT_FOUND)
       }
 
-      // Assign all users within a transaction so a mid-way failure rolls everything back.
-      // Falls back to sequential execution when the adapter has no transactions.
-      const assignUsers = async (db: DBTransactionAdapter) => {
-        let assignedCount = 0
-        let skippedCount = 0
-
-        for (const userId of userIds) {
-          // Skip if assignment already exists
-          const existingAssignment = await db.findOne<UserRole>({
-            model: "userRole",
-            where: [
-              {
-                field: "userId",
-                value: userId,
-              },
-              {
-                field: "roleId",
-                value: ctx.body.roleId,
-              },
-            ],
-          })
-
-          if (existingAssignment) {
-            skippedCount++
-            continue
-          }
-
-          // Create assignment
-          try {
-            await db.create<UserRoleCreateInput, UserRole>({
-              model: "userRole",
-              data: {
-                userId,
-                roleId: ctx.body.roleId,
-              },
-            })
-
-            assignedCount++
-          } catch (error) {
-            // Concurrent request may have created the assignment between check and create
-            const existingAssignment = await db.findOne<UserRole>({
-              model: "userRole",
-              where: [
-                {
-                  field: "userId",
-                  value: userId,
-                },
-                {
-                  field: "roleId",
-                  value: ctx.body.roleId,
-                },
-              ],
-            })
-
-            if (!existingAssignment) {
-              throw error
-            }
-
-            skippedCount++
-          }
-        }
-
-        return { assignedCount, skippedCount }
-      }
-
-      const { assignedCount, skippedCount } =
-        typeof ctx.context.adapter.transaction === "function"
-          ? await ctx.context.adapter.transaction(assignUsers)
-          : await assignUsers(ctx.context.adapter)
+      const { assignedCount, skippedCount } = await assignBatch({
+        adapter: ctx.context.adapter,
+        model: "userRole",
+        targetField: "roleId",
+        targetValue: ctx.body.roleId,
+        itemField: "userId",
+        itemIds: userIds,
+        buildData: (userId) => ({ userId, roleId: ctx.body.roleId }),
+        concurrency: options.maxBatchWriteConcurrency,
+      })
 
       return ctx.json({
         success: true,
@@ -1981,75 +1922,19 @@ export const rbacBulkAssignPermissionsToRole = <O extends RBACPluginOptions>(
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.PERMISSION_NOT_FOUND)
       }
 
-      // Assign all permissions within a transaction so a mid-way failure rolls everything back.
-      // Falls back to sequential execution when the adapter has no transactions.
-      const assignPermissions = async (db: DBTransactionAdapter) => {
-        let assignedCount = 0
-        let skippedCount = 0
-
-        for (const permissionId of permissionIds) {
-          // Skip if assignment already exists
-          const existingAssignment = await db.findOne<RolePermission>({
-            model: "rolePermission",
-            where: [
-              {
-                field: "roleId",
-                value: ctx.body.roleId,
-              },
-              {
-                field: "permissionId",
-                value: permissionId,
-              },
-            ],
-          })
-
-          if (existingAssignment) {
-            skippedCount++
-            continue
-          }
-
-          // Create assignment
-          try {
-            await db.create<RolePermissionCreateInput, RolePermission>({
-              model: "rolePermission",
-              data: {
-                roleId: ctx.body.roleId,
-                permissionId,
-              },
-            })
-
-            assignedCount++
-          } catch (error) {
-            // Concurrent request may have created the assignment between check and create
-            const existingAssignment = await db.findOne<RolePermission>({
-              model: "rolePermission",
-              where: [
-                {
-                  field: "roleId",
-                  value: ctx.body.roleId,
-                },
-                {
-                  field: "permissionId",
-                  value: permissionId,
-                },
-              ],
-            })
-
-            if (!existingAssignment) {
-              throw error
-            }
-
-            skippedCount++
-          }
-        }
-
-        return { assignedCount, skippedCount }
-      }
-
-      const { assignedCount, skippedCount } =
-        typeof ctx.context.adapter.transaction === "function"
-          ? await ctx.context.adapter.transaction(assignPermissions)
-          : await assignPermissions(ctx.context.adapter)
+      const { assignedCount, skippedCount } = await assignBatch({
+        adapter: ctx.context.adapter,
+        model: "rolePermission",
+        targetField: "roleId",
+        targetValue: ctx.body.roleId,
+        itemField: "permissionId",
+        itemIds: permissionIds,
+        buildData: (permissionId) => ({
+          roleId: ctx.body.roleId,
+          permissionId,
+        }),
+        concurrency: options.maxBatchWriteConcurrency,
+      })
 
       return ctx.json({
         success: true,
@@ -3186,75 +3071,16 @@ export const rbacBulkAssignRolesToUser = <O extends RBACPluginOptions>(options: 
         throw APIError.from("NOT_FOUND", RBAC_ERROR_CODES.ROLE_NOT_FOUND)
       }
 
-      // Assign all roles within a transaction so a mid-way failure rolls everything back.
-      // Falls back to sequential execution when the adapter has no transactions.
-      const assignRoles = async (db: DBTransactionAdapter) => {
-        let assignedCount = 0
-        let skippedCount = 0
-
-        for (const roleId of roleIds) {
-          // Skip if assignment already exists
-          const existingAssignment = await db.findOne<UserRole>({
-            model: "userRole",
-            where: [
-              {
-                field: "userId",
-                value: ctx.body.userId,
-              },
-              {
-                field: "roleId",
-                value: roleId,
-              },
-            ],
-          })
-
-          if (existingAssignment) {
-            skippedCount++
-            continue
-          }
-
-          // Create assignment
-          try {
-            await db.create<UserRoleCreateInput, UserRole>({
-              model: "userRole",
-              data: {
-                userId: ctx.body.userId,
-                roleId,
-              },
-            })
-
-            assignedCount++
-          } catch (error) {
-            // Concurrent request may have created the assignment between check and create
-            const existingAssignment = await db.findOne<UserRole>({
-              model: "userRole",
-              where: [
-                {
-                  field: "userId",
-                  value: ctx.body.userId,
-                },
-                {
-                  field: "roleId",
-                  value: roleId,
-                },
-              ],
-            })
-
-            if (!existingAssignment) {
-              throw error
-            }
-
-            skippedCount++
-          }
-        }
-
-        return { assignedCount, skippedCount }
-      }
-
-      const { assignedCount, skippedCount } =
-        typeof ctx.context.adapter.transaction === "function"
-          ? await ctx.context.adapter.transaction(assignRoles)
-          : await assignRoles(ctx.context.adapter)
+      const { assignedCount, skippedCount } = await assignBatch({
+        adapter: ctx.context.adapter,
+        model: "userRole",
+        targetField: "userId",
+        targetValue: ctx.body.userId,
+        itemField: "roleId",
+        itemIds: roleIds,
+        buildData: (roleId) => ({ userId: ctx.body.userId, roleId }),
+        concurrency: options.maxBatchWriteConcurrency,
+      })
 
       return ctx.json({
         success: true,
@@ -3551,76 +3377,19 @@ export const rbacBulkAssignPermissionToRoles = <O extends RBACPluginOptions>(
 
       roles.forEach(assertRoleModifiable)
 
-      // Assign the permission to all roles within a transaction so a mid-way
-      // failure rolls everything back. Falls back to sequential execution when
-      // the adapter has no transactions.
-      const assignRoles = async (db: DBTransactionAdapter) => {
-        let assignedCount = 0
-        let skippedCount = 0
-
-        for (const roleId of roleIds) {
-          // Skip if assignment already exists
-          const existingAssignment = await db.findOne<RolePermission>({
-            model: "rolePermission",
-            where: [
-              {
-                field: "roleId",
-                value: roleId,
-              },
-              {
-                field: "permissionId",
-                value: ctx.body.permissionId,
-              },
-            ],
-          })
-
-          if (existingAssignment) {
-            skippedCount++
-            continue
-          }
-
-          // Create assignment
-          try {
-            await db.create<RolePermissionCreateInput, RolePermission>({
-              model: "rolePermission",
-              data: {
-                roleId,
-                permissionId: ctx.body.permissionId,
-              },
-            })
-
-            assignedCount++
-          } catch (error) {
-            // Concurrent request may have created the assignment between check and create
-            const existingAssignment = await db.findOne<RolePermission>({
-              model: "rolePermission",
-              where: [
-                {
-                  field: "roleId",
-                  value: roleId,
-                },
-                {
-                  field: "permissionId",
-                  value: ctx.body.permissionId,
-                },
-              ],
-            })
-
-            if (!existingAssignment) {
-              throw error
-            }
-
-            skippedCount++
-          }
-        }
-
-        return { assignedCount, skippedCount }
-      }
-
-      const { assignedCount, skippedCount } =
-        typeof ctx.context.adapter.transaction === "function"
-          ? await ctx.context.adapter.transaction(assignRoles)
-          : await assignRoles(ctx.context.adapter)
+      const { assignedCount, skippedCount } = await assignBatch({
+        adapter: ctx.context.adapter,
+        model: "rolePermission",
+        targetField: "permissionId",
+        targetValue: ctx.body.permissionId,
+        itemField: "roleId",
+        itemIds: roleIds,
+        buildData: (roleId) => ({
+          roleId,
+          permissionId: ctx.body.permissionId,
+        }),
+        concurrency: options.maxBatchWriteConcurrency,
+      })
 
       return ctx.json({
         success: true,
