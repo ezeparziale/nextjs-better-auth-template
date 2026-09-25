@@ -181,6 +181,13 @@ export interface RBACPluginOptions {
    */
   maxBatchAssignmentSize?: number
   /**
+   * Maximum number of concurrent inserts issued by the bulk assignment endpoints
+   * while writing the join rows. Ignored when the adapter runs the batch inside a
+   * transaction, since transactions serialize statements on a single connection.
+   * @default 10
+   */
+  maxBatchWriteConcurrency?: number
+  /**
    * Permissions that will be seeded (created) when initializing the plugin
    * @example
    * ```ts
