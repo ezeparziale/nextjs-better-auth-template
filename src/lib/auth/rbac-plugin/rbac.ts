@@ -30,7 +30,7 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
     maxRoleKeyLength: 50,
     roleKeyPattern: DEFAULT_ROLE_KEY_PATTERN,
     roleKeyErrorMessage: undefined,
-    disableEndpoints: [],
+    disabledEndpoints: [],
     ...options,
   }
 
