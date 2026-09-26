@@ -144,6 +144,9 @@ export const schema = {
         fields: ["userId", "roleId"],
         unique: true,
       },
+      {
+        fields: ["roleId"],
+      },
     ],
   },
   rolePermission: {
@@ -178,6 +181,9 @@ export const schema = {
       {
         fields: ["roleId", "permissionId"],
         unique: true,
+      },
+      {
+        fields: ["permissionId", "roleId"],
       },
     ],
   },

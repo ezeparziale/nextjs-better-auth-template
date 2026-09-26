@@ -161,7 +161,6 @@ model Role {
   created_by String?
   updated_by String?
 
-  @@index([key])
   @@map("roles")
 }
 
@@ -179,7 +178,6 @@ model Permission {
   created_by String?
   updated_by String?
 
-  @@index([key])
   @@map("permissions")
 }
 
@@ -193,6 +191,7 @@ model UserRole {
   created_at DateTime @default(now())
 
   @@unique([user_id, role_id])
+  @@index([role_id])
   @@map("users_roles")
 }
 
@@ -206,6 +205,7 @@ model RolePermission {
   created_at DateTime @default(now())
 
   @@unique([role_id, permission_id])
+  @@index([permission_id, role_id])
   @@map("roles_permissions")
 }
 
