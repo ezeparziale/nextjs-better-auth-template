@@ -241,7 +241,12 @@ export interface RBACPluginOptions {
     permissions?: string[]
   }>
   /**
-   * Array of endpoint names to disable
+   * Array of endpoint names to disable.
+   *
+   * When an endpoint is in this list, the route returns `404 NOT_FOUND` with
+   * an empty body (no code/message). This is intentional to avoid leaking
+   * the existence/config of disabled endpoints to untrusted clients.
+   *
    * @example ["deletePermission", "deleteRole", "removeRoleFromUser"]
    * @default []
    */
