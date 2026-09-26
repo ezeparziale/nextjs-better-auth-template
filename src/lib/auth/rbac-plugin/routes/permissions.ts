@@ -795,10 +795,12 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
                       },
                     },
                     invalidPermissionKeyLength: {
-                      summary: "Permission with this key already exists.",
+                      summary:
+                        "Permission key length is outside the configured limits.",
                       value: {
                         code: "INVALID_PERMISSION_KEY_LENGTH",
-                        message: "Permission with this key already exists.",
+                        message:
+                          "Permission key length is outside the configured limits.",
                       },
                     },
                     invalidPermissionKeyFormat: {
@@ -1127,68 +1129,69 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
                   },
                 },
               },
-              400: {
-                description: "Permission key already exists or the key is invalid",
-                content: {
-                  "application/json": {
-                    schema: {
-                      type: "object",
-                      properties: {
-                        code: {
-                          type: "string",
-                          enum: [
-                            "PERMISSION_ALREADY_EXISTS",
-                            "EMPTY_PERMISSION_KEY",
-                            "INVALID_PERMISSION_KEY_LENGTH",
-                            "INVALID_PERMISSION_KEY_FORMAT",
-                          ],
-                          description: "The error code.",
-                          example: "PERMISSION_ALREADY_EXISTS",
-                        },
-                        message: {
-                          type: "string",
-                          enum: [
-                            RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
-                            RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
-                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
-                            options.permissionKeyErrorMessage ??
-                              RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
-                          ],
-                          description:
-                            "Human-readable error message. See `code` for the specific conflict/validation error.",
-                          example: "Permission with this key already exists.",
-                        },
+            },
+            400: {
+              description: "Permission key already exists or the key is invalid",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      code: {
+                        type: "string",
+                        enum: [
+                          "PERMISSION_ALREADY_EXISTS",
+                          "EMPTY_PERMISSION_KEY",
+                          "INVALID_PERMISSION_KEY_LENGTH",
+                          "INVALID_PERMISSION_KEY_FORMAT",
+                        ],
+                        description: "The error code.",
+                        example: "PERMISSION_ALREADY_EXISTS",
+                      },
+                      message: {
+                        type: "string",
+                        enum: [
+                          RBAC_ERROR_CODES.PERMISSION_ALREADY_EXISTS.message,
+                          RBAC_ERROR_CODES.EMPTY_PERMISSION_KEY.message,
+                          RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_LENGTH.message,
+                          options.permissionKeyErrorMessage ??
+                            RBAC_ERROR_CODES.INVALID_PERMISSION_KEY_FORMAT.message,
+                        ],
+                        description:
+                          "Human-readable error message. See `code` for the specific conflict/validation error.",
+                        example: "Permission with this key already exists.",
                       },
                     },
-                    examples: {
-                      permissionAlreadyExists: {
-                        summary: "Permission with this key already exists.",
-                        value: {
-                          code: "PERMISSION_ALREADY_EXISTS",
-                          message: "Permission with this key already exists.",
-                        },
+                  },
+                  examples: {
+                    permissionAlreadyExists: {
+                      summary: "Permission with this key already exists.",
+                      value: {
+                        code: "PERMISSION_ALREADY_EXISTS",
+                        message: "Permission with this key already exists.",
                       },
-                      emptyPermissionKey: {
-                        summary: "Permission key cannot be empty.",
-                        value: {
-                          code: "EMPTY_PERMISSION_KEY",
-                          message: "Permission key cannot be empty.",
-                        },
+                    },
+                    emptyPermissionKey: {
+                      summary: "Permission key cannot be empty.",
+                      value: {
+                        code: "EMPTY_PERMISSION_KEY",
+                        message: "Permission key cannot be empty.",
                       },
-                      invalidPermissionKeyLength: {
-                        summary: "Permission with this key already exists.",
-                        value: {
-                          code: "INVALID_PERMISSION_KEY_LENGTH",
-                          message: "Permission with this key already exists.",
-                        },
+                    },
+                    invalidPermissionKeyLength: {
+                      summary:
+                        "Permission key length is outside the configured limits.",
+                      value: {
+                        code: "INVALID_PERMISSION_KEY_LENGTH",
+                        message:
+                          "Permission key length is outside the configured limits.",
                       },
-                      invalidPermissionKeyFormat: {
-                        summary: "Permission key does not match the configured format.",
-                        value: {
-                          code: "INVALID_PERMISSION_KEY_FORMAT",
-                          message:
-                            "Permission key does not match the configured format.",
-                        },
+                    },
+                    invalidPermissionKeyFormat: {
+                      summary: "Permission key does not match the configured format.",
+                      value: {
+                        code: "INVALID_PERMISSION_KEY_FORMAT",
+                        message: "Permission key does not match the configured format.",
                       },
                     },
                   },
@@ -1593,10 +1596,12 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
                       },
                     },
                     invalidPermissionKeyLength: {
-                      summary: "Permission with this key already exists.",
+                      summary:
+                        "Permission key length is outside the configured limits.",
                       value: {
                         code: "INVALID_PERMISSION_KEY_LENGTH",
-                        message: "Permission with this key already exists.",
+                        message:
+                          "Permission key length is outside the configured limits.",
                       },
                     },
                     invalidPermissionKeyFormat: {
