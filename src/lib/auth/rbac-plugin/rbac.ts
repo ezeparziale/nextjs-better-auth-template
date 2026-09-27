@@ -1,10 +1,12 @@
 import type { BetterAuthPlugin } from "better-auth"
+import { assignBatch } from "./batch-assign"
 import { createValidationOptions } from "./call"
 import { RBAC_ERROR_CODES } from "./error-codes"
 import * as routes from "./routes"
 import { schema } from "./schema"
 import { seedRBACData } from "./seed"
 import type { RBACPluginOptions, Role } from "./types"
+import { DEFAULT_WRITE_CONCURRENCY } from "./utils"
 
 const DEFAULT_PERMISSION_KEY_PATTERN = /^[a-z0-9_]+:[a-z0-9_]+$/i
 const DEFAULT_ROLE_KEY_PATTERN = /^[a-z0-9_]+$/i
@@ -114,15 +116,22 @@ export const rbacPlugin = <O extends RBACPluginOptions>(options?: O | undefined)
 
                     if (roles.length === 0) return
 
-                    for (const role of roles) {
-                      await ctx.adapter.create({
-                        model: "userRole",
-                        data: {
-                          userId: user.id,
-                          roleId: role.id,
-                        },
-                      })
-                    }
+                    // `assignBatch` runs the inserts in a transaction, so a
+                    // failure part-way through leaves the user with none of the
+                    // `assignOnJoin` roles instead of an arbitrary subset of
+                    // them. A role assigned by a concurrent writer is counted
+                    // as skipped rather than breaking the sign-up.
+                    await assignBatch({
+                      adapter: ctx.adapter,
+                      model: "userRole",
+                      targetField: "userId",
+                      targetValue: user.id,
+                      itemField: "roleId",
+                      itemIds: roles.map((role) => role.id),
+                      buildData: (roleId) => ({ userId: user.id, roleId }),
+                      concurrency:
+                        opts.maxBatchWriteConcurrency ?? DEFAULT_WRITE_CONCURRENCY,
+                    })
                   } catch (error) {
                     console.error(
                       `Failed to auto-assign assignOnJoin roles to user ${user.id}:`,
