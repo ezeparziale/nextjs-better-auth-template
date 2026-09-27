@@ -25,9 +25,12 @@ import type {
 } from "../types"
 import {
   dedupeIds,
+  DEFAULT_WRITE_CONCURRENCY,
   findMissingIds,
   getPaginationParams,
+  mapWithConcurrency,
   normalizeIdBatch,
+  runInTransaction,
 } from "../utils"
 import { validateKey } from "../validation"
 import { sortByPermission, sortByRole, sortDirection } from "./sort-schemas"
@@ -915,35 +918,38 @@ export const rbacCreatePermission = <O extends RBACPluginOptions>(options: O) =>
         }
       }
 
-      const permission = await ctx.context.adapter.create<
-        PermissionCreateInput,
-        Permission
-      >({
-        model: "permission",
-        data: {
-          name: ctx.body.name,
-          key,
-          description: ctx.body.description,
-          isActive: ctx.body.isActive ?? true,
-          createdBy: session.user.email,
-          updatedBy: session.user.email,
-        },
-      })
+      const permission = await runInTransaction(ctx.context.adapter, async (db) => {
+        const created = await db.create<PermissionCreateInput, Permission>({
+          model: "permission",
+          data: {
+            name: ctx.body.name,
+            key,
+            description: ctx.body.description,
+            isActive: ctx.body.isActive ?? true,
+            createdBy: session.user.email,
+            updatedBy: session.user.email,
+          },
+        })
 
-      // Assign to roles if provided (in parallel for better performance)
-      if (roleIds && roleIds.length > 0) {
-        await Promise.all(
-          roleIds.map((roleId) =>
-            ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
-              model: "rolePermission",
-              data: {
-                roleId: roleId,
-                permissionId: permission.id,
-              },
-            }),
-          ),
-        )
-      }
+        // Assign to roles if provided, bounded so a large batch does not open
+        // one connection per row
+        if (roleIds && roleIds.length > 0) {
+          await mapWithConcurrency(
+            roleIds,
+            options.maxBatchWriteConcurrency ?? DEFAULT_WRITE_CONCURRENCY,
+            (roleId) =>
+              db.create<RolePermissionCreateInput, RolePermission>({
+                model: "rolePermission",
+                data: {
+                  roleId: roleId,
+                  permissionId: created.id,
+                },
+              }),
+          )
+        }
+
+        return created
+      })
 
       return ctx.json({
         permission,
@@ -1275,36 +1281,40 @@ export const rbacClonePermission = <O extends RBACPluginOptions>(options: O) => 
         }
       }
 
-      // Create the cloned permission
-      const permission = await ctx.context.adapter.create<
-        PermissionCreateInput,
-        Permission
-      >({
-        model: "permission",
-        data: {
-          name: ctx.body.name,
-          key,
-          description: ctx.body.description ?? sourcePermission.description,
-          isActive: ctx.body.isActive ?? sourcePermission.isActive,
-          createdBy: session.user.email,
-          updatedBy: session.user.email,
-        },
-      })
+      // Create the cloned permission together with its copied role
+      // assignments, so a failure part-way through never leaves a half-copied
+      // permission behind
+      const permission = await runInTransaction(ctx.context.adapter, async (db) => {
+        const created = await db.create<PermissionCreateInput, Permission>({
+          model: "permission",
+          data: {
+            name: ctx.body.name,
+            key,
+            description: ctx.body.description ?? sourcePermission.description,
+            isActive: ctx.body.isActive ?? sourcePermission.isActive,
+            createdBy: session.user.email,
+            updatedBy: session.user.email,
+          },
+        })
 
-      // Copy role assignments to the cloned permission
-      if (roleIds.length > 0) {
-        await Promise.all(
-          roleIds.map((roleId) =>
-            ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
-              model: "rolePermission",
-              data: {
-                roleId: roleId,
-                permissionId: permission.id,
-              },
-            }),
-          ),
-        )
-      }
+        // Copy role assignments to the cloned permission
+        if (roleIds.length > 0) {
+          await mapWithConcurrency(
+            roleIds,
+            options.maxBatchWriteConcurrency ?? DEFAULT_WRITE_CONCURRENCY,
+            (roleId) =>
+              db.create<RolePermissionCreateInput, RolePermission>({
+                model: "rolePermission",
+                data: {
+                  roleId: roleId,
+                  permissionId: created.id,
+                },
+              }),
+          )
+        }
+
+        return created
+      })
 
       return ctx.json({
         permission,
@@ -1717,81 +1727,93 @@ export const rbacUpdatePermission = <O extends RBACPluginOptions>(options: O) =>
         }
       }
 
-      // Update permission
-      const updatedPermission = await ctx.context.adapter.update<Permission>({
-        model: "permission",
-        where: [
-          {
-            field: "id",
-            value: ctx.body.id,
-          },
-        ],
-        update: {
-          ...(ctx.body.name !== undefined && { name: ctx.body.name }),
-          ...(key !== undefined && { key }),
-          ...(ctx.body.description !== undefined && {
-            description: ctx.body.description,
-          }),
-          ...(ctx.body.isActive !== undefined && { isActive: ctx.body.isActive }),
-          updatedAt: new Date(),
-          updatedBy: session.user.email,
-        },
-      })
-
-      // Update role assignments if provided (incremental update)
-      if (roleIds !== undefined) {
-        // Get current role assignments
-        const currentAssignments = await ctx.context.adapter.findMany<RolePermission>({
-          model: "rolePermission",
-          where: [
-            {
-              field: "permissionId",
-              value: ctx.body.id,
+      // Update the permission and its assignments atomically, so a failure
+      // part-way through never leaves a half-applied diff behind
+      const updatedPermission = await runInTransaction(
+        ctx.context.adapter,
+        async (db) => {
+          const updated = await db.update<Permission>({
+            model: "permission",
+            where: [
+              {
+                field: "id",
+                value: ctx.body.id,
+              },
+            ],
+            update: {
+              ...(ctx.body.name !== undefined && { name: ctx.body.name }),
+              ...(key !== undefined && { key }),
+              ...(ctx.body.description !== undefined && {
+                description: ctx.body.description,
+              }),
+              ...(ctx.body.isActive !== undefined && {
+                isActive: ctx.body.isActive,
+              }),
+              updatedAt: new Date(),
+              updatedBy: session.user.email,
             },
-          ],
-        })
+          })
 
-        const currentRoleIds = new Set(currentAssignments.map((rp) => rp.roleId))
-        const newRoleIds = new Set(roleIds)
+          // Update role assignments if provided (incremental update). The
+          // current set is read inside the transaction so the diff is computed
+          // against the same snapshot as the writes
+          if (roleIds !== undefined) {
+            const currentAssignments = await db.findMany<RolePermission>({
+              model: "rolePermission",
+              where: [
+                {
+                  field: "permissionId",
+                  value: ctx.body.id,
+                },
+              ],
+            })
 
-        // Find assignments to delete (exist in current but not in new)
-        const toDelete = currentAssignments.filter((rp) => !newRoleIds.has(rp.roleId))
+            const currentRoleIds = new Set(currentAssignments.map((rp) => rp.roleId))
+            const newRoleIds = new Set(roleIds)
 
-        // Find assignments to add (exist in new but not in current)
-        const toAdd = roleIds.filter((roleId) => !currentRoleIds.has(roleId))
+            // Find assignments to delete (exist in current but not in new)
+            const toDelete = currentAssignments.filter(
+              (rp) => !newRoleIds.has(rp.roleId),
+            )
 
-        // Delete removed assignments in parallel
-        if (toDelete.length > 0) {
-          await Promise.all(
-            toDelete.map((rp) =>
-              ctx.context.adapter.delete<RolePermission>({
+            // Find assignments to add (exist in new but not in current)
+            const toAdd = roleIds.filter((roleId) => !currentRoleIds.has(roleId))
+
+            // Delete removed assignments in a single statement
+            if (toDelete.length > 0) {
+              await db.deleteMany({
                 model: "rolePermission",
                 where: [
                   {
                     field: "id",
-                    value: rp.id,
+                    operator: "in",
+                    value: toDelete.map((rp) => rp.id),
                   },
                 ],
-              }),
-            ),
-          )
-        }
+              })
+            }
 
-        // Create new assignments in parallel
-        if (toAdd.length > 0) {
-          await Promise.all(
-            toAdd.map((roleId) =>
-              ctx.context.adapter.create<RolePermissionCreateInput, RolePermission>({
-                model: "rolePermission",
-                data: {
-                  roleId: roleId,
-                  permissionId: ctx.body.id,
-                },
-              }),
-            ),
-          )
-        }
-      }
+            // Create new assignments, bounded so a large batch does not open
+            // one connection per row
+            if (toAdd.length > 0) {
+              await mapWithConcurrency(
+                toAdd,
+                options.maxBatchWriteConcurrency ?? DEFAULT_WRITE_CONCURRENCY,
+                (roleId) =>
+                  db.create<RolePermissionCreateInput, RolePermission>({
+                    model: "rolePermission",
+                    data: {
+                      roleId: roleId,
+                      permissionId: ctx.body.id,
+                    },
+                  }),
+              )
+            }
+          }
+
+          return updated
+        },
+      )
 
       return ctx.json({
         permission: updatedPermission,
@@ -2042,21 +2064,26 @@ export const rbacDeletePermission = <O extends RBACPluginOptions>(options: O) =>
         }
       }
 
-      // Delete associated role-permission mappings to avoid orphans
-      await ctx.context.adapter.deleteMany({
-        model: "rolePermission",
-        where: [{ field: "permissionId", value: ctx.body.id }],
-      })
+      // The join rows go first, so a failure deleting the permission itself
+      // would strip it from every role that grants it. Wrapped in a
+      // transaction so that failure rolls the join rows back.
+      await runInTransaction(ctx.context.adapter, async (db) => {
+        // Delete associated role-permission mappings to avoid orphans
+        await db.deleteMany({
+          model: "rolePermission",
+          where: [{ field: "permissionId", value: ctx.body.id }],
+        })
 
-      // Delete permission
-      await ctx.context.adapter.delete<Permission>({
-        model: "permission",
-        where: [
-          {
-            field: "id",
-            value: ctx.body.id,
-          },
-        ],
+        // Delete permission
+        await db.delete({
+          model: "permission",
+          where: [
+            {
+              field: "id",
+              value: ctx.body.id,
+            },
+          ],
+        })
       })
 
       return ctx.json({
