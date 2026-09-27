@@ -5,6 +5,7 @@ import { buildFilterWhere, zBooleanFilter } from "../../shared/filters"
 import type { OpenApiParameter } from "../../shared/openapi-types"
 import { createPaginationConfig, ensureUserIsAdmin, rbacMiddleware } from "../call"
 import { RBAC_ERROR_CODES } from "../error-codes"
+import { replaceUserRoles } from "../replace-user-roles"
 import type {
   Permission,
   RBACPluginOptions,
@@ -12,9 +13,13 @@ import type {
   RolePermission,
   User,
   UserRole,
-  UserRoleCreateInput,
 } from "../types"
-import { findMissingIds, getPaginationParams, normalizeIdBatch } from "../utils"
+import {
+  DEFAULT_WRITE_CONCURRENCY,
+  findMissingIds,
+  getPaginationParams,
+  normalizeIdBatch,
+} from "../utils"
 import { sortByPermission, sortByRole, sortByUser, sortDirection } from "./sort-schemas"
 
 /**
@@ -1129,67 +1134,19 @@ export const rbacSetUserRoles = <O extends RBACPluginOptions>(options: O) => {
         }
       }
 
-      // Get current user roles
-      const currentUserRoles = await ctx.context.adapter.findMany<UserRole>({
-        model: "userRole",
-        where: [
-          {
-            field: "userId",
-            value: ctx.body.userId,
-          },
-        ],
+      const { addedCount, removedCount, keptCount } = await replaceUserRoles({
+        adapter: ctx.context.adapter,
+        userId: ctx.body.userId,
+        roleIds,
+        concurrency: options.maxBatchWriteConcurrency ?? DEFAULT_WRITE_CONCURRENCY,
       })
-
-      const currentRoleIds = new Set(currentUserRoles.map((ur) => ur.roleId))
-      const newRoleIds = new Set(roleIds)
-
-      // Find roles to delete (exist in current but not in new)
-      const toDelete = currentUserRoles.filter((ur) => !newRoleIds.has(ur.roleId))
-
-      // Find roles to add (exist in new but not in current)
-      const toAdd = roleIds.filter((roleId) => !currentRoleIds.has(roleId))
-
-      // Find roles to keep (exist in both)
-      const kept = ctx.body.roleIds.filter((roleId) => currentRoleIds.has(roleId))
-
-      // Delete removed roles in parallel
-      if (toDelete.length > 0) {
-        await Promise.all(
-          toDelete.map((ur) =>
-            ctx.context.adapter.delete<UserRole>({
-              model: "userRole",
-              where: [
-                {
-                  field: "id",
-                  value: ur.id,
-                },
-              ],
-            }),
-          ),
-        )
-      }
-
-      // Create new roles in parallel
-      if (toAdd.length > 0) {
-        await Promise.all(
-          toAdd.map((roleId) =>
-            ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
-              model: "userRole",
-              data: {
-                userId: ctx.body.userId,
-                roleId: roleId,
-              },
-            }),
-          ),
-        )
-      }
 
       return ctx.json({
         success: true,
         message: "User roles updated successfully",
-        added: toAdd.length,
-        removed: toDelete.length,
-        kept: kept.length,
+        added: addedCount,
+        removed: removedCount,
+        kept: keptCount,
       })
     },
   )
@@ -1752,57 +1709,12 @@ export const rbacUpdateUser = <O extends RBACPluginOptions>(options: O) => {
           }
         }
 
-        // Get current user roles
-        const currentUserRoles = await ctx.context.adapter.findMany<UserRole>({
-          model: "userRole",
-          where: [
-            {
-              field: "userId",
-              value: ctx.body.userId,
-            },
-          ],
+        await replaceUserRoles({
+          adapter: ctx.context.adapter,
+          userId: ctx.body.userId,
+          roleIds,
+          concurrency: options.maxBatchWriteConcurrency ?? DEFAULT_WRITE_CONCURRENCY,
         })
-
-        const currentRoleIds = new Set(currentUserRoles.map((ur) => ur.roleId))
-        const newRoleIds = new Set(roleIds)
-
-        // Find roles to delete (exist in current but not in new)
-        const toDelete = currentUserRoles.filter((ur) => !newRoleIds.has(ur.roleId))
-
-        // Find roles to add (exist in new but not in current)
-        const toAdd = roleIds.filter((roleId) => !currentRoleIds.has(roleId))
-
-        // Delete removed roles in parallel
-        if (toDelete.length > 0) {
-          await Promise.all(
-            toDelete.map((ur) =>
-              ctx.context.adapter.delete<UserRole>({
-                model: "userRole",
-                where: [
-                  {
-                    field: "id",
-                    value: ur.id,
-                  },
-                ],
-              }),
-            ),
-          )
-        }
-
-        // Create new roles in parallel
-        if (toAdd.length > 0) {
-          await Promise.all(
-            toAdd.map((roleId) =>
-              ctx.context.adapter.create<UserRoleCreateInput, UserRole>({
-                model: "userRole",
-                data: {
-                  userId: ctx.body.userId,
-                  roleId: roleId,
-                },
-              }),
-            ),
-          )
-        }
       }
 
       return ctx.json({
