@@ -80,6 +80,12 @@ export function normalizeIdBatch(
  * Declared structurally (instead of reusing better-auth's `DBAdapter`) so the
  * same helpers accept a regular adapter, a transaction handle, or a test double,
  * and so they only depend on the methods they actually use.
+ *
+ * Every member mirrors the shape better-auth's `DBTransactionAdapter` exposes,
+ * so a real transactional handle satisfies this interface as-is. Nothing here
+ * is dialect-specific: the write paths must keep working on Postgres, MySQL and
+ * SQLite, so bulk writes go through `deleteMany` with an `in` clause rather than
+ * N row-by-row deletes, and never rely on Postgres-only behaviour.
  */
 export interface RbacAdapter {
   findOne<T>(data: { model: string; where?: Where[] | undefined }): Promise<T | null>
@@ -96,6 +102,13 @@ export interface RbacAdapter {
     data: T
     select?: string[] | undefined
   }): Promise<R>
+  update<T>(data: {
+    model: string
+    where: Where[]
+    update: Record<string, unknown>
+  }): Promise<T | null>
+  delete(data: { model: string; where: Where[] }): Promise<void>
+  deleteMany(data: { model: string; where: Where[] }): Promise<number>
 }
 
 /**
@@ -119,11 +132,19 @@ export async function runInTransaction<T>(
 }
 
 /**
+ * Default cap for concurrent write statements, mirroring the documented
+ * default of the `maxBatchWriteConcurrency` plugin option.
+ */
+export const DEFAULT_WRITE_CONCURRENCY = 10
+
+/**
  * Maps `items` through `mapper` with at most `limit` concurrent calls, keeping
  * the result order. On the first rejection no new tasks are started and the
  * original error is rethrown once the in-flight tasks settle.
  *
- * A non-positive or non-finite `limit` falls back to sequential execution.
+ * A non-positive or non-finite `limit` falls back to sequential execution, so
+ * callers reading an unset optional option must pass
+ * `DEFAULT_WRITE_CONCURRENCY` rather than the raw `undefined`.
  */
 export async function mapWithConcurrency<T, R>(
   items: readonly T[],

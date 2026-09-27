@@ -1,5 +1,9 @@
 import type { DBAdapter } from "better-auth"
-import { mapWithConcurrency, runInTransaction } from "./utils"
+import {
+  DEFAULT_WRITE_CONCURRENCY,
+  mapWithConcurrency,
+  runInTransaction,
+} from "./utils"
 
 export interface AssignBatchOptions {
   /** Adapter to run against. Used to detect transaction support. */
@@ -35,8 +39,6 @@ export interface AssignBatchResult {
   skippedCount: number
 }
 
-const DEFAULT_CONCURRENCY = 10
-
 /**
  * Assigns many items to a single target through a join model, without the
  * per-item read.
@@ -64,7 +66,7 @@ export async function assignBatch(
     itemField,
     itemIds,
     buildData,
-    concurrency = DEFAULT_CONCURRENCY,
+    concurrency = DEFAULT_WRITE_CONCURRENCY,
   } = options
 
   if (itemIds.length === 0) {
