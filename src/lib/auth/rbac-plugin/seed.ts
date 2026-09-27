@@ -1,4 +1,4 @@
-import type { AuthContext, DBTransactionAdapter } from "better-auth"
+import type { AuthContext } from "better-auth"
 import type {
   Permission,
   PermissionCreateInput,
@@ -8,6 +8,8 @@ import type {
   RolePermission,
   RolePermissionCreateInput,
 } from "./types"
+import type { RbacAdapter } from "./utils"
+import { runInTransaction } from "./utils"
 import { KeyValidationConfig, validateKey } from "./validation"
 
 function validateSeedConfig(
@@ -43,9 +45,12 @@ function validateSeedConfig(
 
 /**
  * Seeds permissions into the database if they don't already exist
+ *
+ * No per-item try/catch: a caught statement error aborts a Postgres
+ * transaction, so the seed would keep "succeeding" while writing nothing.
  */
 async function seedPermissions(
-  db: DBTransactionAdapter,
+  db: RbacAdapter,
   permissions: RBACPluginOptions["seedPermissions"],
 ) {
   if (!permissions || permissions.length === 0) return
@@ -58,23 +63,19 @@ async function seedPermissions(
     })
 
     if (!existing) {
-      try {
-        await db.create<PermissionCreateInput, Permission>({
-          model: "permission",
-          data: {
-            key: permission.key,
-            name: permission.name,
-            description: permission.description,
-            isActive: permission.isActive ?? true,
-            isSystem: true,
-            createdBy: "system",
-            updatedBy: "system",
-          },
-        })
-        console.log(`Permission created: ${permission.key}`)
-      } catch {
-        // Safe check for race conditions during build/worker initialization
-      }
+      await db.create<PermissionCreateInput, Permission>({
+        model: "permission",
+        data: {
+          key: permission.key,
+          name: permission.name,
+          description: permission.description,
+          isActive: permission.isActive ?? true,
+          isSystem: true,
+          createdBy: "system",
+          updatedBy: "system",
+        },
+      })
+      console.log(`Permission created: ${permission.key}`)
     }
   }
 }
@@ -83,10 +84,7 @@ async function seedPermissions(
  * Seeds roles into the database if they don't already exist
  * Also associates permissions with roles
  */
-async function seedRoles(
-  db: DBTransactionAdapter,
-  roles: RBACPluginOptions["seedRoles"],
-) {
+async function seedRoles(db: RbacAdapter, roles: RBACPluginOptions["seedRoles"]) {
   if (!roles || roles.length === 0) return
 
   for (const role of roles) {
@@ -97,28 +95,24 @@ async function seedRoles(
     })
 
     if (!existing) {
-      try {
-        const createdRole = await db.create<RoleCreateInput, Role>({
-          model: "role",
-          data: {
-            key: role.key,
-            name: role.name,
-            description: role.description,
-            isActive: role.isActive ?? true,
-            assignOnJoin: role.assignOnJoin ?? false,
-            isSystem: true,
-            createdBy: "system",
-            updatedBy: "system",
-          },
-        })
-        console.log(`Role created: ${role.key}`)
+      const createdRole = await db.create<RoleCreateInput, Role>({
+        model: "role",
+        data: {
+          key: role.key,
+          name: role.name,
+          description: role.description,
+          isActive: role.isActive ?? true,
+          assignOnJoin: role.assignOnJoin ?? false,
+          isSystem: true,
+          createdBy: "system",
+          updatedBy: "system",
+        },
+      })
+      console.log(`Role created: ${role.key}`)
 
-        // Associate permissions with the role
-        if (role.permissions && role.permissions.length > 0) {
-          await associatePermissionsToRole(db, createdRole.id, role.permissions)
-        }
-      } catch {
-        // Safe check for race conditions during build/worker initialization
+      // Associate permissions with the role
+      if (role.permissions && role.permissions.length > 0) {
+        await associatePermissionsToRole(db, createdRole.id, role.permissions)
       }
     }
   }
@@ -128,7 +122,7 @@ async function seedRoles(
  * Associates permissions to a role by permission keys
  */
 async function associatePermissionsToRole(
-  db: DBTransactionAdapter,
+  db: RbacAdapter,
   roleId: string,
   permissionKeys: string[],
 ) {
@@ -165,21 +159,16 @@ export async function seedRBACData(
   validateSeedConfig(options, validationOptions)
 
   try {
-    // Runs the whole seed within a transaction so a mid-way failure rolls everything back.
-    // Falls back to sequential execution when the adapter has no transactions.
-    const runSeed = async (db: DBTransactionAdapter) => {
+    // Runs the whole seed within a transaction so a mid-way failure rolls
+    // everything back instead of leaving a half-seeded database. Falls back to
+    // sequential execution when the adapter has no transactions.
+    await runInTransaction(ctx.adapter, async (db) => {
       // Seed permissions first (roles depend on them)
       await seedPermissions(db, options.seedPermissions)
 
       // Then seed roles with their permission associations
       await seedRoles(db, options.seedRoles)
-    }
-
-    if (typeof ctx.adapter.transaction === "function") {
-      await ctx.adapter.transaction(runSeed)
-    } else {
-      await runSeed(ctx.adapter)
-    }
+    })
   } catch (error) {
     console.error("Error seeding RBAC data:", error)
     throw error
