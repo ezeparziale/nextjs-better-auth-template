@@ -1,48 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { userHasPermissionKey } from "./permission-check"
-import type { RbacAdapter } from "./utils"
+import { createFakeAdapter, fromTables, type FakeRow } from "./test-helpers"
 
-type Row = Record<string, string | boolean>
-
-interface WhereClause {
-  field: string
-  operator?: string
-  value?: unknown
-}
-
-function matches(row: Row, where?: WhereClause[]): boolean {
-  if (!where) return true
-
-  return where.every((clause) => {
-    const value = row[clause.field]
-
-    if (clause.operator === "in") {
-      return Array.isArray(clause.value) && clause.value.includes(value)
-    }
-
-    return value === clause.value
-  })
-}
-
-function createFakeAdapter(tables: Record<string, Row[]>) {
-  const calls: string[] = []
-
-  const adapter = {
-    findOne: async <T>({ model, where }: { model: string; where?: WhereClause[] }) => {
-      calls.push(`findOne:${model}`)
-      return ((tables[model] ?? []).find((row) => matches(row, where)) ??
-        null) as T | null
-    },
-    findMany: async <T>({ model, where }: { model: string; where?: WhereClause[] }) => {
-      calls.push(`findMany:${model}`)
-      return (tables[model] ?? []).filter((row) => matches(row, where)) as T[]
-    },
-    create: async () => {
-      throw new Error("not implemented")
-    },
-  } satisfies RbacAdapter
-
-  return { adapter, calls }
+function fakeAdapter(tables: Record<string, FakeRow[]>) {
+  return createFakeAdapter({ rows: fromTables(tables) })
 }
 
 const PERMISSION_ACTIVE = { id: "perm_1", key: "post:create", isActive: true }
@@ -50,7 +11,7 @@ const PERMISSION_INACTIVE = { id: "perm_2", key: "post:delete", isActive: false 
 
 describe("userHasPermissionKey", () => {
   it("returns true when an active role grants the permission", async () => {
-    const { adapter } = createFakeAdapter({
+    const { adapter } = fakeAdapter({
       permission: [PERMISSION_ACTIVE],
       userRole: [{ userId: "user_1", roleId: "role_1" }],
       role: [{ id: "role_1", isActive: true }],
@@ -63,7 +24,7 @@ describe("userHasPermissionKey", () => {
   })
 
   it("costs a fixed number of queries no matter how many roles the user has", async () => {
-    const { adapter, calls } = createFakeAdapter({
+    const { adapter, callLog } = fakeAdapter({
       permission: [PERMISSION_ACTIVE],
       userRole: [
         { userId: "user_1", roleId: "role_1" },
@@ -80,7 +41,7 @@ describe("userHasPermissionKey", () => {
 
     await userHasPermissionKey(adapter, "user_1", "post:create")
 
-    expect(calls).toEqual([
+    expect(callLog()).toEqual([
       "findOne:permission",
       "findMany:userRole",
       "findMany:role",
@@ -89,7 +50,7 @@ describe("userHasPermissionKey", () => {
   })
 
   it("returns false when the permission is inactive", async () => {
-    const { adapter, calls } = createFakeAdapter({
+    const { adapter, callLog } = fakeAdapter({
       permission: [PERMISSION_INACTIVE],
       userRole: [{ userId: "user_1", roleId: "role_1" }],
       role: [{ id: "role_1", isActive: true }],
@@ -99,11 +60,11 @@ describe("userHasPermissionKey", () => {
     await expect(userHasPermissionKey(adapter, "user_1", "post:delete")).resolves.toBe(
       false,
     )
-    expect(calls).toEqual(["findOne:permission"])
+    expect(callLog()).toEqual(["findOne:permission"])
   })
 
   it("returns false when the permission does not exist", async () => {
-    const { adapter } = createFakeAdapter({ permission: [] })
+    const { adapter } = fakeAdapter({ permission: [] })
 
     await expect(userHasPermissionKey(adapter, "user_1", "post:create")).resolves.toBe(
       false,
@@ -111,7 +72,7 @@ describe("userHasPermissionKey", () => {
   })
 
   it("returns false when the user has no roles", async () => {
-    const { adapter, calls } = createFakeAdapter({
+    const { adapter, callLog } = fakeAdapter({
       permission: [PERMISSION_ACTIVE],
       userRole: [],
     })
@@ -119,11 +80,11 @@ describe("userHasPermissionKey", () => {
     await expect(userHasPermissionKey(adapter, "user_1", "post:create")).resolves.toBe(
       false,
     )
-    expect(calls).toEqual(["findOne:permission", "findMany:userRole"])
+    expect(callLog()).toEqual(["findOne:permission", "findMany:userRole"])
   })
 
   it("ignores roles that are no longer active", async () => {
-    const { adapter, calls } = createFakeAdapter({
+    const { adapter, callLog } = fakeAdapter({
       permission: [PERMISSION_ACTIVE],
       userRole: [
         { userId: "user_1", roleId: "role_1" },
@@ -139,7 +100,7 @@ describe("userHasPermissionKey", () => {
     await expect(userHasPermissionKey(adapter, "user_1", "post:create")).resolves.toBe(
       false,
     )
-    expect(calls).toEqual([
+    expect(callLog()).toEqual([
       "findOne:permission",
       "findMany:userRole",
       "findMany:role",
@@ -148,7 +109,7 @@ describe("userHasPermissionKey", () => {
   })
 
   it("returns false when no active role grants the permission", async () => {
-    const { adapter } = createFakeAdapter({
+    const { adapter } = fakeAdapter({
       permission: [PERMISSION_ACTIVE],
       userRole: [
         { userId: "user_1", roleId: "role_1" },
@@ -167,7 +128,7 @@ describe("userHasPermissionKey", () => {
   })
 
   it("returns false when every role of the user is inactive", async () => {
-    const { adapter, calls } = createFakeAdapter({
+    const { adapter, callLog } = fakeAdapter({
       permission: [PERMISSION_ACTIVE],
       userRole: [{ userId: "user_1", roleId: "role_1" }],
       role: [{ id: "role_1", isActive: false }],
@@ -176,6 +137,10 @@ describe("userHasPermissionKey", () => {
     await expect(userHasPermissionKey(adapter, "user_1", "post:create")).resolves.toBe(
       false,
     )
-    expect(calls).toEqual(["findOne:permission", "findMany:userRole", "findMany:role"])
+    expect(callLog()).toEqual([
+      "findOne:permission",
+      "findMany:userRole",
+      "findMany:role",
+    ])
   })
 })
